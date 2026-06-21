@@ -1,0 +1,816 @@
+(* ::Package:: *)
+
+(* ::Title:: *)
+(*Setup*)
+
+
+(* ::Input:: *)
+(*Get["C:\\Users\\Miguel\\Github\\libs\\QMB\\Kernel\\init.m"];*)
+
+
+(* ::Input:: *)
+(*SetDirectory[NotebookDirectory[]];*)
+
+
+(* ::Input:: *)
+(*LaunchKernels[12];*)
+
+
+Names["QMB`*"]
+
+
+(* ::Title:: *)
+(*Reduced Spin-State and Choi-State Observables*)
+
+
+(* ::Chapter::Closed:: *)
+(*Definitions -- Spin-Channel Machinery*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 0 -- Kernel setup                                          *)*)
+(*(* ================================================================ *)*)
+(*$CompileTarget = "C";*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 1 -- Compiled partial traces (hardcoded for 4x4 \[Rho]_AB)      *)*)
+(*(* Layout: rows/cols indexed as (q1,q2) \[Element] {00,01,10,11}.        *)*)
+(*(* ================================================================ *)*)
+(*Clear[TraceOutA,TraceOutB];*)
+(*TraceOutB = Compile[                  (* keep spin A, trace out B *)*)
+(*  {{\[Rho], _Complex, 2}},*)
+(*  {{\[Rho][[1,1]] + \[Rho][[2,2]],  \[Rho][[1,3]] + \[Rho][[2,4]]},*)
+(*   {\[Rho][[3,1]] + \[Rho][[4,2]],  \[Rho][[3,3]] + \[Rho][[4,4]]}},*)
+(*  CompilationTarget -> $CompileTarget,*)
+(*  RuntimeOptions -> "Speed"*)
+(*];*)
+(*TraceOutA = Compile[                  (* keep spin B, trace out A *)*)
+(*  {{\[Rho], _Complex, 2}},*)
+(*  {{\[Rho][[1,1]] + \[Rho][[3,3]],  \[Rho][[1,2]] + \[Rho][[3,4]]},*)
+(*   {\[Rho][[2,1]] + \[Rho][[4,3]],  \[Rho][[2,2]] + \[Rho][[4,4]]}},*)
+(*  CompilationTarget -> $CompileTarget,*)
+(*  RuntimeOptions -> "Speed"*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 2 -- Von Neumann entropy (2x2 analytic, 4x4 via Eigenvalues) *)*)
+(*(* ================================================================ *)*)
+(*Clear[VNEntropy2x2,VNEntropy4x4];*)
+(*VNEntropy2x2 = Compile[*)
+(*  {{\[Rho], _Complex, 2}},*)
+(*  Module[{r11, r22, r12r, r12i, absq, disc, \[Lambda]1, \[Lambda]2},*)
+(*    r11  = Re[\[Rho][[1,1]]];*)
+(*    r22  = Re[\[Rho][[2,2]]];*)
+(*    r12r = Re[\[Rho][[1,2]]];*)
+(*    r12i = Im[\[Rho][[1,2]]];*)
+(*    absq = r12r^2 + r12i^2;*)
+(*    disc = Sqrt[(r11 - r22)^2 + 4.*absq];*)
+(*    \[Lambda]1   = (r11 + r22 + disc)/2.;*)
+(*    \[Lambda]2   = (r11 + r22 - disc)/2.;*)
+(*    If[\[Lambda]1 > 1.*^-14, -\[Lambda]1*Log[\[Lambda]1], 0.] +*)
+(*    If[\[Lambda]2 > 1.*^-14, -\[Lambda]2*Log[\[Lambda]2], 0.]*)
+(*  ],*)
+(*  CompilationTarget -> $CompileTarget,*)
+(*  RuntimeOptions -> "Speed"*)
+(*];*)
+(*VNEntropy4x4[\[Rho]_] := Module[*)
+(*  {\[Lambda] = Select[Re[Eigenvalues[N[\[Rho]]]], # > 1.*^-14 &]},*)
+(*  -\[Lambda] . Log[\[Lambda]]*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 3 -- Concurrence (Wootters 1998)                            *)*)
+(*(* ================================================================ *)*)
+(*spinFlip = N[KroneckerProduct[PauliMatrix[2], PauliMatrix[2]]];*)
+(**)
+(*Clear[Concurrence];*)
+(*Concurrence[\[Rho]_] := Module[*)
+(*  {\[Rho]Tilde, \[Lambda]s},*)
+(*  \[Rho]Tilde = spinFlip . Conjugate[\[Rho]] . spinFlip;*)
+(*  \[Lambda]s     = Reverse[Sort[Re[Sqrt[Chop[Eigenvalues[\[Rho] . \[Rho]Tilde]]]]]];*)
+(*  Max[0., \[Lambda]s[[1]] - \[Lambda]s[[2]] - \[Lambda]s[[3]] - \[Lambda]s[[4]]]*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 4 -- Single-pass observable aggregator for the reduced \[Rho]AB *)*)
+(*(* ================================================================ *)*)
+(*Clear[ComputeAllObservables];*)
+(*ComputeAllObservables[\[Rho]AB_, \[Rho]ref_] := Module[*)
+(*  {\[Rho]A, \[Rho]B, SA, SB, SAB},*)
+(*  \[Rho]A  = TraceOutB[\[Rho]AB];*)
+(*  \[Rho]B  = TraceOutA[\[Rho]AB];*)
+(*  SA  = VNEntropy2x2[\[Rho]A];*)
+(*  SB  = VNEntropy2x2[\[Rho]B];*)
+(*  SAB = VNEntropy4x4[\[Rho]AB];*)
+(*  <|*)
+(*    "Concurrence"  -> Concurrence[\[Rho]AB],*)
+(*    "Purity"       -> Re[Tr[\[Rho]AB . \[Rho]AB]],*)
+(*    "EntropyA"     -> SA,*)
+(*    "EntropyB"     -> SB,*)
+(*    "MutualInfo"   -> SA + SB - SAB,*)
+(*    "SpinSurvival" -> Re[Tr[\[Rho]ref . \[Rho]AB]]*)
+(*  |>*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 5 -- Transfer tensor builder, [Q1,Chain,Q2] eigenvectors    *)*)
+(*(* ================================================================ *)*)
+(*Clear[BuildTransferTensors];*)
+(*BuildTransferTensors[U_, L_] := Module[*)
+(*  {dC, idxFull, getCols},*)
+(*  dC       = 2^L;*)
+(*  idxFull  = Compile[{{q1,_Integer},{c,_Integer},{q2,_Integer},{dC,_Integer}},*)
+(*               q1*(2*dC) + c*2 + q2 + 1,*)
+(*               CompilationTarget -> $CompileTarget];*)
+(*  getCols[q1_, q2_] := Table[idxFull[q1, c, q2, dC], {c, 0, dC - 1}];*)
+(*  ParallelTable[*)
+(*    Conjugate[U[[All, getCols[q1, q2]]]] . Transpose[U[[All, getCols[q1p, q2p]]]],*)
+(*    {q1, 0, 1}, {q2, 0, 1}, {q1p, 0, 1}, {q2p, 0, 1}*)
+(*  ]*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 6 -- K-matrix builder: absorbs \[Rho]_E into the transfer tensors *)*)
+(*(* ================================================================ *)*)
+(*Clear[BuildKMatrix];*)
+(*BuildKMatrix[\[Rho]E_, T_] := ArrayReshape[*)
+(*  Table[*)
+(*    Flatten[\[Rho]E * T[[q1+1, q2+1, q1p+1, q2p+1]]],*)
+(*    {q1, 0, 1}, {q2, 0, 1}, {q1p, 0, 1}, {q2p, 0, 1}*)
+(*  ],*)
+(*  {4, 4, Length[\[Rho]E]^2}*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 7 -- Energy difference vector and global survival vector    *)*)
+(*(* ================================================================ *)*)
+(*Clear[BuildEnergyDiffs,BuildGflat];*)
+(*BuildEnergyDiffs[E_] := Flatten[Outer[Subtract, E, E]];*)
+(*BuildGflat[\[Rho]E_] := Flatten[\[Rho]E * Transpose[\[Rho]E]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 8 -- Core per-step functions for the time loop               *)*)
+(*(* ================================================================ *)*)
+(*Clear[ComputeRhoAB,ComputeSurvivalGlobal];*)
+(*ComputeRhoAB[Kmat_, dEflat_, t_?NumericQ] :=*)
+(*  Kmat . Exp[(-I) * dEflat * t];*)
+(*ComputeSurvivalGlobal[Gflat_, dEflat_, t_?NumericQ] :=*)
+(*  Re[Gflat . Conjugate[Exp[(-I) * dEflat * t]]];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Definitions -- Hamiltonian, Couplings, Initial-State Tools*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 9 -- Pauli operators                                        *)*)
+(*(* ================================================================ *)*)
+(*\[Sigma]x  = N[PauliMatrix[1]];*)
+(*\[Sigma]y  = N[PauliMatrix[2]];*)
+(*\[Sigma]z  = N[PauliMatrix[3]];*)
+(*\[Sigma]p  = \[Sigma]x + I*\[Sigma]y;*)
+(*\[Sigma]m  = \[Sigma]x - I*\[Sigma]y;*)
+(*id2 = N[IdentityMatrix[2]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 10 -- Hamiltonian embedding functions, [Q1, Chain, Q2] layout *)*)
+(*(* ================================================================ *)*)
+(*Clear[SparseId,EmbedSpinA,EmbedSpinB,EmbedChain,EmbedChainSite];*)
+(*SparseId[n_] := SparseArray[Band[{1, 1}] -> 1., {n, n}];*)
+(*EmbedSpinA[op_, L_] :=*)
+(*  KroneckerProduct[op, SparseId[2^L], SparseId[2]];*)
+(*EmbedSpinB[op_, L_] :=*)
+(*  KroneckerProduct[SparseId[2], SparseId[2^L], op];*)
+(*EmbedChain[Ha_, L_] :=*)
+(*  KroneckerProduct[SparseId[2], Ha, SparseId[2]];*)
+(*EmbedChainSite[op_, k_, L_] :=*)
+(*  KroneckerProduct[SparseId[2^(k - 1)], op, SparseId[2^(L - k)]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 11 -- Boundary coupling constructors                        *)*)
+(*(* A-chain couples spin A to the FIRST chain site.                  *)*)
+(*(* B-chain couples spin B to the LAST  chain site.                  *)*)
+(*(* ================================================================ *)*)
+(*Clear[BuildCouplingAChain, BuildCouplingBChain];*)
+(**)
+(*BuildCouplingAChain[couplingTerms_, L_] := Sum[*)
+(*  term[[1]] * KroneckerProduct[*)
+(*    term[[2]],*)
+(*    KroneckerProduct[term[[3]], SparseId[2^(L - 1)]],*)
+(*    SparseId[2]*)
+(*  ],*)
+(*  {term, couplingTerms}*)
+(*];*)
+(**)
+(*BuildCouplingBChain[couplingTerms_, L_] := Sum[*)
+(*  term[[1]] * KroneckerProduct[*)
+(*    SparseId[2],*)
+(*    KroneckerProduct[SparseId[2^(L - 1)], term[[2]]],*)
+(*    term[[3]]*)
+(*  ],*)
+(*  {term, couplingTerms}*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 12 -- Full Hamiltonian assembler and diagonalization        *)*)
+(*(* ================================================================ *)*)
+(*Clear[BuildFullHamiltonian,DiagonalizeH];*)
+(*BuildFullHamiltonian[HAlocal_, Ha_, HBlocal_, couplingA_, couplingB_, L_] :=*)
+(*  EmbedSpinA[HAlocal, L] +*)
+(*  EmbedChain[Ha, L]        +*)
+(*  EmbedSpinB[HBlocal, L]  +*)
+(*  BuildCouplingAChain[couplingA, L] +*)
+(*  BuildCouplingBChain[couplingB, L];*)
+(**)
+(*DiagonalizeH[HT_] := Transpose[Sort[Transpose[Eigensystem[Normal[N[HT]]]]]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 13 -- Initial state construction, [Q1,Chain,Q2] target layout *)*)
+(*(* CASE A -- correlated spin state (Bell, Werner, etc.):              *)*)
+(*(*   \[Rho]_AB \[CircleTimes] \[Rho]_chain builds as [Q1,Q2,Chain]; permuted to        *)*)
+(*(*   [Q1,Chain,Q2] via reshape/transpose/reshape -- pure index op.    *)*)
+(*(* ================================================================ *)*)
+(*Clear[PermuteToQ1ChainQ2,BuildInitialStateCorrelated,BuildInitialStateProduct];*)
+(*PermuteToQ1ChainQ2[\[Rho]_, L_] := Module[{dC = 2^L},*)
+(*  ArrayReshape[*)
+(*    Transpose[*)
+(*      ArrayReshape[\[Rho], {2, 2, dC, 2, 2, dC}],*)
+(*      {1, 3, 2, 4, 6, 5}*)
+(*    ],*)
+(*    {4*dC, 4*dC}*)
+(*  ]*)
+(*];*)
+(*BuildInitialStateCorrelated[\[Rho]AB_, \[Rho]chain_, L_] :=*)
+(*  PermuteToQ1ChainQ2[N[KroneckerProduct[\[Rho]AB, \[Rho]chain]], L];*)
+(*BuildInitialStateProduct[\[Rho]A_, \[Rho]chain_, \[Rho]B_] :=*)
+(*  N[KroneckerProduct[\[Rho]A, \[Rho]chain, \[Rho]B]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* BLOCK 14 -- Energy basis projection: \[Rho]_E = U . \[Rho]0 . U^dagger          *)*)
+(*(* ================================================================ *)*)
+(*Clear[ProjectToEnergyBasis];*)
+(*ProjectToEnergyBasis[U_, \[Rho]0_] := U . \[Rho]0 . ConjugateTranspose[U];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Definitions -- Thermal Environment State*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Thermal state of the chain at inverse temperature beta.           *)*)
+(*(*   beta = 0        -> maximally mixed (infinite temperature)       *)*)
+(*(*   beta = Infinity -> ground-state projector (zero temperature)    *)*)
+(*(*   otherwise       -> Gibbs state exp(-beta H) / Z                 *)*)
+(*(* ================================================================ *)*)
+(*Clear[ThermalChainState];*)
+(*ThermalChainState[Ha_, beta_] := Module[*)
+(*  {vals, vecs, weights, Z},*)
+(*  Which[*)
+(*    beta == 0.,*)
+(*      N[IdentityMatrix[Length[Ha]]] / Length[Ha],*)
+(*    beta === Infinity,*)
+(*      {vals, vecs} = Transpose[Sort[Transpose[Eigensystem[N[Ha]]]]];*)
+(*      Outer[Times, vecs[[1]], Conjugate[vecs[[1]]]],*)
+(*    True,*)
+(*      {vals, vecs} = Transpose[Sort[Transpose[Eigensystem[N[Ha]]]]];*)
+(*      weights = Exp[-beta * (vals - Min[vals])];*)
+(*      Z = Total[weights];*)
+(*      ConjugateTranspose[vecs] . DiagonalMatrix[N[weights / Z]] . vecs*)
+(*  ]*)
+(*];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Definitions -- Choi-State Machinery (unoptimized, brute-force per step)*)
+
+
+(* ::Text:: *)
+(*Identical to choi_test_flat.m / choi_edge_spins.m. The latest proposed*)
+(*transfer-tensor-style optimization for the Choi branch is intentionally*)
+(*NOT applied here -- SpectralUnitary rebuilds the full D_total x D_total*)
+(*unitary at every t, exactly as already validated.*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Packing utility (Compile target already set in Block 0 above).   *)*)
+(*(* ================================================================ *)*)
+(*Needs["Developer`"];*)
+(*ClearAll[PackedC];*)
+(*PackedC[x_] := Developer`ToPackedArray[N[x]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Eigenvector column permutation: [Q1,Chain,Q2] -> [Q1,Q2,Chain]    *)*)
+(*(* = S x E, where S = Q1 x Q2 (dS=4) and E = Chain (dE = 2^L).      *)*)
+(*(* ================================================================ *)*)
+(*Clear[PermuteEvecsToSE];*)
+(*PermuteEvecsToSE[Evec_, L_] := Module[*)
+(*  {dC = 2^L},*)
+(*  PackedC@Table[*)
+(*    Flatten[Transpose[ArrayReshape[Evec[[alpha]], {2, dC, 2}], {1, 3, 2}]],*)
+(*    {alpha, 1, Length[Evec]}*)
+(*  ]*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Spectral unitary: Function[t, U(t)], rebuilt fully at each call. *)*)
+(*(* ================================================================ *)*)
+(*ClearAll[SpectralUnitary];*)
+(*SpectralUnitary[allvecs_, allvals_] :=*)
+(*  Module[{Pmat  = PackedC@Transpose[allvecs],*)
+(*          Pinv  = PackedC@Conjugate[allvecs]},*)
+(*    Function[{t},*)
+(*      With[{ph = PackedC@Exp[-I allvals t]},*)
+(*        PackedC@(Transpose[Transpose[Pmat]*ph] . Pinv)]]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Maximally entangled reference-system projector |Phi+><Phi+|.    *)*)
+(*(* ================================================================ *)*)
+(*ClearAll[MakePhiProjector];*)
+(*MakePhiProjector[dS_Integer?Positive] :=*)
+(*  Module[{phi = PackedC@(Flatten[IdentityMatrix[dS]]/Sqrt[dS])},*)
+(*    PackedC@Dyad[phi]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Choi channel builder: choiMat(t) = Tr_E[(I_R x U(t)) (|Phi+><Phi+| x rhoE) (I_R x U(t))^dagger] *)*)
+(*(* "rhoE" -> dE x dE environment initial density matrix.            *)*)
+(*(* ================================================================ *)*)
+(*ClearAll[ChoiChannelF];*)
+(*Options[ChoiChannelF] = {"rhoE" -> None};*)
+(**)
+(*ChoiChannelF[dS_Integer?Positive, dE_Integer?Positive,*)
+(*             unitaryF_Function, opts:OptionsPattern[]] :=*)
+(*  Module[{rhoEval = OptionValue["rhoE"],*)
+(*          projPhi, idRef},*)
+(*    If[rhoEval === None,*)
+(*      Message[ChoiChannelF::noenv]; Return[$Failed]];*)
+(*    rhoEval = PackedC@rhoEval;*)
+(*    projPhi = MakePhiProjector[dS];*)
+(*    idRef   = IdentityMatrix[dS, SparseArray];*)
+(*    Function[{t},*)
+(*      Module[{Ut = unitaryF[t], URt, OmegaMat, fullMat},*)
+(*        URt      = KroneckerProduct[idRef, Ut];*)
+(*        OmegaMat = KroneckerProduct[projPhi, rhoEval];*)
+(*        fullMat  = URt . OmegaMat . ConjugateTranspose[URt];*)
+(*        PackedC@Chop@MatrixPartialTrace[fullMat, 3, {dS, dS, dE}]]]];*)
+(**)
+(*ChoiChannelF::noenv = "Provide \"rhoE\" -> (dE x dE matrix).";*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Choi-state observables, derived from the dS^2 x dS^2 Choi matrix.*)*)
+(*(* ================================================================ *)*)
+(*ClearAll[ChoiPurity, ChoiVNEntropy, ChoiEVals, ChoiAllObs];*)
+(**)
+(*ChoiPurity[choiMat_] := Chop@Re@Tr[choiMat . choiMat];*)
+(**)
+(*ChoiVNEntropy[choiMat_] :=*)
+(*  Module[{ev = Select[Re[Eigenvalues[N[choiMat]]], # > 1.*^-14 &]},*)
+(*    ev = ev / Total[ev];*)
+(*    Chop@(-ev . Log[ev])];*)
+(**)
+(*ChoiEVals[choiMat_] :=*)
+(*  Sort[Select[Re[Eigenvalues[N[choiMat]]], # > 1.*^-14 &], Greater];*)
+(**)
+(*ChoiAllObs[choiMat_] :=*)
+(*  Module[{ev = Sort[Select[Re[Eigenvalues[N[choiMat]]], # > 1.*^-14 &], Greater],*)
+(*          evNorm},*)
+(*    evNorm = ev / Total[ev];*)
+(*    <|"Purity"      -> Chop@Re@Tr[choiMat . choiMat],*)
+(*      "VNEntropy"   -> Chop@(-evNorm . Log[evNorm]),*)
+(*      "Eigenvalues" -> ev,*)
+(*      "Rank"        -> Length[ev]|>];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Time-series driver: evaluates choiFn at each t, returns a list   *)*)
+(*(* of Associations keyed by "Time".                                  *)*)
+(*(* ================================================================ *)*)
+(*ClearAll[ChoiSeries];*)
+(*Options[ChoiSeries] = {"Observables" -> "All", "Parallel" -> True};*)
+(**)
+(*ChoiSeries[choiFn_Function, tlist_List, OptionsPattern[]] :=*)
+(*  Module[{obsOpt = OptionValue["Observables"],*)
+(*          parOpt = TrueQ[OptionValue["Parallel"]],*)
+(*          stepFn},*)
+(*    stepFn = Function[{t},*)
+(*      Module[{choiMat = choiFn[t], obsResult},*)
+(*        obsResult = Switch[obsOpt,*)
+(*          "Purity",*)
+(*            <|"Purity" -> ChoiPurity[choiMat]|>,*)
+(*          "Entropy",*)
+(*            Module[{ev = Sort[Select[Re[Eigenvalues[N[choiMat]]],*)
+(*                                    # > 1.*^-14 &], Greater]},*)
+(*              ev = ev / Total[ev];*)
+(*              <|"Purity"    -> Chop@Re@Tr[choiMat . choiMat],*)
+(*                "VNEntropy" -> Chop@(-ev . Log[ev])|>],*)
+(*          _,*)
+(*            ChoiAllObs[choiMat]];*)
+(*        Join[<|"Time" -> t|>, obsResult]]];*)
+(*    If[parOpt,*)
+(*      ParallelMap[stepFn, tlist,*)
+(*        Method -> "CoarsestGrained",*)
+(*        DistributedContexts -> None],*)
+(*      Map[stepFn, tlist]]];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* Result extraction utilities.                                      *)*)
+(*(* ================================================================ *)*)
+(*ClearAll[ExtractTS, ExtractEVals];*)
+(**)
+(*ExtractTS[res_List, key_String] :=*)
+(*  {#["Time"], #[key]} & /@ res;*)
+(**)
+(*ExtractEVals[res_List, nKeep_Integer] :=*)
+(*  Table[*)
+(*    {#["Time"],*)
+(*     If[Length[#["Eigenvalues"]] >= k, #["Eigenvalues"][[k]], 0.]} & /@ res,*)
+(*    {k, 1, nKeep}];*)
+
+
+(* ::Input:: *)
+(*(* ================================================================ *)*)
+(*(* DISTRIBUTE -- send all reusable static definitions (both branches)*)*)
+(*(* to parallel kernels, once, before any heavy per-run object exists.*)*)
+(*(* ================================================================ *)*)
+(*DistributeDefinitions[*)
+(*  \[Sigma]x, \[Sigma]y, \[Sigma]z, \[Sigma]p, \[Sigma]m, id2, spinFlip,*)
+(*  TraceOutA, TraceOutB, VNEntropy2x2, VNEntropy4x4, Concurrence,*)
+(*  ComputeAllObservables, ComputeRhoAB, ComputeSurvivalGlobal,*)
+(*  PackedC, MakePhiProjector, SpectralUnitary, ChoiChannelF,*)
+(*  ChoiPurity, ChoiVNEntropy, ChoiEVals, ChoiAllObs,*)
+(*  ExtractTS, ExtractEVals,*)
+(*  MatrixPartialTrace, Dyad*)
+(*];*)
+
+
+(* ::Chapter:: *)
+(*Model Specification -- FIXED Parameters (No Sweeps)*)
+
+
+(* ::Input:: *)
+(*(* --- System size --- *)*)
+(*L = 7;*)
+
+
+(* ::Input:: *)
+(*(* --- Edge-spin local fields and boundary couplings --- *)*)
+(*{\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b} = {1., 1., 1., 1.};*)
+(*HAlocal   = \[CapitalDelta]a * \[Sigma]z;*)
+(*HBlocal   = \[CapitalDelta]b * \[Sigma]z;*)
+(*couplingA = {{\[Lambda]a, \[Sigma]p, \[Sigma]m}, {\[Lambda]a, \[Sigma]m, \[Sigma]p}};*)
+(*couplingB = {{\[Lambda]b, \[Sigma]p, \[Sigma]m}, {\[Lambda]b, \[Sigma]m, \[Sigma]p}};*)
+
+
+(* ::Input:: *)
+(*(* --- Chain model: XXZwLocalDefectHamiltonian[Jxy,Jz,w,ed,L,d] --- *)*)
+(*(* Defect terms off (w=ed=0) -> clean XXZ chain. Jz = delta, FIXED. *)*)
+(*{Jxy, w, ed} = {1., 0, 0};*)
+(*delta = 1.0;   (* single fixed anisotropy, no sweep *)*)
+
+
+(* ::Input:: *)
+(*(* --- Bipartition dimensions for the Choi construction --- *)*)
+(*dS = 4;        (* S = Q1 x Q2, the two edge spins *)*)
+(*dE = 2^L;      (* E = Chain *)*)
+
+
+(* ::Input:: *)
+(*(* --- Fixed inverse temperature for the chain's initial state --- *)*)
+(*beta = 100.01;*)
+
+
+(* ::Input:: *)
+(*(* --- Time grid --- *)*)
+(*tMax = 50.;*)
+(*dt   = 0.1;*)
+(*tlist = Range[0., tMax, dt];*)
+
+
+(* ::Input:: *)
+(*Print["Fixed parameters:"];*)
+(*Print["  L = ", L, "   delta = ", delta, "   beta = ", beta];*)
+(*Print["  {Deltaa, Deltab, lambda_a, lambda_b} = ", {\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b}];*)
+(*Print["  {Jxy, w, ed} = ", {Jxy, w, ed}];*)
+(*Print["  dS = ", dS, "   dE = ", dE, "   D_total = ", dS*dE];*)
+(*Print["  tMax = ", tMax, "   dt = ", dt, "   steps = ", Length[tlist]];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Build and Diagonalize the Full Hamiltonian (shared by both branches)*)
+
+
+(* ::Input:: *)
+(*Ha = XXZwLocalDefectHamiltonian[Jxy, delta, w, ed, L, L];*)
+(*Print["Ha dimensions: ", Dimensions[Ha], "  (expected {", dE, ",", dE, "})"];*)
+
+
+(* ::Input:: *)
+(*HT = Chop[BuildFullHamiltonian[HAlocal, Ha, HBlocal, couplingA, couplingB, L]];*)
+(*Print["HT dimensions: ", Dimensions[Normal[HT]],*)
+(*      "  (expected {", dS*dE, ",", dS*dE, "})"];*)
+
+
+(* ::Input:: *)
+(*{Eval, Evec} = DiagonalizeH[HT];*)
+(*Clear[HT];*)
+(*Print["Eval length: ", Length[Eval], "   Evec dimensions: ", Dimensions[Evec]];*)
+(*Print["Eval range: [", N@Min[Eval], ", ", N@Max[Eval], "]"];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Fixed Initial States*)
+
+
+(* ::Input:: *)
+(*(* --- Edge-spin initial state: Bell state, fixed --- *)*)
+(*bellState = {0, 1, 1, 0}/Sqrt[2.];*)
+(*bellState = {0,0,0,1};*)
+(*rhoAB     = Outer[Times, bellState, Conjugate[bellState]];*)
+(*rhoABref  = rhoAB;*)
+(*Print["Tr[rhoAB] = ", N@Re@Tr[rhoAB], "  (expected 1)"];*)
+
+
+(* ::Input:: *)
+(*(* --- Environment (chain) initial state: thermal, fixed beta --- *)*)
+(*rhoChain = ThermalChainState[Ha, beta];*)
+(*Print["Tr[rhoChain] = ", N@Re@Tr[rhoChain], "  (expected 1)"];*)
+(*Print["Min eigenvalue of rhoChain: ", N@Min[Re[Eigenvalues[rhoChain]]], "  (expected >= 0)"];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Branch A -- Spin-Channel: Reduced Density Matrix Observables*)
+
+
+(* ::Text:: *)
+(*Transfer-tensor method, identical to spin_channels_clean.m. Uses Evec*)
+(*directly in its native [Q1,Chain,Q2] layout -- no permutation needed.*)
+
+
+(* ::Input:: *)
+(*rho0 = BuildInitialStateCorrelated[rhoAB, rhoChain, L];*)
+(*rhoE = ProjectToEnergyBasis[Evec, rho0];*)
+(*Clear[rho0];*)
+
+
+(* ::Input:: *)
+(*Tmat = BuildTransferTensors[Evec, L];*)
+(*Kmat = BuildKMatrix[rhoE, Tmat];*)
+(*Clear[Tmat];*)
+
+
+(* ::Input:: *)
+(*dEflat = BuildEnergyDiffs[Chop[Eval]];*)
+(*Gflat  = BuildGflat[rhoE];*)
+(*Clear[rhoE];*)
+
+
+(* ::Input:: *)
+(*DistributeDefinitions[*)
+(*  Kmat, dEflat, Gflat, rhoABref, spinFlip,*)
+(*  TraceOutA, TraceOutB, VNEntropy2x2, VNEntropy4x4,*)
+(*  Concurrence, ComputeAllObservables,*)
+(*  ComputeRhoAB, ComputeSurvivalGlobal*)
+(*];*)
+
+
+(* ::Input:: *)
+(*AbsoluteTiming[*)
+(*  spinResults = ParallelTable[*)
+(*    Module[{rhoABt, survGlobal, obs},*)
+(*      rhoABt     = Chop[ComputeRhoAB[Kmat, dEflat, t]];*)
+(*      survGlobal = ComputeSurvivalGlobal[Gflat, dEflat, t];*)
+(*      obs        = ComputeAllObservables[rhoABt, rhoABref];*)
+(*      Join[<|"Time" -> t, "SurvivalGlobal" -> survGlobal|>, obs]*)
+(*    ],*)
+(*    {t, tlist},*)
+(*    DistributedContexts -> None*)
+(*  ];*)
+(*]*)
+
+
+(* ::Input:: *)
+(*Clear[Kmat, dEflat, Gflat];*)
+(*Print["spinResults length: ", Length[spinResults]];*)
+(*Print["spinResults[[1]]:  ", spinResults[[1]]];*)
+(*Print["spinResults[[-1]]: ", spinResults[[-1]]];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Branch B -- Choi State: Channel Observables (unoptimized, brute-force)*)
+
+
+(* ::Text:: *)
+(*Uses the SAME {Eval, Evec} diagonalized above (after permutation to S x E*)
+(*order) and the SAME rhoChain as Branch A's environment state. rhoAB plays*)
+(*NO role here: the Choi construction replaces the system's state with the*)
+(*maximally entangled reference |Phi+>, by design.*)
+
+
+(* ::Input:: *)
+(*EvecSE = PermuteEvecsToSE[Evec, L];*)
+(*Print["EvecSE dimensions: ", Dimensions[EvecSE],*)
+(*      "  (expected {", dS*dE, ",", dS*dE, "})"];*)
+
+
+(* ::Input:: *)
+(*unitaryFn = SpectralUnitary[EvecSE, Eval];*)
+(*Clear[EvecSE];*)
+
+
+(* ::Input:: *)
+(*choiFn = ChoiChannelF[dS, dE, unitaryFn, "rhoE" -> rhoChain];*)
+
+
+(* ::Input:: *)
+(*choi0 = choiFn[0.];*)
+(*Print["t=0 check: Tr[choiMat^2] = ", ChoiPurity[choi0],*)
+(*      "  (expected 1)   Tr[choiMat] = ", N@Re@Tr[choi0],*)
+(*      "  (expected 1)   dim = ", Dimensions[choi0],*)
+(*      "  (expected {", dS^2, ",", dS^2, "})"];*)
+(*Clear[choi0];*)
+
+
+(* ::Input:: *)
+(*DistributeDefinitions[*)
+(*  choiFn,*)
+(*  PackedC, MakePhiProjector, ChoiChannelF,*)
+(*  ChoiPurity, ChoiVNEntropy, ChoiEVals, ChoiAllObs,*)
+(*  MatrixPartialTrace, Dyad*)
+(*];*)
+
+
+(* ::Input:: *)
+(*AbsoluteTiming[*)
+(*  choiResults = ChoiSeries[choiFn, tlist,*)
+(*    "Observables" -> "All",*)
+(*    "Parallel"    -> True];*)
+(*]*)
+
+
+(* ::Input:: *)
+(*Clear[choiFn];*)
+(*Print["choiResults length: ", Length[choiResults]];*)
+(*Print["choiResults[[1]]:  ", choiResults[[1]]];*)
+(*Print["choiResults[[-1]]: ", choiResults[[-1]]];*)
+
+
+(* ::Chapter::Closed:: *)
+(*Side-by-Side Comparison*)
+
+
+(* ::Input:: *)
+(*(* Sanity: both branches were evaluated over the identical tlist,    *)*)
+(*(* so results align by index -- no need to match on "Time" values.  *)*)
+(*Print["Length match: ", Length[spinResults] == Length[choiResults] == Length[tlist]];*)
+
+
+(* ::Input:: *)
+(*(* Merge per time step. Choi keys are prefixed "Choi" to avoid        *)*)
+(*(* colliding with the spin-channel "Purity" key (different objects:  *)*)
+(*(* Tr[rhoAB^2] vs Tr[choiMat^2]).                                     *)*)
+(*combinedResults = MapThread[*)
+(*  Join[#1, KeyMap[("Choi" <> #) &, KeyDrop[#2, "Time"]]] &,*)
+(*  {spinResults, choiResults}*)
+(*];*)
+(*Print["combinedResults[[1]]: ", combinedResults[[1]]];*)
+
+
+(* ::Input:: *)
+(*get[key_] := {#["Time"], #[key]} & /@ combinedResults;*)
+
+
+(* ::Input:: *)
+(*(* Panel 1: spin-channel observables (reduced 4x4 rhoAB) *)*)
+(*spinPanel = ListLinePlot[*)
+(*  {get["SpinSurvival"], get["Concurrence"], get["Purity"],*)
+(*   get["EntropyA"], get["EntropyB"], get["MutualInfo"]},*)
+(*  Frame       -> True,*)
+(*  FrameLabel  -> {"Time (t)", "Spin-channel observables"},*)
+(*  LabelStyle  -> Directive[Black, 14],*)
+(*  PlotLabel   -> Style["Reduced \[Rho]AB(t)", Black, 14],*)
+(*  PlotStyle   -> {Directive[Thick, Blue], Directive[Thick, Red],*)
+(*                  Directive[Thick, Darker[Green], Dashed], Directive[Thick, Orange],*)
+(*                  Directive[Thick, Darker[Orange], Dashed], Directive[Thick, Purple, DotDashed]},*)
+(*  PlotLegends -> Placed[LineLegend[{"Spin Survival", "Concurrence", "Purity",*)
+(*                  "Entropy A", "Entropy B", "Mutual Info"}, LegendFunction -> Framed], Bottom],*)
+(*  PlotRange   -> All,*)
+(*  ImageSize   -> 480*)
+(*];*)
+
+
+(* ::Input:: *)
+(*(* Panel 2: Choi-state observables (16x16 choiMat) *)*)
+(*choiPanel = ListLinePlot[*)
+(*  {get["ChoiPurity"], get["ChoiVNEntropy"]},*)
+(*  Frame       -> True,*)
+(*  FrameLabel  -> {"Time (t)", "Choi-state observables"},*)
+(*  LabelStyle  -> Directive[Black, 14],*)
+(*  PlotLabel   -> Style["Choi state \[ScriptCapitalE](t)", Black, 14],*)
+(*  PlotStyle   -> {Directive[Thick, Black], Directive[Thick, Blue]},*)
+(*  PlotLegends -> Placed[LineLegend[{"Purity Tr[\[ScriptCapitalE]^2]", "Entropy S(\[ScriptCapitalE])"},*)
+(*                  LegendFunction -> Framed], Bottom],*)
+(*  PlotRange   -> All,*)
+(*  ImageSize   -> 480*)
+(*];*)
+
+
+(* ::Input:: *)
+(*sideBySidePanels = GraphicsRow[{spinPanel, choiPanel}, ImageSize -> 1100, Spacings -> 40]*)
+
+
+(* ::Input:: *)
+(*(* Direct overlay: reduced-state purity vs channel purity.            *)*)
+(*(* Different lower bounds (1/4 vs 1/16) -- both start at 1, both decay.*)*)
+(*purityOverlay = Show[*)
+(*  ListLinePlot[get["Purity"],*)
+(*    PlotStyle -> {Thick, Black}],*)
+(*  ListLinePlot[get["ChoiPurity"],*)
+(*    PlotStyle -> {Thick, Red, Dashed}],*)
+(*  Frame       -> True,*)
+(*  FrameLabel  -> {"Time (t)", "Purity"},*)
+(*  LabelStyle  -> Directive[Black, 14],*)
+(*  PlotLabel   -> Style["Reduced-state purity vs Choi-state purity", Black, 14],*)
+(*  PlotLegends -> Placed[LineLegend[{Black, Red},*)
+(*                  {"Tr[\[Rho]AB^2]", "Tr[\[ScriptCapitalE]^2]"}, LegendFunction -> Framed], Right],*)
+(*  PlotRange   -> All,*)
+(*  ImageSize   -> 700*)
+(*]*)
+
+
+(* ::Input:: *)
+(*(* Direct overlay: spin mutual information vs Choi entropy.           *)*)
+(*infoOverlay = Show[*)
+(*  ListLinePlot[get["MutualInfo"],*)
+(*    PlotStyle -> {Thick, Purple}],*)
+(*  ListLinePlot[get["ChoiVNEntropy"],*)
+(*    PlotStyle -> {Thick, Blue, Dashed}],*)
+(*  Frame       -> True,*)
+(*  FrameLabel  -> {"Time (t)", "Information / Entropy"},*)
+(*  LabelStyle  -> Directive[Black, 14],*)
+(*  PlotLabel   -> Style["Spin mutual information vs Choi channel entropy", Black, 14],*)
+(*  PlotLegends -> Placed[LineLegend[{Purple, Blue},*)
+(*                  {"I(A:B)", "S(\[ScriptCapitalE])"}, LegendFunction -> Framed], Right],*)
+(*  PlotRange   -> All,*)
+(*  ImageSize   -> 700*)
+(*]*)
+
+
+(* ::Chapter:: *)
+(*Export (optional)*)
+
+
+(* ::Input:: *)
+(*runTag = "L" <> ToString[L] <> "_D" <> ToString[delta] <> "_beta" <> ToString[beta];*)
+
+
+(* ::Input:: *)
+(*Export["combined_results_" <> runTag <> ".mx", combinedResults];*)
+(*Export["side_by_side_" <> runTag <> ".png", sideBySidePanels, ImageResolution -> 200];*)
+(*Export["purity_overlay_" <> runTag <> ".png", purityOverlay, ImageResolution -> 200];*)
+(*Export["info_overlay_" <> runTag <> ".png", infoOverlay, ImageResolution -> 200];*)
+
+
+(* ::Input:: *)
+(*Print["Side-by-side comparison complete."];*)

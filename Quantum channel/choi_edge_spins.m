@@ -13,7 +13,7 @@
 
 
 (* ::Input:: *)
-(*LaunchKernels[12];*)
+(*LaunchKernels[10];*)
 
 
 (* ::Title:: *)
@@ -28,7 +28,7 @@
 (*(* ================================================================ *)*)
 (*(* BLOCK 0 -- Kernel and packing utilities                          *)*)
 (*(* ================================================================ *)*)
-(*$CompileTarget = "WVM";*)
+(*$CompileTarget = "C";*)
 (*Needs["Developer`"];*)
 (*ClearAll[PackedC];*)
 (*PackedC[x_] := Developer`ToPackedArray[N[x]];*)
@@ -191,13 +191,10 @@
 (*(*                                                                   *)*)
 
 
-(*(* Returns Function[t, U(t)] where                                  *)(*
+(*(* Returns Function[t, U(t)] where                                  *)
 (*   U(t) = P . Diag(e^{-i lambda t}) . P^dagger                     *)*)
-(*(*                                                                   *)*)
 (*(* allvecs: D x D matrix, rows are eigenvectors in S x E order.     *)*)
 (*(* allvals: length-D eigenvalue vector.                              *)*)
-
-
 
 
 (* ::Input:: *)
@@ -384,8 +381,7 @@
 (*  label = "XXZ edge-spin Choi,  L=" <> ToString[L] <>*)
 (*          ",  \[CapitalDelta]=" <> ToString[NumberForm[delta, {3,1}]] <>*)
 (*          ",  " <> BetaLabel[beta] <>*)
-(*          ",  h1=" <> ToString[h1sweep] <>*)
-(*          ",  h2=" <> ToString[h2sweep] <>*)
+(*          ",  Jxy=" <> ToString[Jxy] <>*)
 (*          ",  dS=" <> ToString[dS];*)
 (*  ext = "_D" <> StringPadLeft[ToString[k], 2, "0"] <>*)
 (*        "_"  <> BetaStr[beta] <> ".png";*)
@@ -472,7 +468,7 @@
 (*];*)
 
 
-(* ::Chapter:: *)
+(* ::Chapter::Closed:: *)
 (*Fixed Parameters*)
 
 
@@ -480,12 +476,18 @@
 (*(* ================================================================ *)*)
 (*(* MODEL SPECIFICATION -- evaluate this entire cell at once.        *)*)
 (*(* All downstream cells depend on these symbols.                    *)*)
-(*(* Hamiltonian parameters and coupling form are identical to        *)*)
-(*(* spin_channels_clean.m.                                           *)*)
+(*(* Hamiltonian parameters and coupling form are identical to the    *)*)
+(*(* current spin_channels_clean.m ('Cycle Delta, and size L' chapter).*)*)
+(*(*                                                                   *)*)
+(*(* Chain model: XXZwLocalDefectHamiltonian[Jxy, Jz, w, ed, L, d]     *)*)
+(*(* with the defect terms switched off (w = ed = 0), Jz = delta      *)*)
+(*(* swept below, and the defect site d = L (irrelevant while w=ed=0).*)*)
+(*(* This REPLACES the previous OpenXXZHamiltonian[L,delta,h1,h2]     *)*)
+(*(* call -- boundary fields h1, h2 are no longer part of the model.  *)*)
 (*(* ================================================================ *)*)
-(*{\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b} = {1.1, 0.9, 1., 1.};*)
-(*{h1sweep, h2sweep} = {0.99, 1.01};*)
-(*tMax  = 100.;*)
+(*{\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b} = {1., 1., 1., 1.};*)
+(*{Jxy, w, ed} = {1., 0, 0};   (* chain XY coupling fixed; defect off *)*)
+(*tMax  = 50.;*)
 (*dt    = 0.1;*)
 (*tlist = Range[0., tMax, dt];*)
 (**)
@@ -499,32 +501,21 @@
 (*dS = 4;*)
 (**)
 (*betaList   = {0., 0.01, 0.5, 1., 5., Infinity};*)
-(*LList      = Range[3,8];*)
-(*kDeltaList = Range[8, 12];*)
+(*LList      = Range[3,4];*)
+(*\[CapitalDelta]=10.;*)
 (**)
 (*baseDir = NotebookDirectory[];*)
 (**)
 (*Print["Fixed parameters set:"];*)
 (*Print["  {Deltaa, Deltab, lambda_a, lambda_b} = ", {\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b}];*)
-(*Print["  {h1sweep, h2sweep}  = ", {h1sweep, h2sweep}];*)
+(*Print["  {Jxy, w, ed} = ", {Jxy, w, ed}, "   (defect off when w=ed=0)"];*)
 (*Print["  dS = ", dS, "   tMax = ", tMax, "   dt = ", dt];*)
 (*Print["  LList = ", LList, "   kDeltaList = ", kDeltaList];*)
 (*Print["  betaList = ", betaList];*)
 
 
-(* ::Chapter:: *)
+(* ::Chapter::Closed:: *)
 (*Sweep*)
-
-
-(* ::Input:: *)
-(*{Jxy,w,ed}={1.,0,0};*)
-
-
-(* ::Input:: *)
-(*(* --- Chain Hamiltonian (your choice of model) ---               *)*)
-(*(* Pass a precomputed numerical 2^L \[Times] 2^L matrix.                  *)*)
-(*(* Example: XXZ chain with anisotropy \[CapitalDelta], boundary fields h1, h2    *)*)
-(*Ha = XXZwLocalDefectHamiltonian[Jxy, Jz, w, ed, L, d];*)
 
 
 (* ::Input:: *)
@@ -557,15 +548,16 @@
 (*  If[!DirectoryQ[dirL],    CreateDirectory[dirL]];*)
 (*  If[!DirectoryQ[dirChoi], CreateDirectory[dirChoi]];*)
 (**)
-(*  Do[*)
-(*    delta = N[k/10];*)
+(**)
+(*    delta = \[CapitalDelta]/10.;*)
 (*    Print["L = ", LL, "   \[CapitalDelta] = ", NumberForm[delta, {3,1}], "   ..."];*)
 (**)
 (*    (* Build and diagonalize once per (LL, delta).                    *)*)
-(*    (* LL is Integer: OpenXXZHamiltonian and all embedding functions   *)*)
-(*    (* require integer chain length.                                   *)*)
-(*Ha = XXZwLocalDefectHamiltonian[Jxy, delta, w, ed, L, L];*)
-(*       HT           = Chop[BuildFullHamiltonian[HAlocal, Ha, HBlocal,*)
+(*    (* LL is Integer: XXZwLocalDefectHamiltonian and all embedding     *)*)
+(*    (* functions require integer chain length.                         *)*)
+(*    (* Defect terms off (w=ed=0): clean XXZ chain, Jz = delta swept.   *)*)
+(*    Ha           = XXZwLocalDefectHamiltonian[Jxy, delta, w, ed, LL, LL];*)
+(*    HT           = Chop[BuildFullHamiltonian[HAlocal, Ha, HBlocal,*)
 (*                         couplingA, couplingB, LL]];*)
 (*    {Eval, Evec} = DiagonalizeH[HT];*)
 (*    Clear[HT];*)
@@ -632,9 +624,6 @@
 (*    ];*)
 (**)
 (*    Clear[Ha, unitaryFn, Eval];*)
-(**)
-(*    , {k, kDeltaList}*)
-(*  ];*)
 (**)
 (*  , {L, LList}*)
 (*];*)
