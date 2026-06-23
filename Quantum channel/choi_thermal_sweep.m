@@ -491,7 +491,7 @@
 (*(*   delta=1.0 -> \[CapitalDelta]=10 -> kDelta=10 -> suffix _D10.                    *)*)
 (*(*   File suffix format is identical to choi_edge_spins.m.           *)*)
 (*(* ================================================================ *)*)
-(*{\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b} = {1., 1., 1., 1.};*)
+(*{\[CapitalDelta]a, \[CapitalDelta]b, \[Lambda]a, \[Lambda]b} = {1., 1., 0.1, 0.1};*)
 (*{Jxy, w, ed}              = {1., 0, 0};*)
 (*\[CapitalDelta]                       = 10;            (* delta = 1.0 *)*)
 (*kDelta                    = IntegerPart[\[CapitalDelta]];*)
@@ -508,7 +508,7 @@
 (*dS = 4;   (* S = Q1 x Q2; fixed for two spin-1/2 edge spins *)*)
 (**)
 (*betaList = {0.,0.5, 1., 10.,Infinity};*)
-(*LList    = Range[6, 7];*)
+(*LList    = Range[3,6];*)
 (**)
 (*baseDir = NotebookDirectory[];*)
 (**)
@@ -558,7 +558,7 @@
 
 
 (* ::Input:: *)
-(*kDeltaList = Range[5,15,1];   (* integer keys: delta = k/10, exact values *)*)
+(*kDeltaList = {0.,1.0,10.};   (* integer keys: delta = k/10, exact values *)*)
 
 
 (* ::Input:: *)
