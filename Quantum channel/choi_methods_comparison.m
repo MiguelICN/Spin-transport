@@ -1,6 +1,6 @@
 (* ::Package:: *)
 
-(* ::Title::Closed:: *)
+(* ::Title:: *)
 (*Setup*)
 
 
@@ -16,7 +16,8 @@
 (*LaunchKernels[12];*)
 
 
-Names["QMB`*"]
+(* ::Input:: *)
+(*Names["QMB`*"]*)
 
 
 (* ::Title:: *)
@@ -33,14 +34,6 @@ Names["QMB`*"]
 (*{Eval,Evec} diagonalization and the SAME rhoChain, over the SAME tlist,*)
 (*so results are directly comparable index-by-index without any *)
 (*re-alignment.*)
-
-
-(* ::Text:: *)
-(*Parameters below are intentionally smaller than the L=7 production *)
-(*run (L=5 here) so that the brute-force method -- which is the whole *)
-(*point of comparison -- completes in a reasonable time. Once this file *)
-(*confirms numerical agreement, L can be raised; the brute-force branch *)
-(*should then be dropped from production sweeps in favor of Method 2.*)
 
 
 (* ::Chapter::Closed:: *)
@@ -470,13 +463,13 @@ Names["QMB`*"]
 (*];*)
 
 
-(* ::Chapter::Closed:: *)
+(* ::Chapter:: *)
 (*Model Specification -- FIXED Parameters (No Sweeps, Validation Size)*)
 
 
 (* ::Input:: *)
 (*(* --- System size (kept small: brute-force method must finish) --- *)*)
-(*L =5;*)
+(*L =6;*)
 
 
 (* ::Input:: *)
@@ -505,12 +498,12 @@ Names["QMB`*"]
 (*(* --- Fixed inverse temperature for the chain's initial state --- *)*)
 (*(* A generic finite beta is used deliberately (not 0 or Infinity), *)*)
 (*(* since those two limits are numerically degenerate special cases.*)*)
-(*beta = 1.;*)
+(*beta = 100.;*)
 
 
 (* ::Input:: *)
 (*(* --- Time grid --- *)*)
-(*tMax = 100.;*)
+(*tMax = 50.;*)
 (*dt   = 0.1;*)
 (*tlist = Range[0., tMax, dt];*)
 
@@ -708,7 +701,7 @@ Names["QMB`*"]
 (*Print["Max |\[CapitalDelta]\[Lambda]_k| over tlist, k=1..4: ", eigMaxDiffs];*)
 
 
-(* ::Chapter::Closed:: *)
+(* ::Chapter:: *)
 (*Side-by-Side Graphics*)
 
 
@@ -750,10 +743,11 @@ Names["QMB`*"]
 (*  {GraphicsRow[{obsPanel}, ImageSize -> 540],*)
 (*   GraphicsRow[Table[eigPanel[k], {k, 1, 4}], ImageSize -> 980, Spacings -> 15]},*)
 (*  Spacings -> 30, ImageSize -> 1200*)
-(*]*)
+(*];*)
 
 
-Table[Show[eigPanel[i],ImageSize->900],{i,4}]
+(* ::Input:: *)
+(*Table[Show[eigPanel[k],ImageSize->700], {k, 1, 4}]*)
 
 
 (* ::Chapter:: *)
