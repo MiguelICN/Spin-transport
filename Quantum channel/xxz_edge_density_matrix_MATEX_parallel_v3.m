@@ -454,8 +454,11 @@ DensityPlots[delta_,p_,model_,info_,dir_,res_] := Module[{pairs,basis,labels},
     (ExtractSeries[delta,res,#] & /@ {"TraceError","HermiticityError","MinEigenvalue"}),
     {"|Tr(rho_AB)-1|","||rho_AB-rho_AB^dagger||_F","lambda_min(rho_AB)"},"Reduced-state numerical checks"];
 ];
-(* ::Section:: *)
+
+
+(* ::Section::Closed:: *)
 (*Parallel time evolution - execution settings only*)
+
 
 (* Eight independent TIME chunks, one anisotropy/model at a time.
    The existing eigensystem is built ONCE on the main kernel. Each task receives
@@ -472,7 +475,7 @@ DensityPlots[delta_,p_,model_,info_,dir_,res_] := Module[{pairs,basis,labels},
 *)
 parallelExecutionSettings = <|
   "Enabled" -> True,
-  "Kernels" -> 8,
+  "Kernels" -> 12,
   "MemoryBudgetGB" -> 20.,
   "CheckEndpoints" -> True
 |>;
@@ -584,7 +587,7 @@ RunDensity[delta_?NumericQ,model_,p_Association,chainFunction_,probeFunction_] :
 
 
 
-(* ::Chapter:: *)
+(* ::Chapter::Closed:: *)
 (*I - SIGMA-Z / PURE DEPHASING*)
 
 
@@ -607,7 +610,7 @@ RunDensity[delta_?NumericQ,model_,p_Association,chainFunction_,probeFunction_] :
 RunZ = True;
 deltaListZ = {0.01,0.5, 1., 1.5,10.};
 parametersZ = <|
-  "L" -> 6,
+  "L" -> 8,
   "Jxy" -> 1.,             (* Jz is ALWAYS Jxy*Delta *)
   "w" -> 0.,              (* uniform chain field: w Sum Z/2 *)
   "ed" -> 0.,             (* defect field ed Z_d/2; zero switches it off *)
@@ -623,7 +626,7 @@ parametersZ = <|
   "InverseTolerance" -> 10.^-8,
   "CheckDivisibility" -> False, (* unused in density file *)
   "SaveData" -> True,
-  "RunLabel" -> "run01", (* same label regenerates files; change to run02 to keep a new run *)
+  "RunLabel" -> "run06", (* same label regenerates files; change to run02 to keep a new run *)
   "PlotChopTolerance" -> 10.^-10, (* Chop only the plotted data; raw results stay unchanged *)
   "OutputRoot" -> FileNameJoin[{BaseDirectory[0.], "xxz_boundary_results"}]
 |>;
@@ -669,6 +672,150 @@ ProbeStateZ[delta_?NumericQ,p_Association] := {1.,1.,1.,1.}/2;
    Keep |++> to compare dephasing and exchange with the same input state.
    Update ProbeStateLabel above. This state is independent of the chain initially. *)
 
+
+
+(* ::Subsection::Closed:: *)
+(*Phantom/helix states*)
+
+
+Clear[SpinHelixKet, PhantomHelixKet, HelixCentralDefectKet];
+
+(* General spin-helix product state.
+   q: winding angle between neighboring spins.
+   theta: polar angle; theta = Pi/2 gives a transverse helix.
+   phi: initial azimuthal phase.
+
+   |Psi> = TensorProduct_j [
+     Cos[theta/2] |0>_j + Exp[I (phi + (j-1) q)] Sin[theta/2] |1>_j
+   ].
+*)
+
+SpinHelixKet[
+  delta_?NumericQ,
+  p_Association,
+  q_?NumericQ,
+  theta_: Pi/2,
+  phi_: 0
+] := ProductKet[
+  delta,
+  Table[
+    {
+      Cos[theta/2],
+      Exp[I (phi + (j - 1) q)] Sin[theta/2]
+    },
+    {j, p["L"]}
+  ]
+];
+
+
+(* Matched phantom spin helix: Delta = Cos[q].
+   chirality = +1 or -1 selects opposite winding directions.
+*)
+
+PhantomHelixKet[
+  delta_?NumericQ,
+  p_Association,
+  chirality_: 1,
+  theta_: Pi/2
+] := Module[{q},
+
+  Require[
+    delta,
+    -1 <= delta <= 1 && MemberQ[{-1, 1}, chirality],
+    "PhantomHelixKet requires -1 <= Delta <= 1 and chirality = +/-1."
+  ];
+
+  q = chirality ArcCos[delta];
+
+  SpinHelixKet[delta, p, q, theta]
+];
+
+
+(* Control state: matched transverse helix with an additional
+   phase shift on one interior spin.
+
+   The first and last chain spins are identical to those
+   of the corresponding unmodified phantom helix.
+*)
+
+HelixCentralDefectKet[
+  delta_?NumericQ,
+  p_Association,
+  chirality_: 1,
+  phaseShift_: Pi/2
+] := Module[{q, mid},
+
+  Require[
+    delta,
+    -1 <= delta <= 1 && p["L"] >= 3 &&
+      MemberQ[{-1, 1}, chirality],
+    "HelixCentralDefectKet requires -1 <= Delta <= 1, L >= 3 and chirality = +/-1."
+  ];
+
+  q = chirality ArcCos[delta];
+  mid = Ceiling[p["L"]/2];
+
+  ProductKet[
+    delta,
+    Table[
+      {
+        1/Sqrt[2],
+        Exp[
+          I (
+            (j - 1) q +
+            If[j == mid, phaseShift, 0]
+          )
+        ]/Sqrt[2]
+      },
+      {j, p["L"]}
+    ]
+  ]
+];
+
+
+Clear[ChainStateZ];
+
+ChainStateZ[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, +1];
+
+parametersZ["ChainStateLabel"] =
+  "Matched transverse phantom helix, positive chirality";
+
+
+Clear[ChainStateZ];
+
+ChainStateZ[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, -1];
+
+parametersZ["ChainStateLabel"] =
+  "Matched transverse phantom helix, negative chirality";
+
+
+Clear[ChainStateZ];
+
+ChainStateZ[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, +1, Pi/3];
+
+parametersZ["ChainStateLabel"] =
+  "Matched phantom helix, theta = Pi/3";
+
+
+Clear[ChainStateZ];
+
+ChainStateZ[delta_?NumericQ, p_Association] :=
+  SpinHelixKet[delta, p, Pi/3, Pi/2];
+
+parametersZ["ChainStateLabel"] =
+  "Fixed transverse helix, Q = Pi/3";
+
+
+Clear[ChainStateZ];
+
+ChainStateZ[delta_?NumericQ, p_Association] :=
+  HelixCentralDefectKet[delta, p, +1, Pi/2];
+
+parametersZ["ChainStateLabel"] =
+  "Matched helix with central phase defect";
 
 
 (* ::Section:: *)
@@ -729,7 +876,7 @@ RhoBZ[delta_?NumericQ,t_?NumericQ] := DataAt[delta,t,densityResultsZ,"RhoB"];
 RunExchange = True;
 deltaListExchange = {0.01, 0.5, 1., 1.5,10.};
 parametersExchange = <|
-  "L" -> 6,
+  "L" -> 8,
   "Jxy" -> 1.,             (* Jz is ALWAYS Jxy*Delta *)
   "w" -> 0.,              (* uniform chain field: w Sum Z/2 *)
   "ed" -> 0.,             (* defect field ed Z_d/2; zero switches it off *)
@@ -745,7 +892,7 @@ parametersExchange = <|
   "InverseTolerance" -> 10.^-8,
   "CheckDivisibility" -> False, (* unused in density file *)
   "SaveData" -> True,
-  "RunLabel" -> "run01", (* same label regenerates files; change to run02 to keep a new run *)
+  "RunLabel" -> "run02", (* same label regenerates files; change to run02 to keep a new run *)
   "PlotChopTolerance" -> 10.^-10, (* Chop only the plotted data; raw results stay unchanged *)
   "OutputRoot" -> FileNameJoin[{BaseDirectory[0.], "xxz_boundary_results"}]
 |>;
@@ -791,6 +938,84 @@ ProbeStateExchange[delta_?NumericQ,p_Association] := {1.,1.,1.,1.}/2;
    Keep |++> to compare dephasing and exchange with the same input state.
    Update ProbeStateLabel above. This state is independent of the chain initially. *)
 
+
+
+(* ::Subsection:: *)
+(*Phantom/helix states \[LongDash] exchange-coupled probes*)
+
+(* Matched helix constructors require -1 <= Delta <= 1.
+   Replace the original Exchange list, which includes 1.5 and 10. *)
+deltaListExchange = {-0.5, 0., 0.5};
+
+(*(* ACTIVE CHOICE: matched transverse helix with a central phase defect. *)
+Clear[ChainStateExchange];
+
+ChainStateExchange[delta_?NumericQ, p_Association] :=
+  HelixCentralDefectKet[delta, p, +1, Pi/2];
+
+parametersExchange["ChainStateLabel"] =
+  "Matched helix with central phase defect";
+
+parametersExchange["RunLabel"] = "exchange_helix_defect";*)
+
+
+(*ALTERNATIVE 1: matched transverse helix, positive chirality.*)
+
+Clear[ChainStateExchange];
+
+ChainStateExchange[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, +1];
+
+parametersExchange["ChainStateLabel"] =
+  "Matched transverse phantom helix, positive chirality";
+
+parametersExchange["RunLabel"] = "exchange_helix_positive";
+
+
+
+(* ALTERNATIVE 2: matched transverse helix, negative chirality.
+
+Clear[ChainStateExchange];
+
+ChainStateExchange[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, -1];
+
+parametersExchange["ChainStateLabel"] =
+  "Matched transverse phantom helix, negative chirality";
+
+parametersExchange["RunLabel"] = "exchange_helix_negative";
+
+*)
+
+
+(* ALTERNATIVE 3: matched tilted helix, theta = Pi/3.
+
+Clear[ChainStateExchange];
+
+ChainStateExchange[delta_?NumericQ, p_Association] :=
+  PhantomHelixKet[delta, p, +1, Pi/3];
+
+parametersExchange["ChainStateLabel"] =
+  "Matched phantom helix, theta = Pi/3";
+
+parametersExchange["RunLabel"] = "exchange_helix_tilted";
+
+*)
+
+
+(* ALTERNATIVE 4: fixed pitch q = Pi/3 while Delta varies.
+
+Clear[ChainStateExchange];
+
+ChainStateExchange[delta_?NumericQ, p_Association] :=
+  SpinHelixKet[delta, p, Pi/3, Pi/2];
+
+parametersExchange["ChainStateLabel"] =
+  "Fixed transverse helix, q = Pi/3";
+
+parametersExchange["RunLabel"] = "exchange_helix_fixed_q";
+
+*)
 
 
 (* ::Section:: *)
