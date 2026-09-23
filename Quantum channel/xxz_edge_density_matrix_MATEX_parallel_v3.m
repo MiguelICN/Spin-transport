@@ -118,7 +118,7 @@ StateFactor[delta_, input_, dim_, tol_, label_] := Module[{x=N[Normal[input]], e
 
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*2 - Hamiltonians and initial chain states*)
 
 
@@ -943,6 +943,7 @@ ProbeStateExchange[delta_?NumericQ,p_Association] := {1.,1.,1.,1.}/2;
 (* ::Subsection:: *)
 (*Phantom/helix states \[LongDash] exchange-coupled probes*)
 
+
 (* Matched helix constructors require -1 <= Delta <= 1.
    Replace the original Exchange list, which includes 1.5 and 10. *)
 deltaListExchange = {-0.5, 0., 0.5};
@@ -961,7 +962,7 @@ parametersExchange["RunLabel"] = "exchange_helix_defect";*)
 
 (*ALTERNATIVE 1: matched transverse helix, positive chirality.*)
 
-Clear[ChainStateExchange];
+(*Clear[ChainStateExchange];
 
 ChainStateExchange[delta_?NumericQ, p_Association] :=
   PhantomHelixKet[delta, p, +1];
@@ -969,13 +970,13 @@ ChainStateExchange[delta_?NumericQ, p_Association] :=
 parametersExchange["ChainStateLabel"] =
   "Matched transverse phantom helix, positive chirality";
 
-parametersExchange["RunLabel"] = "exchange_helix_positive";
+parametersExchange["RunLabel"] = "exchange_helix_positive";*)
 
 
 
-(* ALTERNATIVE 2: matched transverse helix, negative chirality.
+(*ALTERNATIVE 2: matched transverse helix, negative chirality.*)
 
-Clear[ChainStateExchange];
+(*Clear[ChainStateExchange];
 
 ChainStateExchange[delta_?NumericQ, p_Association] :=
   PhantomHelixKet[delta, p, -1];
@@ -983,14 +984,14 @@ ChainStateExchange[delta_?NumericQ, p_Association] :=
 parametersExchange["ChainStateLabel"] =
   "Matched transverse phantom helix, negative chirality";
 
-parametersExchange["RunLabel"] = "exchange_helix_negative";
-
-*)
+parametersExchange["RunLabel"] = "exchange_helix_negative";*)
 
 
-(* ALTERNATIVE 3: matched tilted helix, theta = Pi/3.
 
-Clear[ChainStateExchange];
+
+(*ALTERNATIVE 3: matched tilted helix, theta = Pi/3.*)
+
+(*Clear[ChainStateExchange];
 
 ChainStateExchange[delta_?NumericQ, p_Association] :=
   PhantomHelixKet[delta, p, +1, Pi/3];
@@ -998,12 +999,10 @@ ChainStateExchange[delta_?NumericQ, p_Association] :=
 parametersExchange["ChainStateLabel"] =
   "Matched phantom helix, theta = Pi/3";
 
-parametersExchange["RunLabel"] = "exchange_helix_tilted";
-
-*)
+parametersExchange["RunLabel"] = "exchange_helix_tilted";*)
 
 
-(* ALTERNATIVE 4: fixed pitch q = Pi/3 while Delta varies.
+(*ALTERNATIVE 4: fixed pitch q = Pi/3 while Delta varies.*)
 
 Clear[ChainStateExchange];
 
@@ -1015,7 +1014,6 @@ parametersExchange["ChainStateLabel"] =
 
 parametersExchange["RunLabel"] = "exchange_helix_fixed_q";
 
-*)
 
 
 (* ::Section:: *)
