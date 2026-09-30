@@ -1,0 +1,115 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,amsmath,amssymb,booktabs,longtable,array,geometry,microtype,xcolor,url}
+\geometry{margin=20mm}
+\setlength{\parskip}{3pt}
+\setlength{\parindent}{0pt}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\rh}{\rho_{AB}}
+\title{XXZ Boundary Probes: Exact Settings and Phantom/Helix Preparations}
+\author{}
+\date{22 September 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+Definitions
+\end{abstract}
+
+\section{Hilbert space and Hamiltonians}
+The open system has $L$ chain spins and two external probes, ordered $A,1,\ldots,L,B$; $L=8$ gives 10 spins. The probe computational basis is $(|00\rangle,|01\rangle,|10\rangle,|11\rangle)$, with $\sigma^z|0\rangle=+|0\rangle$ and $\sigma^z|1\rangle=-|1\rangle$. Write $\sigma_k^\alpha$ for the Pauli operator in direction $\alpha\in\{x,y,z\}$ acting on spin $k$, and define $\sigma_k^\pm=(\sigma_k^x\pm i\sigma_k^y)/2$. The source sets $\hbar=1$. Its chain and probe Hamiltonians are
+\begin{align}
+H_C(\Delta)&=\frac{J_{xy}}4\sum_{j=1}^{L-1}\left(
+\sigma_j^x\sigma_{j+1}^x+\sigma_j^y\sigma_{j+1}^y
++\Delta\,\sigma_j^z\sigma_{j+1}^z\right)
+ +\frac w2\sum_{j=1}^L \sigma_j^z+\frac{e_d}2\sigma_d^z,
+& J_z&=J_{xy}\Delta,\\
+H_Q&=\frac{\omega_A}{2}\sigma_A^z+\frac{\omega_B}{2}\sigma_B^z,\\
+H_{\mathrm{int}}^Z&=\frac{g_A}{4}\sigma_A^z\sigma_1^z
++\frac{g_B}{4}\sigma_L^z\sigma_B^z,\\
+H_{\mathrm{int}}^{\mathrm{Exchange}}
+&=g_A(\sigma_A^+\sigma_1^-+\sigma_A^-\sigma_1^+)
++g_B(\sigma_L^+\sigma_B^-+\sigma_L^-\sigma_B^+)\\
+&=\frac{g_A}{2}(\sigma_A^x\sigma_1^x+\sigma_A^y\sigma_1^y)
++\frac{g_B}{2}(\sigma_L^x\sigma_B^x+\sigma_L^y\sigma_B^y).
+\end{align}
+The \code{FullHamiltonian} is $H_C+H_Q+H_{\mathrm{int}}^{\mathrm{model}}$, with $H_C$ extended by the probe identities. The code takes the real part of the assembled matrix. It diagonalizes sectors of fixed total $\sigma^z$ and applies unitary phases $e^{-iEt}$; the \code{Z} engine instead evolves four conditional chain Hamiltonians and probe phases. The defect field $e_d\sigma_d^z/2$ is a Hamiltonian term; it is separate from the \emph{initial-state} helix phase defect below.
+
+\section{Exact configuration}
+\begin{center}\small
+\begin{tabular}{@{}p{34mm}p{50mm}p{73mm}@{}}
+\toprule
+Source setting & Final \code{Z} value & Final \code{Exchange} value\\\midrule
+\code{RunZ}, \code{RunExchange} & \code{True} & \code{True}\\
+\code{deltaListZ}, \code{deltaListExchange} & $\{0.01,0.5,1.,1.5,10.\}$ & $\{-0.5,0.,0.5\}$ (later assignment overrides $\{0.01,0.5,1.,1.5,10.\}$)\\
+\code{L}, total spins & $8$, $10$ & $8$, $10$\\
+\code{Jxy}, $J_z$ & $1.$, $\Delta$ & $1.$, $\Delta$\\
+\code{w}, \code{ed}, \code{DefectSite} & $0.$, $0.$, $3$ (field off) & $0.$, $0.$, $3$ (field off)\\
+\code{omegaA}, \code{omegaB} & $1.$, $1.$ & $1.$, $1.$\\
+\code{gA}, \code{gB} & $0.1$, $0.1$ & $0.1$, $0.1$\\
+\code{tMax}, \code{dt} & $1000.$, $0.1$ & $1000.$, $0.1$\\
+\code{RunLabel} & \code{run06} & \code{exchange\_helix\_fixed\_q}\\
+\code{ChainStateLabel} & \emph{Matched helix with central phase defect} & \emph{Fixed transverse helix, q = Pi/3}\\
+\code{ProbeStateLabel} & \emph{|+>\_A tensor |+>\_B} & same\\
+\code{GroundTolerance} & $10^{-10}$ & $10^{-10}$\\
+\code{ValidationTolerance} & $10^{-8}$ & $10^{-8}$\\
+\code{InverseTolerance} & $10^{-8}$ & $10^{-8}$\\
+\code{CheckDivisibility} & \code{False} & \code{False}\\
+\code{SaveData} & \code{True} & \code{True}\\
+\code{PlotChopTolerance} & $10^{-10}$ & $10^{-10}$\\
+\code{OutputRoot} & \multicolumn{2}{p{126mm}@{}}{\code{FileNameJoin[\{BaseDirectory[0.], "xxz\_boundary\_results"\}]} (script's directory when loaded from a file)}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Initial probe, chain, and total states}
+Both active probe functions return $(1,1,1,1)/2=|+\rangle_A\otimes|+\rangle_B$ where $|+\rangle=(|0\rangle+|1\rangle)/\sqrt2$. Thus $\rho_{AB}(0)=|++\rangle\langle++|$, whose 16 matrix entries equal $1/4$ in the stated basis. At each $\Delta$ the chain input is generated separately. In the physical site order $A,1,\ldots,L,B$, the initial state factorizes as
+\begin{align}
+\rho_{A,C,B}(0)
+  &=\rho_A(0)\otimes\rho_C(0)\otimes\rho_B(0),\\
+\rho_A(0)&=|+\rangle_A\langle+|,
+&\rho_B(0)&=|+\rangle_B\langle+|,\\
+\rho_C(0)&=|\Psi_C(\Delta)\rangle\langle\Psi_C(\Delta)|,
+&\rho_{AB}(0)&=\rho_A(0)\otimes\rho_B(0).
+\end{align}
+The full evolution is unitary, and the reported two-probe state is
+\begin{equation}
+\rho_{AB}(t)=\operatorname{Tr}_C\!\left[
+e^{-iHt}\rho_{A,C,B}(0)e^{iHt}
+\right].
+\end{equation}
+
+
+
+\section{Exact names and definitions of saved trajectory quantities}
+\enlargethispage{3\baselineskip}
+Every sampled time produces one \code{DensityObservables} association. Below $r=\rho_{AB}(t)$, $a=\operatorname{Tr}_B r$, $b=\operatorname{Tr}_A r$, $r_0=\rho_{AB}(0)$, and $\langle O\rangle=\operatorname{Re}\operatorname{Tr}(Or)$ for Hermitian probe operators. The script's entropy \code{VNEntropy} uses positive eigenvalues of the Hermitian part and the natural logarithm.
+\begin{center}\small
+\begin{longtable}{@{}p{43mm}p{113mm}@{}}
+\toprule
+Association key & Exact meaning in this density workflow\\\midrule
+\endfirsthead
+\toprule Association key & Exact meaning in this density workflow\\\midrule\endhead
+\code{Delta}, \code{Time} & Run anisotropy $\Delta$ and sampled time $t$.\\
+\code{RhoAB}, \code{RhoA}, \code{RhoB} & $r$, $a$, $b$; $4\times4$, $2\times2$, $2\times2$ reduced density matrices.\\
+\code{Purity} & $\operatorname{Re}\operatorname{Tr}(r^2)$.\\
+\code{EntropyA}, \code{EntropyB}, \code{EntropyAB} & $S(a)$, $S(b)$, $S(r)$ where $S(\rho)=-\sum_{\lambda>0}\lambda\ln\lambda$ (nats).\\
+\code{MutualInfo} & $S(a)+S(b)-S(r)$, probe mutual information.\\
+\code{Concurrence} & $\max(0,\lambda_1-\lambda_2-\lambda_3-\lambda_4)$: Wootters concurrence; $\lambda_k$ are descending nonnegative square roots from the usual spin-flipped two-qubit construction, with small negative eigenvalues clipped in the implementation.\\
+\code{Negativity} & Sum of absolute values of negative eigenvalues of the Hermitian part of $r^{T_B}$; for a normalized state, $(\|r^{T_B}\|_1-1)/2$.\\
+\code{InitialOverlap} & $\operatorname{Re}\operatorname{Tr}(r_0r)$; with this pure probe input, $\langle++|r|++\rangle$. It is probe-input survival probability, not a full-chain Loschmidt echo.\\
+\code{MagnetizationA}, \code{MagnetizationB} & $\langle \sigma_A^z\rangle$, $\langle \sigma_B^z\rangle$ (Pauli convention, not divided by 2).\\
+\code{ConnectedZZ} & $\langle \sigma_A^z\sigma_B^z\rangle-\langle \sigma_A^z\rangle\langle \sigma_B^z\rangle$.\\
+\code{ConnectedXX} & $\langle \sigma_A^x\sigma_B^x\rangle-\langle \sigma_A^x\rangle\langle \sigma_B^x\rangle$. Both connected quantities correlate the \emph{probes}.\\
+\code{TraceError} & $|\operatorname{Tr}r-1|$.\\
+\code{HermiticityError} & $\|r-r^\dagger\|_F$.\\
+\code{MinEigenvalue} & Minimum real eigenvalue of $(r+r^\dagger)/2$.\\
+\bottomrule
+\end{longtable}
+\end{center}
+For \code{Z}, \code{RhoAB} is the entrywise product of $r_0$ and four-condition chain overlap factors $F_{ij}(t)$; its diagonal probe populations stay fixed under this pure-dephasing model. For \code{Exchange}, \code{RhoAB} is obtained by evolving the full 10-spin probe-chain state and tracing out the chain, allowing population transfer. The six independent pairs $(00,01)$, $(00,10)$, $(00,11)$, $(01,10)$, $(01,11)$, $(10,11)$ are used for the real, imaginary and absolute coherence plots. 
+
+
+
+
+\end{document}

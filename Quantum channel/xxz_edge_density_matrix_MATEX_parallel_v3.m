@@ -118,7 +118,7 @@ StateFactor[delta_, input_, dim_, tol_, label_] := Module[{x=N[Normal[input]], e
 
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*2 - Hamiltonians and initial chain states*)
 
 
@@ -853,7 +853,7 @@ RhoBZ[delta_?NumericQ,t_?NumericQ] := DataAt[delta,t,densityResultsZ,"RhoB"];
 
 
 
-(* ::Chapter:: *)
+(* ::Chapter::Closed:: *)
 (*II - EXCHANGE-COUPLED PROBES*)
 
 
@@ -1051,3 +1051,514 @@ RhoBExchange[delta_?NumericQ,t_?NumericQ] := DataAt[delta,t,densityResultsExchan
 
 End[];
 EndPackage[];
+
+
+(* ::Chapter::Closed:: *)
+(*III - Spectrum*)
+
+
+(* XXZ chain and coupled-system spectra versus Delta.
+   Paste after the existing package definitions have been evaluated.
+   Each selected boundary coupling produces one two-panel PNG.
+   The chain and full-system Hamiltonians and parameters come from the
+   current EdgeDensity` definitions; initial states are not used.
+   A complete spectrum at L=12 is costly: try a larger step first. *)
+
+Begin["EdgeDensity`Private`"];
+
+ClearAll[SpectrumSectorEnergies, SpectrumSamples, SpectrumComparison];
+
+(* Change these two settings to choose models and Delta resolution. *)
+spectrumModels = {"Z", "Exchange"};
+spectrumDeltaMin = 0.;
+spectrumDeltaMax = 10.;
+spectrumDeltaStep = 0.05;
+
+(* Every Hamiltonian here conserves the number of |1> spins. Computing
+   all eigenvalues sector by sector gives the full spectrum without
+   constructing a dense 2^(L+2) by 2^(L+2) matrix. *)
+SpectrumSectorEnergies[h_, n_Integer] := Module[{blocks},
+  blocks = SectorIndices[0., n];
+  Re[Flatten[Eigenvalues[Normal[N[h[[#, #]]]]] & /@ blocks]]
+];
+
+SpectrumSamples[grid_List, hamiltonian_, n_Integer] := Flatten[
+  Table[
+    With[{energies = SpectrumSectorEnergies[hamiltonian[delta], n]},
+      Transpose[{ConstantArray[delta, Length[energies]], energies}]
+    ],
+    {delta, grid}
+  ],
+  1
+];
+
+SpectrumComparison[model_String, p_Association] := Module[
+  {grid, chainData, fullData, energyRange, chopTol, xt, yt, panel,
+   caption, plot, dir, filename, num, parameterToken, stepCount},
+
+  If[!MemberQ[{"Z", "Exchange"}, model],
+    Print["Unknown boundary coupling model: ", model]; Return[$Failed]
+  ];
+  If[!TrueQ[spectrumDeltaStep > 0 && spectrumDeltaMax > spectrumDeltaMin],
+    Print["Require spectrumDeltaStep > 0 and spectrumDeltaMax > spectrumDeltaMin."];
+    Return[$Failed]
+  ];
+
+  stepCount = Floor[(spectrumDeltaMax - spectrumDeltaMin)/spectrumDeltaStep];
+  grid = N[DeleteDuplicates[Append[
+    spectrumDeltaMin + spectrumDeltaStep Range[0, stepCount],
+    spectrumDeltaMax
+  ], Abs[#1 - #2] < 10^-10 &]];
+  chopTol = Lookup[p, "PlotChopTolerance", 10^-10];
+
+  Print["Spectrum: ", model, "; L=", p["L"], "; ", Length[grid],
+    " Delta values; chain dimension=", 2^p["L"],
+    "; full dimension=", 2^(p["L"] + 2)];
+  chainData = Chop[
+    SpectrumSamples[grid, ChainHamiltonian[#, p] &, p["L"]], chopTol];
+  fullData = Chop[
+    SpectrumSamples[grid, FullHamiltonian[#, model, p] &, p["L"] + 2],
+    chopTol];
+
+  energyRange = MinMax[Join[chainData[[All, 2]], fullData[[All, 2]]]];
+  xt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  yt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  num[x_] := TeXNumber[0., x];
+
+  panel[data_, title_, color_] := ListPlot[data,
+    Joined -> False, PlotStyle -> Directive[color, PointSize[0.003]],
+    PlotRange -> {{spectrumDeltaMin, spectrumDeltaMax}, energyRange},
+    Frame -> True, Axes -> False,
+    FrameStyle -> Directive[Black, AbsoluteThickness[1.5]],
+    FrameTicks -> {{yt, None}, {xt, None}},
+    FrameLabel -> {PlotTeX[0., "\\Delta", 19], PlotTeX[0., "E", 19]},
+    PlotLabel -> PlotTeX[0., title, 18],
+    ImageSize -> 680, AspectRatio -> 0.72, Background -> White
+  ];
+
+  caption = Column[
+    PlotTeX[0., #, 14] & /@ {
+      "\\mathrm{XXZ\\ OBC}:\\quad L=" <> num[p["L"]] <>
+        ",\\quad J_{xy}=" <> num[p["Jxy"]] <>
+        ",\\quad J_z=J_{xy}\\Delta,\\quad w=" <> num[p["w"]] <>
+        ",\\quad e_d=" <> num[p["ed"]] <>
+        ",\\quad d=" <> num[p["DefectSite"]],
+      "\\mathrm{Boundary\\ model}:\\ " <> model <>
+        ",\\quad \\omega_A=" <> num[p["omegaA"]] <>
+        ",\\quad \\omega_B=" <> num[p["omegaB"]] <>
+        ",\\quad g_A=" <> num[p["gA"]] <>
+        ",\\quad g_B=" <> num[p["gB"]],
+      "\\Delta\\in[" <> num[spectrumDeltaMin] <> "," <>
+        num[spectrumDeltaMax] <> "],\\quad \\mathrm{step}=" <>
+        num[spectrumDeltaStep] <> ",\\quad \\hbar=1"
+    }, Alignment -> Center, Spacings -> 0.3
+  ];
+
+  plot = Column[{
+    PlotTeX[0., "\\text{Energy spectra versus }\\Delta", 23],
+    caption,
+    GraphicsRow[{
+      panel[chainData, "\\text{Isolated XXZ chain}", RGBColor[0.19, 0.54, 0.77]],
+      panel[fullData, "\\text{Chain + probes A,B}", RGBColor[0.87, 0.43, 0.12]]
+    }, Spacings -> 15, ImageSize -> 1430]
+  }, Alignment -> Center, Spacings -> 0.65];
+
+  parameterToken = StringRiffle[{
+    "L" <> ToString[p["L"]],
+    "Jxy" <> SafeName[0., p["Jxy"]],
+    "w" <> SafeName[0., p["w"]],
+    "ed" <> SafeName[0., p["ed"]],
+    "d" <> ToString[p["DefectSite"]],
+    "omegaA" <> SafeName[0., p["omegaA"]],
+    "omegaB" <> SafeName[0., p["omegaB"]],
+    "gA" <> SafeName[0., p["gA"]],
+    "gB" <> SafeName[0., p["gB"]]
+  }, "_"];
+  dir = FileNameJoin[{p["OutputRoot"], "spectra_" <> model, parameterToken}];
+  If[!DirectoryQ[dir], CreateDirectory[dir, CreateIntermediateDirectories -> True]];
+  filename = FileNameJoin[{dir,
+    "XXZ_vs_full_Delta" <> SafeName[0., spectrumDeltaMin] <>
+    "to" <> SafeName[0., spectrumDeltaMax] <>
+    "_step" <> SafeName[0., spectrumDeltaStep] <> ".png"}];
+  Export[filename, plot, "PNG"];
+  Print["Saved: ", filename];
+  filename
+];
+
+spectrumFiles = Table[
+  SpectrumComparison[model,
+    If[model === "Z", parametersZ, parametersExchange]],
+  {model, spectrumModels}
+];
+
+End[];
+
+
+(* ::Section:: *)
+(**)
+
+
+(* XXZ chain and coupled-system spectra versus Delta.
+   Paste after the existing package definitions have been evaluated.
+   Each selected boundary coupling produces one two-panel PNG.
+   The chain and full-system Hamiltonians and parameters come from the
+   current EdgeDensity` definitions; initial states are not used.
+   A complete spectrum at L=12 is costly: try a larger step first. *)
+
+Begin["EdgeDensity`Private`"];
+
+ClearAll[SpectrumSectorEnergies, SpectrumChunk, SpectrumComparison];
+
+(* Both coupling models are evaluated independently below. *)
+spectrumDeltaMin = 0.;
+spectrumDeltaMax = 10.;
+spectrumDeltaStep = 0.020;
+spectrumKernelCount = 8;
+
+(* Every Hamiltonian here conserves the number of |1> spins. Computing
+   all eigenvalues sector by sector gives the full spectrum without
+   constructing a dense 2^(L+2) by 2^(L+2) matrix. *)
+SpectrumSectorEnergies[h_, n_Integer] := Module[{blocks},
+  blocks = SectorIndices[0., n];
+  Re[Flatten[Eigenvalues[Normal[N[h[[#, #]]]]] & /@ blocks]]
+];
+
+(* Each Delta is independent. Return both spectra from the same worker,
+   keeping its two lists associated with that Delta. *)
+SpectrumChunk[grid_List, model_String, p_Association] :=
+  Table[
+    With[{
+      chain = SpectrumSectorEnergies[ChainHamiltonian[delta, p], p["L"]],
+      full = SpectrumSectorEnergies[FullHamiltonian[delta, model, p], p["L"] + 2]
+    },
+      {delta,
+       Transpose[{ConstantArray[delta, Length[chain]], chain}],
+       Transpose[{ConstantArray[delta, Length[full]], full}]}
+    ],
+    {delta, grid}
+  ];
+
+SpectrumComparison[model_String, p_Association] := Module[
+  {grid, chunks, records, chainData, fullData, energyRange, chopTol,
+   xt, yt, panel, caption, plot, dir, filename, num, parameterToken,
+   stepCount, workers, kernelCount, output},
+
+  If[!MemberQ[{"Z", "Exchange"}, model],
+    Print["Unknown boundary coupling model: ", model]; Return[$Failed]
+  ];
+  If[!TrueQ[spectrumDeltaStep > 0 && spectrumDeltaMax > spectrumDeltaMin],
+    Print["Require spectrumDeltaStep > 0 and spectrumDeltaMax > spectrumDeltaMin."];
+    Return[$Failed]
+  ];
+
+  stepCount = Floor[(spectrumDeltaMax - spectrumDeltaMin)/spectrumDeltaStep];
+  grid = N[DeleteDuplicates[Append[
+    spectrumDeltaMin + spectrumDeltaStep Range[0, stepCount],
+    spectrumDeltaMax
+  ], Abs[#1 - #2] < 10^-10 &]];
+  chopTol = Lookup[p, "PlotChopTolerance", 10^-10];
+  If[!IntegerQ[spectrumKernelCount] || spectrumKernelCount < 1,
+    Print["spectrumKernelCount must be a positive integer."];
+    Return[$Failed]
+  ];
+
+  Print["Spectrum: ", model, "; L=", p["L"], "; ", Length[grid],
+    " Delta values; chain dimension=", 2^p["L"],
+    "; full dimension=", 2^(p["L"] + 2)];
+
+  If[Length[grid] > 1 && spectrumKernelCount > 1,
+    If[Length[Kernels[]] < spectrumKernelCount,
+      Quiet[LaunchKernels[spectrumKernelCount - Length[Kernels[]]]]];
+  ];
+  kernelCount = Min[spectrumKernelCount, Length[Kernels[]], Length[grid]];
+  If[kernelCount >= 2,
+    (* At most eight tasks: kernels are reused without altering the running
+       time-evolution setup or launching one task per eigenvalue. *)
+    DistributeDefinitions[SparseId, Pauli, SiteOp, BondOp,
+      ChainHamiltonian, FullHamiltonian, SectorIndices,
+      SpectrumSectorEnergies, SpectrumChunk];
+    chunks = Partition[grid, UpTo[Ceiling[Length[grid]/kernelCount]]];
+    Print["Diagonalizing on ", Length[chunks], " parallel Delta chunks."];
+    records = Flatten[
+      ParallelMap[
+        With[{m = model, pp = p}, SpectrumChunk[#, m, pp] &],
+        chunks, Method -> "CoarsestGrained", DistributedContexts -> None
+      ], 1];,
+    Print["No parallel kernels available; diagonalizing serially."];
+    records = SpectrumChunk[grid, model, p]
+  ];
+  If[Length[records] =!= Length[grid] ||
+     !AllTrue[records, MatchQ[#, {_?NumericQ, _List, _List}] &],
+    Print["Spectrum calculation failed for ", model, ". No plot exported."];
+    Return[$Failed]
+  ];
+  chainData = Chop[Flatten[records[[All, 2]], 1], chopTol];
+  fullData = Chop[Flatten[records[[All, 3]], 1], chopTol];
+
+  energyRange = MinMax[Join[chainData[[All, 2]], fullData[[All, 2]]]];
+  xt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  yt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  num[x_] := TeXNumber[0., x];
+
+  panel[data_, title_, color_] := ListPlot[data,
+    Joined -> False, PlotStyle -> Directive[color, PointSize[0.003]],
+    PlotRange -> {{spectrumDeltaMin, spectrumDeltaMax}, energyRange},
+    Frame -> True, Axes -> False,
+    FrameStyle -> Directive[Black, AbsoluteThickness[1.5]],
+    FrameTicks -> {{yt, None}, {xt, None}},
+    FrameLabel -> {PlotTeX[0., "\\Delta", 19], PlotTeX[0., "E", 19]},
+    PlotLabel -> PlotTeX[0., title, 18],
+    ImageSize -> 680, AspectRatio -> 0.72, Background -> White
+  ];
+
+  caption = Column[
+    PlotTeX[0., #, 14] & /@ {
+      "\\mathrm{XXZ\\ OBC}:\\quad L=" <> num[p["L"]] <>
+        ",\\quad J_{xy}=" <> num[p["Jxy"]] <>
+        ",\\quad J_z=J_{xy}\\Delta,\\quad w=" <> num[p["w"]] <>
+        ",\\quad e_d=" <> num[p["ed"]] <>
+        ",\\quad d=" <> num[p["DefectSite"]],
+      "\\mathrm{Boundary\\ model}:\\ " <> model <>
+        ",\\quad \\omega_A=" <> num[p["omegaA"]] <>
+        ",\\quad \\omega_B=" <> num[p["omegaB"]] <>
+        ",\\quad g_A=" <> num[p["gA"]] <>
+        ",\\quad g_B=" <> num[p["gB"]],
+      "\\Delta\\in[" <> num[spectrumDeltaMin] <> "," <>
+        num[spectrumDeltaMax] <> "],\\quad \\mathrm{step}=" <>
+        num[spectrumDeltaStep] <> ",\\quad \\hbar=1"
+    }, Alignment -> Center, Spacings -> 0.3
+  ];
+
+  plot = Column[{
+    PlotTeX[0., "\\text{Energy spectra versus }\\Delta", 23],
+    caption,
+    GraphicsRow[{
+      panel[chainData, "\\text{Isolated XXZ chain}", RGBColor[0.19, 0.54, 0.77]],
+      panel[fullData, "\\text{Chain + probes A,B}", RGBColor[0.87, 0.43, 0.12]]
+    }, Spacings -> 15, ImageSize -> 1430]
+  }, Alignment -> Center, Spacings -> 0.65];
+
+  parameterToken = StringRiffle[{
+    "L" <> ToString[p["L"]],
+    "Jxy" <> SafeName[0., p["Jxy"]],
+    "w" <> SafeName[0., p["w"]],
+    "ed" <> SafeName[0., p["ed"]],
+    "d" <> ToString[p["DefectSite"]],
+    "omegaA" <> SafeName[0., p["omegaA"]],
+    "omegaB" <> SafeName[0., p["omegaB"]],
+    "gA" <> SafeName[0., p["gA"]],
+    "gB" <> SafeName[0., p["gB"]]
+  }, "_"];
+  dir = FileNameJoin[{p["OutputRoot"], "spectra_" <> model, parameterToken}];
+  If[!DirectoryQ[dir], CreateDirectory[dir, CreateIntermediateDirectories -> True]];
+  filename = FileNameJoin[{dir,
+    "XXZ_vs_full_Delta" <> SafeName[0., spectrumDeltaMin] <>
+    "to" <> SafeName[0., spectrumDeltaMax] <>
+    "_step" <> SafeName[0., spectrumDeltaStep] <> ".png"}];
+  output = Quiet[Check[Export[filename, plot, "PNG"], $Failed]];
+  If[output === $Failed || !FileExistsQ[filename],
+    Print["Export failed for ", model, ": ", filename];
+    Return[$Failed]
+  ];
+  Print["Saved ", model, " spectrum: ", filename];
+  filename
+];
+
+spectrumFileZ = SpectrumComparison["Z", parametersZ];
+spectrumFileExchange = SpectrumComparison["Exchange", parametersExchange];
+spectrumFiles = <|"Z" -> spectrumFileZ,
+  "Exchange" -> spectrumFileExchange|>;
+
+End[];
+
+
+Begin["EdgeDensity`Private`"];
+spectrumFileZ = SpectrumComparison["Z", parametersZ];
+End[];
+
+
+(* ::Chapter:: *)
+(*III - Spectrum 2*)
+
+
+(* Selected-Delta spectra: compare Z and Exchange couplings at the SAME
+   Hamiltonian parameters. Paste after the original EdgeDensity` package
+   has been evaluated. This section does not use any initial state or
+   time-evolution result. It exports one five-row, two-column PNG.
+
+   Left: ordered full-system energies for uncoupled probes (gray),
+   Z coupling (blue), and Exchange coupling (orange).
+   Right: differences from the uncoupled energies at the same rank.
+   Rank matching is a comparison of ordered spectra, not a tracking
+   of individual eigenvectors through a coupling change. *)
+
+Begin["EdgeDensity`Private`"];
+
+ClearAll[SelectedSpectrumEnergies, SelectedSpectrumRow,
+  SelectedSpectrumComparison];
+
+selectedSpectrumDeltas = N[deltaListZ];
+selectedSpectrumParameters = parametersZ;  (* Shared by BOTH interactions. *)
+selectedSpectrumKernels = 8;
+
+SelectedSpectrumEnergies[h_, n_Integer] := Module[{sectors},
+  sectors = SectorIndices[0., n];
+  Sort[Re[Flatten[Eigenvalues[Normal[N[h[[#, #]]]]] & /@ sectors]]]
+];
+
+SelectedSpectrumRow[delta_?NumericQ, p_Association] := Module[
+  {pUncoupled, n, reference, zCoupled, exchangeCoupled},
+  n = p["L"] + 2;
+  pUncoupled = Join[p, <|"gA" -> 0., "gB" -> 0.|>];
+  reference = SelectedSpectrumEnergies[
+    FullHamiltonian[delta, "Z", pUncoupled], n];
+  zCoupled = SelectedSpectrumEnergies[
+    FullHamiltonian[delta, "Z", p], n];
+  exchangeCoupled = SelectedSpectrumEnergies[
+    FullHamiltonian[delta, "Exchange", p], n];
+  <|"Delta" -> delta, "Reference" -> reference,
+    "Z" -> zCoupled, "Exchange" -> exchangeCoupled|>
+];
+
+SelectedSpectrumComparison[p_Association, deltas_List] := Module[
+  {grid, kernels, records, dim, tol, xt, yt, colors, panel, rows,
+   caption, picture, folder, name, token, output, num},
+
+  grid = N[deltas];
+  If[grid === {} || !VectorQ[grid, NumericQ] ||
+     !IntegerQ[selectedSpectrumKernels] || selectedSpectrumKernels < 1,
+    Print["Use a nonempty numeric Delta list and a positive kernel count."];
+    Return[$Failed]
+  ];
+  dim = 2^(p["L"] + 2);
+  tol = Lookup[p, "PlotChopTolerance", 10^-10];
+  num[x_] := TeXNumber[0., x];
+
+  If[Length[grid] > 1 && selectedSpectrumKernels > 1 &&
+     Length[Kernels[]] < selectedSpectrumKernels,
+    Quiet[LaunchKernels[selectedSpectrumKernels - Length[Kernels[]]]]
+  ];
+  kernels = Min[Length[grid], selectedSpectrumKernels, Length[Kernels[]]];
+  If[kernels >= 2,
+    DistributeDefinitions[SparseId, Pauli, SiteOp, BondOp,
+      ChainHamiltonian, FullHamiltonian, SectorIndices,
+      SelectedSpectrumEnergies, SelectedSpectrumRow];
+    Print["Diagonalizing ", Length[grid], " Delta values across up to ",
+      kernels, " kernels (one reference and two couplings per Delta)."];
+    records = ParallelMap[
+      With[{pp = p}, SelectedSpectrumRow[#, pp] &],
+      grid, Method -> "CoarsestGrained", DistributedContexts -> None
+    ];,
+    Print["Diagonalizing ", Length[grid], " Delta values serially."];
+    records = SelectedSpectrumRow[#, p] & /@ grid
+  ];
+  If[Length[records] =!= Length[grid] ||
+     !AllTrue[records, Function[rec,
+       AssociationQ[rec] && AllTrue[{"Reference", "Z", "Exchange"},
+         Function[key, VectorQ[Lookup[rec, key, {}], NumericQ] &&
+           Length[Lookup[rec, key, {}]] == dim]]]],
+    Print["An eigenvalue calculation failed; no figure was exported."];
+    Return[$Failed]
+  ];
+
+  xt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  yt = Function[{lo, hi}, PlotTicks[0., lo, hi]];
+  colors = {GrayLevel[0.65], RGBColor[0.14, 0.48, 0.75],
+    RGBColor[0.90, 0.43, 0.13]};
+
+  panel[record_Association] := Module[
+    {r, ref, z, ex, q, spectra, shifts, energies, shiftRange,
+     spectrumPlot, shiftPlot, maxShift},
+    r = record["Delta"];
+    {ref, z, ex} = Chop[Lookup[record,
+      {"Reference", "Z", "Exchange"}], tol];
+    q = N[Range[0, dim - 1]/(dim - 1)];
+    spectra = (Transpose[{q, #}] & /@ {ref, z, ex});
+    shifts = (Transpose[{q, #}] & /@
+      Chop[{z - ref, ex - ref}, tol]);
+    energies = MinMax[Join[ref, z, ex]];
+    maxShift = Max[Abs[Flatten[shifts[[All, All, 2]]]]];
+    shiftRange = If[maxShift == 0, {-1., 1.},
+      1.05 maxShift {-1., 1.}];
+
+    spectrumPlot = ListLinePlot[spectra,
+      PlotStyle -> {
+        Directive[colors[[1]], AbsoluteThickness[2.4]],
+        Directive[colors[[2]], AbsoluteThickness[1.5]],
+        Directive[colors[[3]], AbsoluteThickness[1.5]]},
+      PlotRange -> {{0, 1}, energies}, PlotRangePadding -> Scaled[0.02],
+      Frame -> True, Axes -> False,
+      FrameTicks -> {{yt, None}, {xt, None}},
+      FrameStyle -> Directive[Black, AbsoluteThickness[1.3]],
+      FrameLabel -> {PlotTeX[0., "n/(D-1)", 16],
+        PlotTeX[0., "E_n", 17]},
+      PlotLabel -> PlotTeX[r, "\\Delta=" <> num[r], 17],
+      ImageSize -> 620, AspectRatio -> 0.43, Background -> White
+    ];
+    shiftPlot = ListLinePlot[shifts,
+      PlotStyle -> {
+        Directive[colors[[2]], AbsoluteThickness[1.4]],
+        Directive[colors[[3]], AbsoluteThickness[1.4]]},
+      PlotRange -> {{0, 1}, shiftRange},
+      Frame -> True, Axes -> False,
+      FrameTicks -> {{yt, None}, {xt, None}},
+      FrameStyle -> Directive[Black, AbsoluteThickness[1.3]],
+      FrameLabel -> {PlotTeX[0., "n/(D-1)", 16],
+        PlotTeX[0., "E_n(g)-E_n(0)", 17]},
+      Epilog -> {Directive[GrayLevel[0.6], Dashed],
+        Line[{{0, 0}, {1, 0}}]},
+      ImageSize -> 620, AspectRatio -> 0.43, Background -> White
+    ];
+    {spectrumPlot, shiftPlot}
+  ];
+  rows = panel /@ records;
+
+  caption = Column[PlotTeX[0., #, 14] & /@ {
+    "L=" <> num[p["L"]] <> ",\\quad J_{xy}=" <> num[p["Jxy"]] <>
+      ",\\quad J_z=J_{xy}\\Delta,\\quad w=" <> num[p["w"]] <>
+      ",\\quad e_d=" <> num[p["ed"]] <>
+      ",\\quad d=" <> num[p["DefectSite"]],
+    "\\omega_A=" <> num[p["omegaA"]] <>
+      ",\\quad \\omega_B=" <> num[p["omegaB"]] <>
+      ",\\quad g_A=" <> num[p["gA"]] <>
+      ",\\quad g_B=" <> num[p["gB"]] <>
+      ",\\quad D=" <> num[dim],
+    "\\text{Gray}:\\ g_A=g_B=0;\\quad \\text{blue}:\\ Z;" <>
+      "\\quad \\text{orange}:\\ \\mathrm{Exchange}"
+  }, Alignment -> Center, Spacings -> 0.25];
+  picture = Column[{
+    PlotTeX[0., "\\text{Selected-anisotropy spectra and coupling shifts}", 22],
+    caption,
+    GraphicsGrid[rows, Spacings -> {12, 13}, ImageSize -> 1290]
+  }, Alignment -> Center, Spacings -> 0.6];
+
+  token = StringRiffle[{
+    "L" <> ToString[p["L"]],
+    "Jxy" <> SafeName[0., p["Jxy"]],
+    "w" <> SafeName[0., p["w"]],
+    "ed" <> SafeName[0., p["ed"]],
+    "d" <> ToString[p["DefectSite"]],
+    "omegaA" <> SafeName[0., p["omegaA"]],
+    "omegaB" <> SafeName[0., p["omegaB"]],
+    "gA" <> SafeName[0., p["gA"]],
+    "gB" <> SafeName[0., p["gB"]]
+  }, "_"];
+  folder = FileNameJoin[{p["OutputRoot"], "selected_spectra", token}];
+  If[!DirectoryQ[folder],
+    CreateDirectory[folder, CreateIntermediateDirectories -> True]];
+  name = FileNameJoin[{folder, "spectra_and_shifts_Delta_" <>
+    StringRiffle[SafeName[0., #] & /@ grid, "_"] <> ".png"}];
+  output = Quiet[Check[Export[name, picture, "PNG"], $Failed]];
+  If[output === $Failed || !FileExistsQ[name],
+    Print["Export failed: ", name]; Return[$Failed]];
+  Print["Saved selected-Delta comparison: ", name];
+  name
+];
+
+selectedSpectrumFile = SelectedSpectrumComparison[
+  selectedSpectrumParameters, selectedSpectrumDeltas];
+
+End[];
+
+
+
