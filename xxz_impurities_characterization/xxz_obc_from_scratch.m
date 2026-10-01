@@ -343,6 +343,10 @@ helixEnergy = J (L - 1) Cos[helixPitch]/4 +
    (bLeft + bRight)/2;
 
 
+{boundaryEnergies, boundaryVectors} =
+ Eigensystem[Normal[N[Hboundary]]];
+
+
 Dataset[<|
   "Hermiticity residual" ->
    Chop[Norm[Hboundary - ConjugateTranspose[Hboundary],
@@ -353,3 +357,168 @@ Dataset[<|
    Norm[Hboundary . TotalMagnetization[L] -
      TotalMagnetization[L] . Hboundary, "Frobenius"]
   |>]
+
+
+spinFlipX =
+ KroneckerProduct @@ ConstantArray[PauliMatrix[1], L];
+
+helixProjector =
+ Outer[Times, helixKet, Conjugate[helixKet]];
+
+Chop[{
+  Norm[Hboundary -
+    spinFlipX . Conjugate[Hboundary] . spinFlipX, "Frobenius"],
+  Norm[Hboundary . helixProjector -
+    helixProjector . Hboundary, "Frobenius"]
+  }]
+
+
+(* ::Section:: *)
+(*Particular helix states*)
+
+
+L = 8;
+J = 1.;
+pitch = 0.7;
+anisotropy = Cos[pitch];
+
+c = J Sin[pitch]/2;
+b = -c Cot[(L - 1) pitch/2];
+endpointField = {b, -c, 0};
+
+h0 = Normal[N[XXZHamiltonian[J, anisotropy, L]]];
+
+hExact = Normal[N[
+    BoundaryXXZHamiltonian[
+     J, anisotropy, L, endpointField, endpointField]]];
+
+hEdge = hExact - h0;
+
+
+helixPlus = N[SpinHelixState[L, pitch, Pi/2, 0]];
+helixMinus =
+  N[SpinHelixState[L, -pitch, Pi/2, (L - 1) pitch]];
+
+lambdaList = Subdivide[0., 1.5, 300];
+
+
+spectrum = Table[
+   Sort[Re[Chop[Eigenvalues[h0 + lambda hEdge]]]],
+   {lambda, lambdaList}];
+
+
+trialEnergy[lambda_] :=
+  J (L - 1) anisotropy/4 + lambda b;
+
+residuals = Table[
+   With[{h = h0 + lambda hEdge, e = trialEnergy[lambda]},
+    {lambda,
+     Norm[h . helixPlus - e helixPlus],
+     Norm[h . helixMinus - e helixMinus]}],
+   {lambda, lambdaList}];
+
+
+Column[{
+  ListPlot[
+   (Transpose[{lambdaList, #}] &) /@ Transpose[spectrum],
+   Frame -> True, Axes -> False,
+   FrameLabel -> {"\[Lambda]", "E"},
+   PlotStyle -> Directive[Gray, PointSize[0.0015]],
+   GridLines -> {{1}, None},
+   PlotRange -> All, ImageSize -> Large],
+
+  ListLinePlot[
+   {residuals[[All, {1, 2}]], residuals[[All, {1, 3}]]},
+   Frame -> True, Axes -> False,
+   FrameLabel -> {"\[Lambda]", "Eigenstate residual"},
+   PlotLegends -> {"Helix +", "Helix -"},
+   GridLines -> {{1}, None},
+   PlotRange -> All, ImageSize -> Large]
+  }]
+
+
+L = 6;
+J = 1.;
+pitch = 0.7;
+anisotropy = Cos[pitch];
+
+c = J Sin[pitch]/2;
+b = -c Cot[(L - 1) pitch/2];
+endpointField = {b, -c, 0};
+
+h0 = Normal[N[XXZHamiltonian[J, anisotropy, L]]];
+
+hExact = Normal[N[
+    BoundaryXXZHamiltonian[
+     J, anisotropy, L, endpointField, endpointField]]];
+
+hEdge = hExact - h0;
+
+helixPlus = N[SpinHelixState[L, pitch, Pi/2, 0]];
+helixMinus =
+  N[SpinHelixState[L, -pitch, Pi/2, (L - 1) pitch]];
+
+helixEnergy = J (L - 1) anisotropy/4 + b;
+
+(* Projector onto the span of both helices *)
+a = Transpose[{helixPlus, helixMinus}];
+aDag = ConjugateTranspose[a];
+pHelix = a . Inverse[aDag . a] . aDag;
+
+(* Eigensystem at the exact point, sorted by ascending energy *)
+{energies, vectors} = Eigensystem[hExact];
+order = Ordering[Re[Chop[energies]]];
+energies = Re[Chop[energies[[order]]]];
+vectors = vectors[[order]];
+
+weights = Chop[
+   (Re[Conjugate[#] . pHelix . #] &) /@ vectors];
+
+tolerance = 10^-9;
+helixIndices = Select[
+   Range[Length[energies]],
+   Abs[energies[[#]] - helixEnergy] < tolerance &];
+
+Print[Dataset[
+   Table[
+    <|"Ascending index" -> n,
+     "Energy" -> energies[[n]],
+     "Helix-subspace weight" -> weights[[n]]|>,
+    {n, helixIndices}]]];
+
+Print["Helix residuals: ",
+  Chop[{
+    Norm[hExact . helixPlus - helixEnergy helixPlus],
+    Norm[hExact . helixMinus - helixEnergy helixMinus]}]];
+
+
+(* Full spectrum versus boundary-field strength *)
+lambdaList = Subdivide[0., 1.5, 600];
+
+spectrum = Table[
+   Sort[Re[Chop[Eigenvalues[h0 + lambda hEdge]]]],
+   {lambda, lambdaList}];
+
+
+Column[{
+  ListPlot[
+   (Transpose[{lambdaList, #}] &) /@ Transpose[spectrum],
+   Frame -> True, Axes -> False,
+   FrameLabel -> {"\[Lambda]", "E"},
+   PlotStyle -> Directive[Gray, PointSize[0.002]],
+   GridLines -> {{1}, None},
+   Epilog -> {Red, PointSize[0.018],
+     Point[{1, helixEnergy}]},
+   PlotRange -> All, ImageSize -> 800],
+
+  (* Shows exactly where the helices sit at lambda = 1 *)
+  ListPlot[
+   Transpose[{Range[Length[energies]], energies}],
+   Frame -> True, Axes -> False,
+   FrameLabel -> {"Eigenvalue index (ascending)", "E"},
+   PlotStyle -> Directive[Gray, PointSize[0.012]],
+   Epilog -> {Red, PointSize[0.025],
+     Point[Transpose[
+       {helixIndices, energies[[helixIndices]]}]]},
+   PlotRange -> All, ImageSize -> Large]
+  }]
