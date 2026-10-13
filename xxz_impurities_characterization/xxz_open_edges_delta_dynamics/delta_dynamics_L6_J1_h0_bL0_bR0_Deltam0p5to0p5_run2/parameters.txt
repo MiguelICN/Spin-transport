@@ -1,0 +1,9 @@
+Model: <|"L" -> 6, "J" -> 1, "h" -> 0, "bLeft" -> 0, "bRight" -> 0|>
+Delta values: {-0.5, -0.4, -0.3, -0.19999999999999996, -0.09999999999999998, 0., 0.10000000000000009, 0.20000000000000007, 0.30000000000000004, 0.4, 0.5}
+Time grid: <|"Grid" -> "Linear", "tMax" -> 50., "dt" -> 0.1, "tMinPositive" -> 0.01, "LogPoints" -> 501|>
+Initial factor is fixed across Delta and stored in delta_dynamics.wxf.
+Entropies: natural logarithms. Local and pair operators: Pauli matrices.
+Connected ab = <sigma_1^a sigma_L^b>-<sigma_1^a><sigma_L^b>.
+Full survival for pure inputs; normalized full overlap for mixed inputs.
+InitialOverlap = Tr[rho_AB(0) rho_AB(t)].
+Colors: negative Delta red, zero purple, positive Delta blue.
