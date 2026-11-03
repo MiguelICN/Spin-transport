@@ -1,0 +1,198 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{bm}
+\usepackage{listings}
+\usepackage{hyperref}
+
+\newcommand{\ket}[1]{\lvert #1\rangle}
+\newcommand{\bra}[1]{\langle #1\rvert}
+\newcommand{\up}{\uparrow}
+\newcommand{\dn}{\downarrow}
+\newcommand{\Ht}{\tilde H}
+
+\lstset{basicstyle=\ttfamily\small,breaklines=true,columns=fullflexible,frame=single}
+
+\title{Edge reduced density matrices of the open XXZ chain\\ for the initial state $\ket{\up\dn\cdots\dn}$}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Setup and conventions}
+
+Conventions follow \texttt{xxz\_open\_edges\_revised.m}:
+\begin{equation}
+H = J\sum_{k=1}^{L-1}\bigl(S^x_kS^x_{k+1}+S^y_kS^y_{k+1}+\Delta S^z_kS^z_{k+1}\bigr)
+ + h\sum_{k=1}^{L}S^z_k + b_L S^z_1 + b_R S^z_L ,
+\end{equation}
+with $S^a=\sigma^a/2$, $\hbar=1$, and two-edge basis $\{00,01,10,11\}=\{\up\up,\up\dn,\dn\up,\dn\dn\}$ for sites $(1,L)$.
+The initial state is $\ket{\psi(0)}=\ket{\up\dn\cdots\dn}$.
+The initial state currently set in the code (one $\dn$ at site $L$ in an $\up$ background) is its spin-flipped mirror image; all results below apply to it with $h,b\to-h,-b$ and the two edges exchanged.
+
+\section{Reduction to the one-magnon sector}
+
+$H$ conserves $S^z_{\rm tot}$, so the dynamics stays in the $L$-dimensional one-magnon sector spanned by $\ket{j}$ (single $\up$ at site $j$):
+\begin{equation}
+\ket{\psi(t)}=\sum_{j=1}^{L}c_j(t)\ket{j},\qquad \bm c(t)=e^{-iH_1t}\,\bm e_1 .
+\end{equation}
+Counting anti-aligned bonds gives, up to the constant $E_0=J\Delta(L-5)/4+h(1-L/2)-(b_L+b_R)/2$,
+\begin{equation}
+(H_1)_{j,j\pm1}=\frac J2,\qquad (H_1)_{jj}=V_1\,\delta_{j1}+V_L\,\delta_{jL},\qquad
+V_1=\frac{J\Delta}{2}+b_L,\quad V_L=\frac{J\Delta}{2}+b_R .
+\end{equation}
+The uniform field $h$ only contributes a global phase and drops out of every reduced quantity.
+The problem is therefore a tight-binding chain with hopping $J/2$ and edge potentials $V_{1,L}$; the cost is $L\times L$ instead of $2^L\times2^L$.
+
+\section{Reduced density matrices}
+
+\paragraph{Single edge spin.}
+Writing $\ket{\psi}=c_1\ket{\up}_1\ket{\Downarrow}_{\bar1}+\ket{\dn}_1\ket{\chi}_{\bar1}$ with $\ket{\chi}=\sum_{j\ge2}c_j\ket{j}$ and $\langle\Downarrow\vert\chi\rangle=0$,
+\begin{equation}
+\rho_1(t)=\begin{pmatrix}|c_1|^2&0\\0&1-|c_1|^2\end{pmatrix},\qquad
+\langle\sigma^z_1\rangle=2|c_1|^2-1 .
+\end{equation}
+$\rho_1$ has no coherences at any time.
+
+\paragraph{Both edge spins $\{1,L\}$.}
+With $p=|c_1|^2+|c_L|^2$,
+\begin{equation}
+\rho_{1L}(t)=\begin{pmatrix}
+0&0&0&0\\
+0&|c_1|^2&c_1c_L^*&0\\
+0&c_1^*c_L&|c_L|^2&0\\
+0&0&0&1-p
+\end{pmatrix}
+= p\,\ket{w}\bra{w}+(1-p)\ket{\dn\dn}\bra{\dn\dn},\qquad
+\ket{w}=\frac{c_1\ket{\up\dn}+c_L\ket{\dn\up}}{\sqrt p}.
+\end{equation}
+$\rho_{1L}$ has rank 2 and spectrum $\{p,1-p,0,0\}$. With $h_2(x)=-x\ln x-(1-x)\ln(1-x)$ (nats):
+\begin{align}
+S(\rho_1)&=h_2(|c_1|^2),\qquad S(\rho_L)=h_2(|c_L|^2),\qquad S(\rho_{1L})=h_2(p),\\
+I(1{:}L)&=h_2(|c_1|^2)+h_2(|c_L|^2)-h_2(p),\\
+\mathcal C(\rho_{1L})&=2|c_1c_L|,\\
+\mathcal N(\rho_{1L})&=\tfrac12\Bigl[\sqrt{(1-p)^2+4|c_1c_L|^2}-(1-p)\Bigr],
+\end{align}
+where $\mathcal N$ is the sum of the moduli of the negative eigenvalues of $\rho_{1L}^{T_L}$ (the convention used in the code).
+
+\section{Closed forms and limits}
+
+\paragraph{XX point ($\Delta=0$, $h=b_L=b_R=0$).}
+With $k_n=n\pi/(L+1)$,
+\begin{equation}
+c_1(t)=\frac{2}{L+1}\sum_{n=1}^{L}\sin^2k_n\,e^{-iJt\cos k_n},\qquad
+c_L(t)=\frac{2}{L+1}\sum_{n=1}^{L}(-1)^{n+1}\sin^2k_n\,e^{-iJt\cos k_n}.
+\end{equation}
+Before the reflection from site $L$ returns ($t\lesssim 2L/J$),
+\begin{equation}
+c_1(t)=\frac{2J_1(Jt)}{Jt},\qquad |c_1|^2\simeq\frac{8}{\pi (Jt)^3}\cos^2\!\Bigl(Jt-\frac{3\pi}{4}\Bigr)\quad (Jt\gg1).
+\end{equation}
+$c_1$ is real and changes sign at the zeros of $J_1$.
+
+\paragraph{Edge bound state.}
+For $L\to\infty$ an edge-localized eigenstate $\psi_j\propto r^{\,j-1}$ exists iff $|V_1|>J/2$, with
+\begin{equation}
+r=\frac{J}{J\Delta+2b_L},\qquad E_b=V_1+\frac{J^2}{4V_1}\ (\text{relative to the bulk}),\qquad w\equiv|\psi_1|^2=1-r^2 .
+\end{equation}
+Without fields this is $|\Delta|>1$, $r=1/\Delta$. The band contribution to $c_1$ decays, so
+\begin{equation}
+|c_1(t)|^2\xrightarrow{t\to\infty}w^2=(1-r^2)^2 .
+\end{equation}
+
+\paragraph{Symmetric edges ($b_L=b_R$), bound-state regime.}
+The two edge states hybridize into even and odd combinations; Herring's formula gives the splitting
+\begin{equation}
+\delta\simeq J\,(1-r^2)^2\,r^{L-2}.
+\end{equation}
+The magnon then tunnels between the edges: $c_1\simeq w\,e^{-i\bar Et}\cos(\delta t/2)$, $c_L\simeq -i\,w\,e^{-i\bar Et}\sin(\delta t/2)$, hence
+\begin{equation}
+\mathcal C(\rho_{1L})\simeq w^2\,\lvert\sin\delta t\rvert ,
+\end{equation}
+on average, with band-induced fluctuations around it that decrease slowly with $L$.
+
+\section{The Schmidt-decomposition approach}
+
+Ref.~\cite{MB22} writes $\ket{\Psi}=\sum_j\lambda_j\ket{\varphi^{(1)}_j}\ket{\varphi^{(2)}_j}$ and defines the local effective Hamiltonian
+$\Ht^{(k)}(t)=i\sum_j\ket{\dot\varphi^{(k)}_j}\bra{\varphi^{(k)}_j}$, so that
+\begin{equation}
+i\dot\rho^{(k)}=[\Ht^{(k)},\rho^{(k)}]+\mathfrak D^{(k)}_t\rho^{(k)},\qquad
+\mathfrak D^{(k)}_t\rho^{(k)}=i\sum_j\frac{d\lambda_j^2}{dt}\ket{\varphi^{(k)}_j}\bra{\varphi^{(k)}_j}.
+\end{equation}
+The phases $\ket{\varphi^{(1)}_j}\to e^{i\theta_j}\ket{\varphi^{(1)}_j}$, $\ket{\varphi^{(2)}_j}\to e^{-i\theta_j}\ket{\varphi^{(2)}_j}$ are a gauge freedom that shifts $\Ht^{(1)}$ by $-\sum_j\dot\theta_j\ket{\varphi^{(1)}_j}\bra{\varphi^{(1)}_j}$.
+
+\paragraph{Computational content.}
+The formalism provides no shortcut: building the Schmidt decomposition requires $\ket{\Psi(t)}$, i.e.\ it is equivalent to diagonalizing $\rho^{(k)}$. The simplification of Sec.~2 comes from $S^z_{\rm tot}$ conservation. Here the Schmidt decompositions are known in closed form, so the quantities of Ref.~\cite{MB22} can be written explicitly.
+
+\paragraph{Single edge, bipartition $1\,|\,2\cdots L$.}
+With $c_1=|c_1|e^{-i\Phi}$, $\lambda_\dn=\sqrt{1-|c_1|^2}$ and $\ket{\hat\chi}=\ket{\chi}/\lambda_\dn$,
+\begin{equation}
+\ket{\Psi}=|c_1|\,\bigl(e^{i\theta_\up}\ket{\up}\bigr)\bigl(e^{-i\theta_\up-i\Phi}\ket{\Downarrow}\bigr)
++\lambda_\dn\,\bigl(e^{i\theta_\dn}\ket{\dn}\bigr)\bigl(e^{-i\theta_\dn}\ket{\hat\chi}\bigr).
+\end{equation}
+The Schmidt basis of spin 1 is $\{\ket\up,\ket\dn\}$ for all $t$, up to phases. Therefore
+\begin{equation}
+\Ht^{(1)}(t)=-\dot\theta_\up\ket\up\bra\up-\dot\theta_\dn\ket\dn\bra\dn,\qquad
+\Ht^{(1)}_X\equiv0,\qquad [\Ht^{(1)},\rho_1]=0,
+\end{equation}
+and the whole edge dynamics is non-unitary:
+\begin{equation}
+\dot\rho_1=\frac{d|c_1|^2}{dt}\,\sigma^z_1 .
+\end{equation}
+$\Ht^{(1)}$ and $U^{(1)}=\langle\Ht^{(1)}\rangle=-\dot\theta_\up|c_1|^2-\dot\theta_\dn(1-|c_1|^2)$ contain only gauge information.
+The criterion of Ref.~\cite{MB22} ($\Ht^{(1)}\to H^{(1)}=(h+b_L)S^z_1$ when the $(1,2)$ bond is switched off) requires $\dot\theta_\up\to-(h+b_L)/2$ in that limit. It excludes, e.g., the parallel-transport gauge ($\dot\theta=0$, $U^{(1)}=0$) when $h+b_L\neq0$, but any $\dot\theta_\up=-(h+b_L)/2+f(t)$ with $f\to0$ in the decoupled limit is admissible. $U^{(1)}$ is therefore not uniquely fixed at finite coupling.
+
+\paragraph{Two edges, bipartition $\{1,L\}\,|\,\{2,\dots,L-1\}$.}
+With $\ket{\chi_M}=\sum_{j=2}^{L-1}c_j\ket{j}_M$,
+\begin{equation}
+\ket{\Psi}=\sqrt p\,\ket{w}\ket{\Downarrow}_M+\sqrt{1-p}\,\ket{\dn\dn}\,\frac{\ket{\chi_M}}{\sqrt{1-p}} .
+\end{equation}
+Here $\Ht^{(1L)}$ is non-trivial. $\ket{\dn\dn}$ is fixed up to a phase, while $\ket w$ moves inside $\mathrm{span}\{\ket{\up\dn},\ket{\dn\up}\}$. In this pseudo-spin space $\ket w$ has Bloch vector
+\begin{equation}
+\bm n=\frac1p\Bigl(2\,\mathrm{Re}(c_1^*c_L),\ 2\,\mathrm{Im}(c_1^*c_L),\ |c_1|^2-|c_L|^2\Bigr),
+\end{equation}
+Completing the Schmidt basis with $\ket{w_\perp}=(-c_L^*\ket{\up\dn}+c_1^*\ket{\dn\up})/\sqrt p$ and $\ket{\up\up}$, $\Ht^{(1L)}$ is block diagonal, and its restriction to that subspace is $\tfrac12\bm\Omega\cdot\bm\tau+\text{const}$ ($\bm\tau$: Pauli matrices in the pseudo-spin basis), with
+\begin{equation}
+\bm\Omega=\bm n\times\dot{\bm n}+\gamma(t)\,\bm n,\qquad \dot{\bm n}=\bm\Omega\times\bm n .
+\end{equation}
+$\bm n\times\dot{\bm n}$ is gauge independent; $\gamma$ and the constant are gauge. The non-unitary part is $\dot p$.
+Thus $\rho_{1L}$ is fully described by three real functions: $p(t)$ and the direction of $\bm n(t)$. $\Ht^{(1L)}$ on the zero-weight Schmidt vectors ($\ket{\up\up}$ and $\ket{w_\perp}$) is undetermined.
+Before the signal reaches site $L$ ($t\lesssim(L-1)/J$), $c_L\simeq0$, $\ket w\simeq\ket{\up\dn}$, and this reduces to the single-edge case.
+
+\paragraph{Technical caveats.}
+\begin{itemize}
+\item With $\lambda_j\ge0$ as in Ref.~\cite{MB22}, a sign change of a real $c_1$ ($\Delta=0$) flips the Schmidt vector and produces $\pm\pi\,\delta(t-t_n)$ terms in $\Ht^{(1)}$; signed (analytic) Schmidt coefficients remove them. For $\Delta\neq0$, $c_1$ is complex and near-zeros give sharp spikes in $\dot\theta$. The same happens in $\bm\Omega$ when $p\to0$.
+\item At $|c_1|^2=1/2$ (single edge) or $p=1/2$ (two edges) the Schmidt values are degenerate. A numerical SVD reorders the vectors there; branches must be followed by continuity (by $\sigma^z$ labels for the single edge).
+\end{itemize}
+
+\section{Numerical checks (Mathematica)}
+\begin{itemize}
+\item $L=8$, $J=1$, $\Delta=2$, $h=0.3$, $b_L=0.2$, $b_R=-0.1$, $t=3.7$: $\rho_1$ and $\rho_{1L}$ from $H_1$ agree with the full $2^L$ evolution to $\sim10^{-16}$; the Wootters concurrence equals $2|c_1c_L|$; spectrum of $\rho_{1L}$ is $\{p,1-p,0,0\}$.
+\item $\Delta=0$, $L=300$: $|c_1(t)-2J_1(t)/t|<2\times10^{-12}$ for $t\in\{5,20,100,250\}$.
+\item $L=600$, $t=400$: $|c_1|^2=0.5625$ ($\Delta=2$; $w^2=0.5625$), $0.3084$ ($\Delta=1.5$; $0.3086$), $0.7901$ ($\Delta=-3$; $0.7901$), $0.5625$ ($\Delta=1$, $b_L=0.5$; $0.5625$), $\sim10^{-7}$ ($\Delta=0.5$; no bound state).
+\item $\Delta=2$, symmetric edges: $\delta\,2^{L-1}/J=1.1275,\,1.1253,\,1.12503,\,1.125002$ for $L=8,10,12,14$; Herring formula gives $9/8$. Time-averaged $\mathcal C$ near $t=\pi/(2\delta)$: $0.574,\,0.564,\,0.563$ for $L=12,20,30$ ($w^2=0.5625$).
+\end{itemize}
+
+\appendix
+\section{Mathematica code}
+Verified against the full $2^L$ evolution (error $\sim10^{-16}$). The diagonal is shifted by $E_0$, which only adds a global phase.
+\begin{lstlisting}
+oneMagnonH[p_] := Module[{l=p["L"], j=p["J"], d=p["Delta"]},
+  SparseArray[{{1,1} -> j d/2 + p["bLeft"], {l,l} -> j d/2 + p["bRight"],
+    Band[{1,2}] -> j/2, Band[{2,1}] -> j/2}, {l,l}]];
+
+edgeRDMs[p_, t_] := Module[
+  {c = MatrixExp[-I N[Normal[oneMagnonH[p]]] t, UnitVector[p["L"],1]], c1, cL},
+  {c1, cL} = {First[c], Last[c]};
+  <|"RhoA" -> {{Abs[c1]^2, 0}, {0, 1 - Abs[c1]^2}},
+    "RhoAB" -> {{0,0,0,0},
+                {0, Abs[c1]^2, c1 Conjugate[cL], 0},
+                {0, Conjugate[c1] cL, Abs[cL]^2, 0},
+                {0,0,0, 1 - Abs[c1]^2 - Abs[cL]^2}}|>];
+\end{lstlisting}
+
+\begin{thebibliography}{9}
+\bibitem{MB22} A.~H.~A.~Malavazi and F.~Brito, ``A Schmidt Decomposition Approach to Quantum Thermodynamics'', Entropy \textbf{24}, 1645 (2022), \href{https://doi.org/10.3390/e24111645}{doi:10.3390/e24111645}.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,763 @@
+\documentclass[11pt,a4paper]{article}
+%\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{braket}
+\usepackage{booktabs,array,longtable}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage[colorlinks=true,linkcolor=blue!50!black,citecolor=green!40!black,urlcolor=blue!60!black]{hyperref}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{algorithm}[theorem]{Algorithm}
+
+\newcommand{\hL}{\mathbf h_{\mathrm L}}
+\newcommand{\hR}{\mathbf h_{\mathrm R}}
+\newcommand{\bsig}{\boldsymbol\sigma}
+\newcommand{\ML}[1][s]{\mathcal M_{\mathrm L}^{(#1)}}
+\newcommand{\MR}[1][s]{\mathcal M_{\mathrm R}^{(#1)}}
+\newcommand{\ez}{\hat{\mathbf z}}
+\newcommand{\Hil}{\mathcal H}
+\newcommand{\ver}[1]{\textsf{[#1]}}   % pointer to a numerical check
+\newcommand{\re}{\operatorname{Re}}
+\newcommand{\im}{\operatorname{Im}}
+
+\lstdefinestyle{mma}{language=Mathematica,basicstyle=\ttfamily\footnotesize,breaklines=true,
+  columns=fullflexible,keepspaces=true,frame=single,framerule=0.3pt,rulecolor=\color{black!30},
+  backgroundcolor=\color{black!3},commentstyle=\color{green!40!black},showstringspaces=false}
+\lstset{style=mma}
+
+\title{Spin-helix eigenstates of the open spin-$\tfrac12$ XXZ chain\\ and phantom Bethe roots\\[4pt]
+\large Reference notes: theory, classification, and a Mathematica toolkit}
+\author{Prepared for the project \emph{Spin transport} (phantom roots, helix states, edge-spin dynamics)}
+\date{Version of 5 October 2026}
+
+\begin{document}
+\maketitle
+\sloppy
+
+\begin{abstract}
+These notes collect, in one uniform notation, what is known about spin-helix states (SHS) in the spin-$\tfrac12$ XXZ chain, with emphasis on \emph{open} chains of \emph{finite} length $N$ and on their relation to phantom Bethe roots (PBR). The material of nine references is rederived step by step and every structural statement used below was checked numerically in Mathematica (exact diagonalisation and product-state algebra; checks are labelled \ver{C1}--\ver{C17} and listed in \cref{app:checks}). Beyond reorganising the literature, the notes contain three results that we derived and verified here but did not find stated in this form in the references: (i) a necessary and sufficient classification of \emph{all} product eigenstates of the open XXZ chain with arbitrary boundary fields (\cref{thm:classification}), which answers ``given $\Delta$ and the boundary fields, which helices are exact eigenstates''; (ii) a geometric reformulation of the PBR criterion as a winding condition between the two boundary-selected spin directions (\cref{prop:geometric-criterion}); (iii) an explicit $(N+1)\times(N+1)$ matrix for the one-kink (``semi-phantom'') sector and a Rayleigh--Ritz scheme for the $M$-kink sectors. The last part gives a numerical protocol: build the chain, find all helix eigenstates for given parameters, tune parameters for a given helix, verify exactness in $O(N)$ operations, and locate the states in the spectrum.
+\end{abstract}
+
+\tableofcontents
+
+%=====================================================================
+\section{Scope, sources and conventions of verification}\label{sec:scope}
+
+\paragraph{Sources.} The notes are based on the following references (numbering used throughout):
+\begin{enumerate}[label={[R\arabic*]},leftmargin=3.2em]
+\item\label{R1} V.~Popkov, X.~Zhang, A.~Kl\"umper, \emph{Phantom Bethe excitations and spin helix eigenstates in integrable periodic and open spin chains}, Phys.\ Rev.\ B \textbf{104}, L081410 (2021). [PZK]
+\item\label{R2} X.~Zhang, A.~Kl\"umper, V.~Popkov, \emph{Phantom Bethe roots in the integrable open spin-$\frac12$ XXZ chain}, Phys.\ Rev.\ B \textbf{103}, 115435 (2021). [ZKP]
+\item\label{R3} V.~Popkov, J.~Schmidt, C.~Presilla, \emph{Spin-helix states in the XXZ spin chain with strong boundary dissipation}, J.\ Phys.\ A \textbf{50}, 435302 (2017).
+\item\label{R4} P.~N.~Jepsen, Y.~K.~Lee, H.~Lin, I.~Dimitrova, Y.~Margalit, W.~W.~Ho, W.~Ketterle, \emph{Long-lived phantom helix states in Heisenberg quantum magnets}, Nat.\ Phys.\ \textbf{18}, 899 (2022).
+\item\label{R5} V.~Popkov, M.~\v{Z}nidari\v{c}, X.~Zhang, \emph{Universality in the relaxation of spin helices under XXZ spin-chain dynamics}, Phys.\ Rev.\ B \textbf{107}, 235408 (2023).
+\item\label{R6} G.~Zhang, Z.~Song, \emph{Stable dynamic helix state in the nonintegrable XXZ Heisenberg model}, Phys.\ Scr.\ \textbf{99}, 075119 (2024).
+\item\label{R7} D.~Bhowmick, W.~W.~Ho, \emph{Granovskii--Zhedanov scars of XYZ models: modern algebraic perspectives and realization in higher dimensional lattices}, arXiv:2507.14895.
+\item\label{R8} Y.~Hu, F.~Gerken, T.~Posske, \emph{Hidden twisted sectors and exponential degeneracy in root-of-unity XXZ Heisenberg chains}, arXiv:2602.15098.
+\item\label{R9} P.~Kattel, P.~R.~Pasnoori, J.~H.~Pixley, N.~Andrei, \emph{Edge modes and boundary impurities in the anisotropic Heisenberg spin chain}, Phys.\ Rev.\ B \textbf{111}, 174430 (2025).
+\end{enumerate}
+The open-chain theory rests mainly on \ref{R1}, \ref{R2}; \ref{R3} gives the dissipative (Zeno-limit) version; \ref{R4}, \ref{R5} treat helices that are \emph{not} eigenstates (dynamics, experiment); \ref{R6}--\ref{R8} concern periodic chains, non-integrable extensions and root-of-unity degeneracies; \ref{R9} is an open chain with $U(1)$-symmetric boundaries and, as shown in \cref{rem:R9}, supports no helix eigenstates.
+
+\paragraph{Status labels.} Every statement is one of: \emph{(derived)} -- proved in these notes; \emph{(quoted)} -- taken from a reference and not independently re-derived; \emph{(verified)} -- checked numerically, with a pointer \ver{Cx} to \cref{app:checks}. Statements in the Bethe-ansatz part (BAE, completeness) are quoted from \ref{R1}, \ref{R2}; their consequences that can be tested by exact diagonalisation (ED) were tested.
+
+%=====================================================================
+\section{Unified notation}\label{sec:notation}
+
+\subsection{Hamiltonian}
+We use Pauli matrices $\sigma^{x,y,z}_n$ on sites $n=1,\dots,N$ and the bond operator with the energy shift of \ref{R1}, \ref{R2}, \ref{R3}, \ref{R5}:
+\begin{equation}\label{eq:bond}
+h_{n,n+1}=\sigma^x_n\sigma^x_{n+1}+\sigma^y_n\sigma^y_{n+1}+\Delta\big(\sigma^z_n\sigma^z_{n+1}-1\big).
+\end{equation}
+The open chain with boundary fields is
+\begin{equation}\label{eq:H}
+H=J\sum_{n=1}^{N-1}h_{n,n+1}+\hL\cdot\bsig_1+\hR\cdot\bsig_N ,\qquad J=1 \text{ unless stated.}
+\end{equation}
+The periodic chain is $H_{\rm per}=\sum_{n=1}^{N}h_{n,n+1}$ with $\sigma_{N+1}\equiv\sigma_1$. The overall sign of $J$ is irrelevant for the eigenstate property (the fields scale with $J$), so we set $J=1$.
+
+\paragraph{Anisotropy.} We write
+\begin{equation}\label{eq:gamma}
+\Delta=\cos\gamma,\qquad \kappa\equiv i\sin\gamma,\qquad \eta\equiv i\gamma\ (\Delta=\cosh\eta),
+\end{equation}
+with $\gamma$ complex in general:
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+regime & $\gamma$ & $\kappa=i\sin\gamma$\\ \midrule
+easy plane $|\Delta|<1$ & $\gamma\in(0,\pi)$ real & $i\sin\gamma$ (imaginary)\\
+easy axis $\Delta>1$ & $\gamma=i\eta_0$, $\eta_0\in\mathbb R$ & $-\sinh\eta_0$ (real)\\
+easy axis $\Delta<-1$ & $\gamma=\pi+i\eta_0$ & $\sinh\eta_0$ (real)\\
+isotropic $\Delta=\pm1$ & $\gamma=0,\pi$ & $0$\\ \bottomrule
+\end{tabular}
+\end{center}
+In the code, $\gamma=\arccos\Delta$ with the principal complex branch.
+
+\paragraph{Conversion to spin operators.} With $\mathbf S=\bsig/2$ and the convention $H_{S}=J_{xy}\sum(S^xS^x+S^yS^y+\Delta S^zS^z)+\mathbf B_{\rm L}\cdot\mathbf S_1+\mathbf B_{\rm R}\cdot\mathbf S_N$ used in \ref{R4}, \ref{R6}, \ref{R7}, \ref{R8},
+\begin{equation}\label{eq:spinconv}
+H_S=\frac{J_{xy}}{4}\Big[H+(N-1)\Delta\Big]_{\hL=2\mathbf B_{\rm L}/J_{xy},\ \hR=2\mathbf B_{\rm R}/J_{xy}},\qquad E_S=\frac{J_{xy}}4\big(E+(N-1)\Delta\big).
+\end{equation}
+Time scales therefore differ by a factor 4 between Pauli and spin conventions ($t_{\rm Pauli}=J_{xy}t/4\hbar$).
+
+\subsection{Spin-coherent (qubit) states}
+Following \ref{R1} we parametrise a single-site pure state by a complex number $y$:
+\begin{equation}\label{eq:qubit}
+\ket{y}=\begin{pmatrix}1\\ e^{y}\end{pmatrix}\ \text{(unnormalised)},\qquad y=\ln\tan\frac{\theta}{2}+i\varphi ,
+\end{equation}
+so that $\bra{y}\bsig\ket{y}/\braket{y|y}=\mathbf m(\theta,\varphi)=(\sin\theta\cos\varphi,\sin\theta\sin\varphi,\cos\theta)$. Useful facts:
+\begin{itemize}
+\item $\re y$ fixes the polar angle, $\im y$ the azimuth; $y\to-\infty$ ($+\infty$) is $\ket\uparrow$ ($\ket\downarrow$).
+\item The antipodal state ($\mathbf m\to-\mathbf m$) is $\ket{\bar y}$ with $\bar y=-y^*+i\pi$.
+\item The (non-conjugated) \emph{dual} vector $\bra{y^\perp}:=(e^{y},-1)$ satisfies $\bra{y^\perp}y\rangle=0$ for any complex $y$; it is used to extract components orthogonal to $\ket y$ without complex conjugation, which keeps all formulas analytic in $\Delta$.
+\item $\sigma^z\ket{y}=\ket{y+i\pi}$, and for any $\gamma\notin\pi\mathbb Z$ (proof: solve a $2\times2$ linear system)
+\begin{equation}\label{eq:sz-decomp}
+\kappa\,\sigma^z\ket y=-\Delta\ket y+e^{i\gamma}\ket{y-2i\gamma}=\Delta\ket y-e^{-i\gamma}\ket{y+2i\gamma}.
+\end{equation}
+\end{itemize}
+
+\subsection{Helix states}
+\begin{definition}[Spin-helix state]\label{def:helix}
+For $s\in\{+1,-1\}$ (chirality) and $y_1\in\mathbb C$,
+\begin{equation}\label{eq:helix}
+\ket{\Psi_s(y_1)}=\bigotimes_{n=1}^{N}\ket{y_n},\qquad y_n=y_1+i s\gamma\,(n-1).
+\end{equation}
+\end{definition}
+Geometrically:
+\begin{itemize}
+\item \emph{Easy plane} ($\gamma$ real): $\theta_n\equiv\theta$ constant, $\varphi_n=\varphi_1+s\gamma(n-1)$: a cone (``transverse'' helix if $\theta=\pi/2$) winding about $z$ with pitch $\gamma$; magnetisation profile $\langle\bsig_n\rangle=\mathbf m(\theta,\varphi_1+s\gamma(n-1))$. This is the SHS of \ref{R1}, \ref{R2}, \ref{R3}, \ref{R4}, \ref{R5}; in \ref{R4} the wave number is $Q=\gamma/a$ ($\Delta=\cos Qa$).
+\item \emph{Easy axis} $\Delta>1$: $\varphi$ constant and $\tan(\theta_{n+1}/2)=e^{-s\eta_0}\tan(\theta_n/2)$: the ``polar'' helix of \ref{R1} (the spin rotates in a vertical plane, non-uniformly).
+\item \emph{Easy axis} $\Delta<-1$: as above with an additional $\pi$ jump of $\varphi$ on every bond (staggered polar helix).
+\end{itemize}
+Equivalent forms used in the references: \ref{R3}: $\ket{\psi(\theta,\alpha)}=(\cos\frac\theta2e^{-i\alpha/2},\sin\frac\theta2e^{i\alpha/2})^T$, i.e.\ $y=\ln\tan\frac\theta2+i\alpha$; \ref{R5}: the same with $\alpha=Qn+\varphi$; \ref{R4}: $e^{-iQz_n}$ on $\ket\downarrow$, i.e.\ $\varphi_n=-Qz_n$ (chirality $s=-1$ in our convention for $Q>0$); \ref{R6}, \ref{R7}: towers $\propto e^{t\,\tau_{\pm}}\ket{\Uparrow}$ with $\tau_\pm=\sum_n e^{\pm i n q}S_n^-$, which is \eqref{eq:helix} with $e^{y_1}\propto t$; \ref{R2}: \emph{bra} vectors $\phi_n(x)=(1,-e^{\vartheta_-+\alpha_-+\beta_-+(2x-n+1)\eta})$ (see \cref{sec:geom}).
+
+\paragraph{Observables (derived, verified \ver{C14}).} For the easy-plane helix,
+\begin{equation}\label{eq:current}
+\langle j^z_{n,n+1}\rangle=\big\langle 2(\sigma^x_n\sigma^y_{n+1}-\sigma^y_n\sigma^x_{n+1})\big\rangle=2s\sin\gamma\,\sin^2\theta=\pm\frac{2\sin\gamma}{\cosh^2(\re y_1)},
+\end{equation}
+in agreement with \ref{R1} eq.~(after (5)) and \ref{R2} eq.~(32) ($\sin\theta=1/\cosh\re y$). The current is $O(1)$ and $N$-independent (``ballistic''). The polar (easy-axis) helix carries no $z$-current \ref{R1}.
+
+\subsection{Reference dictionary}
+\begin{center}
+\small
+\begin{longtable}{p{1.2cm}p{4.6cm}p{4.0cm}p{4.6cm}}
+\toprule
+Ref. & Hamiltonian convention & state convention & relation to \eqref{eq:H},\eqref{eq:helix}\\ \midrule
+\ref{R1} & Pauli, shifted bonds, $J=1$; fields $\mathbf h_{l,r}$ & $\ket{y_0+i\varphi(n-1)}$ (ket) & identical; their $\varphi=s\gamma$\\
+\ref{R2} & as \ref{R1}; fields parametrised by $\alpha_\pm,\beta_\pm,\theta_\pm$ & bra vectors $\phi_n(x)$, kets $\tilde\phi_n(x)$ & their $\theta_\pm\equiv$ our $\vartheta_\pm$ (renamed to avoid clash with the polar angle)\\
+\ref{R3} & Pauli, shifted, $J$; Lindblad baths at sites $1,N$ & $\ket{\psi(\theta,\alpha)}$ & $\alpha_n=(n-1)\varphi$, $\Delta=\cos\varphi$\\
+\ref{R4} & spin ops, $J_{xy},\ \Delta=J_z/J_{xy}$, no fields & $e^{-iQz}$ on $\ket\downarrow$ & use \eqref{eq:spinconv}; $\Delta=\cos Qa$\\
+\ref{R5} & Pauli, shifted, periodic formula (open 64-site numerics) & symmetric phases & $\varphi_n=Qn+\varphi$\\
+\ref{R6} & spin ops, $\cos q(s^zs^z-\tfrac14)$, periodic, uniform $h s^z$ & tower on $\ket\Downarrow$ with $s_q^+$ & $\Delta=\cos q$\\
+\ref{R7} & spin-$S$ XYZ, periodic & GZ product states & XXZ limit $J_z/J_y=\cos q$\\
+\ref{R8} & spin ops, periodic and twisted & product states, $q=e^{i\gamma}$ & $\gamma=\arccos\Delta$\\
+\ref{R9} & Pauli with $J/2$, $\Delta=\cosh\eta>1$, edge impurities & -- & no helices (\cref{rem:R9})\\ \bottomrule
+\end{longtable}
+\end{center}
+
+%=====================================================================
+\section{Local mechanism: two-site identities}\label{sec:local}
+
+All exact results on helices follow from two elementary two-site facts.
+
+\begin{lemma}[Double-flip amplitude; derived, verified \ver{C2}]\label{lem:doubleflip}
+Let $\ket{a}=(1,A)^T$, $\ket b=(1,B)^T$ and $\bra{a^\perp}=(A,-1)$, $\bra{b^\perp}=(B,-1)$. Then
+\begin{equation}\label{eq:doubleflip}
+\bra{a^\perp}\otimes\bra{b^\perp}\,h\,\ket a\otimes\ket b=-2\left(A^2+B^2-2\Delta AB\right).
+\end{equation}
+Hence the double-flip amplitude vanishes iff $B/A\in\{e^{i\gamma},e^{-i\gamma}\}$, i.e.\ iff
+\begin{equation}\label{eq:pitch}
+y_b-y_a\equiv\pm i\gamma\pmod{2\pi i},
+\end{equation}
+or both spins are $\ket\uparrow$ ($A=B=0$), or both are $\ket\downarrow$ (same statement in the other chart).
+\end{lemma}
+\begin{proof}
+In the basis $(\uparrow\uparrow,\uparrow\downarrow,\downarrow\uparrow,\downarrow\downarrow)$, $h=\mathrm{diag}(0,-2\Delta,-2\Delta,0)+2(\ket{\uparrow\downarrow}\bra{\downarrow\uparrow}+\mathrm{h.c.})$, so $h\ket{ab}=(0,\,2A-2\Delta B,\,2B-2\Delta A,\,0)$. Contracting with $\bra{a^\perp b^\perp}=(AB,-A,-B,1)$ gives \eqref{eq:doubleflip}. The quadratic $A^2-2\Delta AB+B^2=0$ has roots $B/A=\Delta\pm\sqrt{\Delta^2-1}=e^{\pm i\gamma}$.
+\end{proof}
+
+\begin{lemma}[Divergence identity; \ref{R1} eq.~(5), \ref{R3} eq.~(22), \ref{R4} eq.~(24); verified symbolically \ver{C1}]\label{lem:divergence}
+For any $y\in\mathbb C$ and $s=\pm1$,
+\begin{equation}\label{eq:divergence}
+h\,\ket{y}\otimes\ket{y+is\gamma}=s\kappa\left(\mathbb{I}\otimes\sigma^z-\sigma^z\otimes\mathbb{I}\right)\ket{y}\otimes\ket{y+is\gamma},\qquad \kappa=i\sin\gamma .
+\end{equation}
+\end{lemma}
+\begin{proof}
+Put $w=e^y$, $q=e^{is\gamma}$. The product vector is $(1,wq,w,w^2q)$ and $h$ maps it to $(0,\,2w-2\Delta wq,\,2wq-2\Delta w,\,0)$, while $(\sigma^z_2-\sigma^z_1)$ is $\mathrm{diag}(0,-2,2,0)$. Componentwise equality requires $1-\Delta q=-s\kappa q$ and $q-\Delta=s\kappa$; both reduce to $e^{is\gamma}=\cos\gamma+is\sin\gamma$.
+\end{proof}
+
+\begin{remark}[Translation to the other references]
+In spin-$\frac12$ units and with $\gamma=Q_p$, \eqref{eq:divergence} is \ref{R4} eq.~(24): $h_{ij}\ket{\psi}_{ij}=S^2\cos Q_p\ket\psi_{ij}\pm iS\sin Q_p(S^z_j-S^z_i)\ket\psi_{ij}$ (the constant $S^2\cos Q_p$ is absent here because of the shift in \eqref{eq:bond}). In \ref{R3} eq.~(22) the same identity is written with the orthogonal complement $\ket{\psi^\perp}$, since $\sigma^z\ket\psi=\cos\theta\ket\psi+(\dots)\ket{\psi^\perp}$. In \ref{R7} it appears as the commutator $[H,\tau]=i\sin q\sum_ne^{inq}S_n^-(S^z_{n+1}-S^z_{n-1})$ with $[\tau,\Lambda]=0$, which exponentiates to \eqref{eq:divergence} for $\ket{\Psi}\propto e^{t\tau}\ket\Uparrow$.
+\end{remark}
+
+\subsection{Bulk telescoping and the three boundary situations}
+Summing \eqref{eq:divergence} over the bonds of a helix \eqref{eq:helix}, all interior terms cancel:
+\begin{equation}\label{eq:telescoping}
+\sum_{n=1}^{N-1}h_{n,n+1}\ket{\Psi_s(y_1)}=s\kappa\left(\sigma^z_N-\sigma^z_1\right)\ket{\Psi_s(y_1)}.
+\end{equation}
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Periodic chain.} The closing bond contributes $s\kappa(\sigma^z_1-\sigma^z_N)$ provided $y_{N+1}\equiv y_1$, i.e.\ $N\gamma\in2\pi\mathbb Z$ (easy plane). Then $H_{\rm per}\ket{\Psi_s(y_1)}=0$ for \emph{every} $y_1$ and both $s$ \ref{R1}, \ref{R4}, \ref{R5}, \ref{R8}. Verified \ver{C13}.
+\item \textbf{Open chain without fields.} The remainder is not cancelled: $H\ket{\Psi}=s\kappa(\sigma^z_N-\sigma^z_1)\ket\Psi$, i.e.\ $\mp i\sin Qa\,(\sigma^z_1-\sigma^z_N)$ as in \ref{R1} (``simplest experimental setup''). The helix is invariant in the bulk and decays only from the edges, on time scales $\sim N/v$ \ref{R1}, \ref{R4}.
+\item \textbf{Open chain with fields.} The remainder can be absorbed by the boundary terms if $\ket{y_1}$ and $\ket{y_N}$ are eigenvectors of the single-site operators
+\begin{equation}\label{eq:Mops}
+\ML=\hL\cdot\bsig-s\kappa\,\sigma^z,\qquad \MR=\hR\cdot\bsig+s\kappa\,\sigma^z .
+\end{equation}
+This is the PZK boundary condition \ref{R1} eqs.~(6)--(7). Whether this is also \emph{necessary}, and which other product states can be eigenstates, is settled next.
+\end{enumerate}
+
+%=====================================================================
+\section{Classification of all product (helix) eigenstates of the open chain}\label{sec:classification}
+
+\begin{theorem}[Classification; derived here, verified \ver{C3--C7}]\label{thm:classification}
+Let $N\ge2$, $\Delta=\cos\gamma$ with $\Delta\neq\pm1$, and let $\hL,\hR\in\mathbb C^3$ be arbitrary (Hermiticity is not needed). A product state $\ket\Psi=\bigotimes_n\ket{\psi_n}$ is an eigenvector of $H$ in \eqref{eq:H} if and only if it is one of:
+\begin{enumerate}[label=(\roman*)]
+\item $\ket{\Uparrow}$ or $\ket{\Downarrow}$, and $\hL,\hR$ are both parallel to $\ez$ (for these states only the $z$ components of the fields are allowed);
+\item a helix $\ket{\Psi_s(y_1)}$ of \emph{uniform} chirality $s$, such that
+\begin{equation}\label{eq:bc}
+\ML\ket{y_1}=\lambda_{\rm L}\ket{y_1},\qquad \MR\ket{y_N}=\lambda_{\rm R}\ket{y_N},\qquad y_N=y_1+is\gamma(N-1).
+\end{equation}
+The eigenvalue is then $E=\lambda_{\rm L}+\lambda_{\rm R}$.
+\end{enumerate}
+\end{theorem}
+\begin{proof}
+Complete each $\ket{\psi_n}$ to a basis $\{\ket{\psi_n},\ket{\psi_n^\perp}\}$ and expand $H\ket\Psi$ in the induced product basis, labelling components by the set $S$ of ``flipped'' sites. A bond term $h_{n,n+1}$ produces only $S\subseteq\{n,n+1\}$ and a boundary term only $S\subseteq\{1\}$ or $\{N\}$. Hence $H\ket\Psi=E\ket\Psi$ is equivalent to: (a) the $S=\{n,n+1\}$ component of $h_{n,n+1}\ket{\psi_n\psi_{n+1}}$ vanishes for every bond; (b) for every site the $S=\{n\}$ components of all terms acting on $n$ cancel.
+
+By \cref{lem:doubleflip}, (a) forces $y_{n+1}-y_n=is_n\gamma$ with $s_n=\pm1$ on every bond, or a chain that is entirely $\ket\uparrow$ or entirely $\ket\downarrow$ (a $z$-polarised site forces its neighbours to be $z$-polarised in the same direction, because $e^{y_{n+1}}/e^{y_n}=e^{\pm i\gamma}$ is finite and non-zero).
+
+Fully polarised case: bulk bonds annihilate $\ket\Uparrow$ and $\ket\Downarrow$; (b) at sites $1,N$ requires $\hL\cdot\bsig\ket\uparrow\propto\ket\uparrow$ etc., i.e.\ fields along $\ez$. This is (i).
+
+Otherwise, by \cref{lem:divergence} the single-flip amplitude at an interior site $n$ is $(s_{n-1}-s_n)\kappa\braket{\psi_n^\perp|\sigma^z|\psi_n}$. With the dual vector, $\bra{y^\perp}\sigma^z\ket y=2e^{y}\neq0$ for a non-polarised site, and $\kappa\neq0$ for $\Delta\neq\pm1$; hence $s_{n-1}=s_n$: the chirality cannot change (no ``kinks''). At site 1 the single-flip amplitude is $\bra{y_1^\perp}(\hL\cdot\bsig-s\kappa\sigma^z)\ket{y_1}$, which vanishes iff $\ket{y_1}$ is an eigenvector of $\ML$; likewise at site $N$. Finally the $S=\emptyset$ component gives $E=\lambda_{\rm L}+\lambda_{\rm R}$, since bulk bonds contribute zero by \eqref{eq:divergence} and $\bra{y}\sigma^z\ket y$-type diagonal terms are already included in $\lambda_{\rm L,R}$.
+\end{proof}
+
+\begin{corollary}[Immediate consequences]\label{cor:consequences}
+\begin{enumerate}[label=(\alph*)]
+\item \emph{No kinks.} A product eigenstate never changes chirality inside the chain. States with kinks are not eigenstates, but they span the invariant subspaces of \cref{sec:splitting}.
+\item \emph{Free ends forbid helices.} If $\hL=0$, then $\ML=-s\kappa\sigma^z$, whose eigenvectors are $\ket\uparrow,\ket\downarrow$: only $\ket\Uparrow,\ket\Downarrow$ survive. This is the boundary instability seen in \ref{R4} (helices in open chains without pinning fields decay from the edges).
+\item \emph{Hermitian $U(1)$-symmetric boundaries forbid non-polarised helices in the easy plane.} For $|\Delta|<1$, $\kappa=i\sin\gamma$ is nonzero and imaginary. A real longitudinal field therefore gives $\ML=(h_{{\rm L},z}-s\kappa)\sigma^z$ with a nonzero coefficient, so its only eigenvector directions are $\ket\uparrow,\ket\downarrow$. This conclusion does not extend to $|\Delta|>1$: there $\kappa$ is real, and the matched real fields $\hL=s\kappa\ez$, $\hR=-s\kappa\ez$ give $\ML=\MR=0$. Every $y_1$ then yields a polar (or staggered polar) helix eigenstate with $E=0$ in the shifted Pauli convention. For $\Delta=\cosh\eta$, $\gamma=i\eta$, the spin convention of \eqref{eq:spinconv} gives $B_{{\rm L},z}=-sJ_{xy}\sinh\eta/2$, $B_{{\rm R},z}=+sJ_{xy}\sinh\eta/2$, and $E_S=J_{xy}(N-1)\Delta/4$. For $\Delta=-\cosh\eta$, $\gamma=\pi+i\eta$, the signs of both fields reverse and the azimuth alternates by $\pi$. The field-free outer ends in \ref{R9} still obey item (b), independently of this matched-field exception (see \cref{rem:R9}).
+\item \emph{At most four isolated helices for non-scalar boundary operators.} If $\ML$ is nonzero for each chirality, it has at most two eigenvector directions, each fixing $y_1$, so there are at most four candidates. A nonzero defective $\ML$ has one direction. The zero operator is not defective: every spinor is an eigenvector. In particular $\ML=\MR=0$ supports a continuous family indexed by $y_1$, as in item (c), and is excluded from the finite-candidate count.
+\item \emph{Non-uniqueness of the fields.} Adding $c\,\mathbf m_1\cdot\bsig_1$ to the left field does not destroy the eigenstate (it acts as $c$ on $\ket{y_1}$) and shifts $E$ by $c$. The fields that support a \emph{given} helix form a two-parameter family $(c_{\rm L},c_{\rm R})$.
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[$\Delta=\pm1$]
+For $\kappa=0$ both pitch choices coincide ($e^{i\gamma}=e^{-i\gamma}=\pm1$), the no-kink argument is void, and \eqref{eq:bc} reduces to $\hL\cdot\bsig\ket{y_1}\propto\ket{y_1}$, $\hR\cdot\bsig\ket{y_N}\propto\ket{y_N}$: ferromagnetic ($\Delta=1$) or in-plane-staggered ($\Delta=-1$) coherent states aligned with the two fields; for $\hL=\hR=0$ and $\Delta=1$ one recovers the full $SU(2)$ multiplet.
+\end{remark}
+
+\subsection{Inverse problem: the fields that make a given helix exact}\label{sec:inverse}
+For Hermitian $H$ ($\hL,\hR\in\mathbb R^3$) the eigenvector condition $(\mathbf v\cdot\bsig)\ket{\mathbf m}\propto\ket{\mathbf m}$ with complex $\mathbf v=\mathbf a+i\mathbf b$ and real unit $\mathbf m$ is equivalent to $\mathbf v\cdot(\mathbf e_1+i\mathbf e_2)=0$, where $(\mathbf e_1,\mathbf e_2,\mathbf m)$ is a right-handed orthonormal frame (because $\bra{\mathbf m^\perp}\bsig\ket{\mathbf m}\propto\mathbf e_1+i\mathbf e_2$). Solving gives $\mathbf a_\perp=\mathbf b\times\mathbf m$. Applying this to $\mathbf v=\hL+\mathbf w_{\rm L}$, $\mathbf w_{\rm L}=-s\kappa\ez$ (and $\mathbf w_{\rm R}=+s\kappa\ez$):
+
+\begin{proposition}[Supporting fields; derived, verified \ver{C3--C4}]\label{prop:fields}
+The helix $\ket{\Psi_s(y_1)}$ with end directions $\mathbf m_1=\mathbf m(y_1)$, $\mathbf m_N=\mathbf m(y_N)$ is an eigenstate of the Hermitian Hamiltonian \eqref{eq:H} iff
+\begin{equation}\label{eq:fields-general}
+\hL=c_{\rm L}\mathbf m_1-(\re\mathbf w_{\rm L})_{\perp\mathbf m_1}+\im\mathbf w_{\rm L}\times\mathbf m_1,\qquad
+\hR=c_{\rm R}\mathbf m_N-(\re\mathbf w_{\rm R})_{\perp\mathbf m_N}+\im\mathbf w_{\rm R}\times\mathbf m_N,
+\end{equation}
+with arbitrary real $c_{\rm L},c_{\rm R}$, and then
+\begin{equation}\label{eq:E-general}
+E=c_{\rm L}+c_{\rm R}-s\kappa\left(\cos\theta_1-\cos\theta_N\right).
+\end{equation}
+\emph{Easy plane} ($\kappa=i\sin\gamma$, $\theta_n\equiv\theta$, $\hat{\mathbf e}_\varphi=(-\sin\varphi,\cos\varphi,0)$):
+\begin{equation}\label{eq:fields-plane}
+\boxed{\ \hL=c_{\rm L}\,\mathbf m_1-s\sin\gamma\sin\theta\;\hat{\mathbf e}_{\varphi_1},\qquad
+\hR=c_{\rm R}\,\mathbf m_N+s\sin\gamma\sin\theta\;\hat{\mathbf e}_{\varphi_N},\qquad E=c_{\rm L}+c_{\rm R}\ }
+\end{equation}
+with $\varphi_N=\varphi_1+s\gamma(N-1)$. \emph{Easy axis} $\Delta=\cosh\eta_0>1$ ($\kappa=-\sinh\eta_0$):
+\begin{equation}\label{eq:fields-axis}
+\hL=c_{\rm L}\mathbf m_1-s\sinh\eta_0\left(\ez-\cos\theta_1\mathbf m_1\right),\quad \hR=c_{\rm R}\mathbf m_N+s\sinh\eta_0\left(\ez-\cos\theta_N\mathbf m_N\right),
+\end{equation}
+$E=c_{\rm L}+c_{\rm R}+s\sinh\eta_0(\cos\theta_1-\cos\theta_N)$.
+\end{proposition}
+
+In words (easy plane): each edge field must lie in the plane spanned by the edge spin and its azimuthal tangent; its tangential component is fixed, $\mp s\sin\gamma\sin\theta$, and its component along the spin is free. In spin-$\frac12$ units \eqref{eq:spinconv} the tangential field is $\mathbf B=\mp\frac{J_{xy}}2 s\sin\gamma\sin\theta\,\hat{\mathbf e}_\varphi$, and $E_S=\frac{J_{xy}}{4}[(N-1)\Delta+c_{\rm L}+c_{\rm R}]$. The pure tangential choice $c_{\rm L}=c_{\rm R}=0$ gives $E=0$ (shifted Pauli units). The free parameters of a supported helix are therefore $(\gamma,\theta,\varphi_1,s;c_{\rm L},c_{\rm R})$; $N$ only enters through $\varphi_N$.
+
+\paragraph{Tuning recipe (given a target helix).} Given a desired transverse/cone helix with pitch $Q$ (rad per site), polar angle $\theta$, initial azimuth $\varphi_1$ and chirality $s$: set $\Delta=\cos Q$; choose $c_{\rm L,R}$; set the fields by \eqref{eq:fields-plane}. For a polar helix ($\Delta>1$) choose $\eta_0=\operatorname{arccosh}\Delta$, the profile $\tan\frac{\theta_n}2=e^{-s\eta_0(n-1)}\tan\frac{\theta_1}{2}$ and fields \eqref{eq:fields-axis}. If instead the fields are constrained (e.g.\ only one component tunable), \eqref{eq:fields-general} is a set of linear equations for the remaining free parameters.
+
+\subsection{Forward problem: given $(\Delta,\hL,\hR)$, which helices are eigenstates?}\label{sec:forward}
+\begin{algorithm}[Helix finder for non-scalar left boundary operators; verified \ver{C5}]\label{alg:finder}
+For $s=+1,-1$: (1) diagonalise the $2\times2$ matrix $\ML$; (2) for each eigenvector $(v_1,v_2)$ with $v_1\neq0$ set $y_1=\ln(v_2/v_1)$; (3) propagate $y_N=y_1+is\gamma(N-1)$; (4) accept iff $\ket{y_N}$ is an eigenvector of $\MR$ (test the collinearity $|(\MR u)_1u_2-(\MR u)_2u_1|$ for $u=(1,e^{y_N})$); (5) the energy is $\lambda_{\rm L}+\lambda_{\rm R}$. Add $\ket\Uparrow,\ket\Downarrow$ if both fields are along $z$. By \cref{thm:classification} the output is the complete list of product eigenstates. Cost: $O(1)$, independent of $N$.
+\end{algorithm}
+
+\paragraph{Genericity and counting.} For a generic nonzero $\ML$ there are two candidate initial-state directions per chirality; a nonzero defective matrix has one, while the zero matrix requires the separate treatment of \cref{cor:consequences}(c,d). The right-boundary condition is one complex (two real) equations. Hence:
+\begin{itemize}
+\item for generic fields there is \emph{no} helix eigenstate (verified: random fields give none \ver{C5});
+\item the fields supporting at least one helix form a codimension-2 set in the 6-dimensional space of $(\hL,\hR)$ (at fixed $\Delta,N$); this is the PBR criterion with $M=0$ (\cref{sec:PBR}), which is indeed one complex condition;
+\item on this set there is generically exactly one helix.
+\end{itemize}
+
+\paragraph{Coincidences that produce several helices (derived, verified \ver{C6,C7}).}
+\begin{enumerate}[label=(\alph*)]
+\item \emph{Chirality duality at $(N-1)\gamma\in\pi\mathbb Z$ (easy plane).} If $\ket{\Psi_s(y_1)}$ is supported by \eqref{eq:fields-plane}, then the helix of opposite chirality starting from the antipode,
+\begin{equation}\label{eq:dual}
+\ket{\Psi_{-s}(\bar y_1)},\qquad \bar y_1=-y_1^*+i\pi,
+\end{equation}
+has antipodal first spin ($\theta\to\pi-\theta$, $\varphi_1\to\varphi_1+\pi$), and its last spin is antipodal to $\mathbf m_N$ iff $2(N-1)\gamma\in2\pi\mathbb Z$. Since $c\,\mathbf m=(-c)(-\mathbf m)$ and the tangential terms coincide, the same fields support it, with energy $-(c_{\rm L}+c_{\rm R})$. In PBR language this is the simultaneous validity of the criterion for $M=0$ and $M=N-1$ (the second SHS of \ref{R2} eq.~(31), with energy $-E_0$). For $(N-1)\gamma\notin\pi\mathbb Z$ only one helix survives (verified for $(N-1)\gamma=3\pi/2$).
+\item \emph{$z$-mirror for in-plane fields.} If $h^z_{\rm L}=h^z_{\rm R}=0$, $H$ is invariant under the antiunitary map $\sigma^{x,y}\to\sigma^{x,y}$, $\sigma^z\to-\sigma^z$ (time reversal $\times$ $\pi$-rotation about $z$). It maps $\ket{\Psi_s(y_1)}$ to the helix with $\theta\to\pi-\theta$, same $\varphi_n$ and same chirality, with the same energy. By \eqref{eq:fields-plane}, in-plane fields with $\theta\neq\pi/2$ require $c_{\rm L}=c_{\rm R}=0$ and then $E=0$ for both helices.
+\item Combining (a) and (b): purely tangential fields at commensurate $\gamma$ support four helices (all at $E=0$), saturating \cref{cor:consequences}(d). Verified for $N=7$, $\gamma=\pi/3$ \ver{C7}.
+\end{enumerate}
+
+%=====================================================================
+\section{Bethe-ansatz side: phantom Bethe roots}\label{sec:PBR}
+
+\subsection{Why infinite roots carry zero energy and momentum $\pm\gamma$}
+In the periodic chain with reference state $\ket{0}=\ket{\uparrow\cdots\uparrow}$ (\ref{R1} eqs.~(8)--(10), quoted) a Bethe state $B(\mu_1)\cdots B(\mu_n)\ket0$ has
+\begin{equation}\label{eq:BAEper}
+\left[\frac{\sinh(\mu_j-\frac{i\gamma}2)}{\sinh(\mu_j+\frac{i\gamma}2)}\right]^N=\prod_{l\neq j}^{n}\frac{\sinh(\mu_j-\mu_l-i\gamma)}{\sinh(\mu_j-\mu_l+i\gamma)},\quad
+E=-\sum_j\frac{4\sin^2\gamma}{\cosh2\mu_j-\cos\gamma},\quad e^{ik(\mu)}=\frac{\sinh(\mu+\frac{i\gamma}2)}{\sinh(\mu-\frac{i\gamma}2)}.
+\end{equation}
+For $\re\mu\to\pm\infty$ the single-particle energy vanishes and $e^{ik}\to e^{\pm i\gamma}$: a \emph{phantom} root is a magnon of momentum exactly $k_0=\pm\gamma$ (i.e.\ $\cos k_0=\Delta$) and zero energy. In the open chain the same holds for the energy term $4\sinh^2\eta/(\cosh2\mu_j-\cosh\eta)$ of \eqref{eq:BAEopen-E} below. The helix of \cref{def:helix} is precisely a coherent state of such magnons: expanding the product \eqref{eq:helix},
+\begin{equation}\label{eq:helix-expansion}
+\ket{\Psi_s(y_1)}\propto\sum_{n=0}^{N}e^{n y_1}\sum_{l_1<\dots<l_n}e^{is\gamma(l_1+\dots+l_n)}\sigma^-_{l_1+1}\cdots\sigma^-_{l_n+1}\ket0
+\end{equation}
+(\ref{R1} eqs.~(12)--(13); \ref{R5} eq.~(D1); \ref{R6} eq.~(9); \ref{R7} eq.~(11)). Each term is a state with $n$ magnons all in the mode $k_0=s\gamma$; the helix superposes \emph{different magnetisation sectors}. It can be an eigenstate only if all these sectors are degenerate, which is what phantom roots guarantee.
+
+\subsection{Periodic chain (quoted from \ref{R1}, consequences verified)}
+\begin{itemize}
+\item \emph{Lemma (phantom strings) \ref{R1}.} If $\gamma=2\pi m/N$, then for every $n=1,\dots,N$ the set $\mu_p=\pm\infty+i\pi p/n$, $p=1,\dots,n$ solves \eqref{eq:BAEper}. The Bethe vectors are $\ket{\pm,n}\propto\sum_{l_i}e^{\pm i\gamma\sum l_i}\sigma^-_{l_1}\cdots\sigma^-_{l_n}\ket0$ with $E=0$ and momentum $\pm n\gamma$.
+\item \emph{Degeneracy.} The span of $\{\ket{\pm,n}\}$ has dimension $2N$ (the two chiralities coincide for $n=0,N$). Verified: the span of helices has rank $2N$ for $N=8,9,10$ \ver{C13}. This agrees with $\dim\mathcal P=2N$ of \ref{R8} eq.~(8). (The caption of Fig.~1 of \ref{R8} mentions 20 product states for $N=9$; we find $2N=18$.)
+\item \emph{Full degeneracy is larger at roots of unity} \ref{R8}: with $\ell$ the order of $q^2=e^{2i\gamma}$, the $E=0$ eigenspace has dimension $2^{N/\ell}\ell$ (commensurate case, $\Delta\neq0,\pm1$), generated by Fabricius--McCoy strings on top of the phantom towers. Verified: $N=8,\gamma=\pi/4$: 16; $N=9,\gamma=2\pi/3$: 24; $N=10,\gamma=2\pi/5$: 20 \ver{C13}. The free-fermion point $\Delta=0$ is exceptional (much larger degeneracy).
+\item \emph{Mixtures} \ref{R1} eq.~(15): $n$ phantom plus $r$ regular roots require $e^{i\gamma(N-2r)}=1$; the regular roots obey twisted BAE with twist $e^{\pm2i\gamma n}$.
+\item \emph{Current} \ref{R1} eq.~(14): $\braket{\pm,n|j^z|\pm,n}=\pm\frac{8n(N-n)}{N(N-1)}\sin\gamma$.
+\end{itemize}
+
+\subsection{Open chain: ODBA equations and the phantom-root criterion}
+\paragraph{Parametrisation (quoted, \ref{R2} eqs.~(1)--(8); \ref{R1} eq.~(16)).} The boundary fields are written as ($\eta=i\gamma$; we rename the ZKP parameters $\theta_\pm\to\vartheta_\pm$)
+\begin{equation}\label{eq:ZKPfields}
+\mathbf h_{\pm}=\frac{\sinh\eta}{\sinh\alpha_\pm\cosh\beta_\pm}\Big(\cosh\vartheta_\pm,\ i\sinh\vartheta_\pm,\ \mp\cosh\alpha_\pm\sinh\beta_\pm\Big),\qquad \hR=\mathbf h_+,\ \hL=\mathbf h_-.
+\end{equation}
+Hermiticity in the easy plane: $\alpha_\pm,\vartheta_\pm\in i\mathbb R$, $\beta_\pm\in\mathbb R$ (then the six real numbers $\im\alpha_\pm,\beta_\pm,\im\vartheta_\pm$ parametrise all real fields). For generic fields $U(1)$ is broken and the spectrum is given by an inhomogeneous $T$--$Q$ relation with exactly $N$ roots $\mu_j$:
+\begin{gather}
+\frac{2G(-\mu_j-\frac\eta2)Q(-\mu_j-\frac\eta2)}{\sinh(2\mu_j+\eta)\sinh^{2N}(\mu_j+\frac\eta2)}+\frac{2G(\mu_j-\frac\eta2)Q(\mu_j-\frac\eta2)}{\sinh(2\mu_j-\eta)\sinh^{2N}(\mu_j-\frac\eta2)}=c\sinh2\mu_j,\label{eq:BAEopen}\\
+Q(u)=\prod_{k=1}^N\sinh(u-\mu_k-\tfrac\eta2)\sinh(u+\mu_k-\tfrac\eta2),\qquad G(u)=\prod_{\sigma=\pm}\sinh(u-\alpha_\sigma)\cosh(u-\beta_\sigma),\nonumber\\
+c=\cosh\!\big[(N+1)\eta+\alpha_-+\beta_-+\alpha_++\beta_+\big]-\cosh(\vartheta_--\vartheta_+),\nonumber\\
+E=\sum_{j=1}^N\frac{4\sinh^2\eta}{\cosh2\mu_j-\cosh\eta}+E_0,\qquad E_0=-\sinh\eta\big(\coth\alpha_-+\tanh\beta_-+\coth\alpha_++\tanh\beta_+\big).\label{eq:BAEopen-E}
+\end{gather}
+
+\paragraph{Derivation of the criterion, step by step (\ref{R2} eqs.~(9)--(17)).}
+\begin{enumerate}[label=\arabic*.]
+\item \emph{Ansatz.} Let $N-M$ roots be phantom, $\mu_p=\mu_\infty+\gamma_p$ with $\mu_\infty\to+\infty$, $p=1,\dots,N-M$, and $M$ roots $x_j$ finite.
+\item \emph{Leading asymptotics.} For $j=p$ phantom, the two terms on the left of \eqref{eq:BAEopen} are dominated by the factors involving the other phantom roots; keeping the leading exponentials gives
+\begin{equation}
+\begin{gathered}
+e^{W}\prod_{k=1}^{N-M}2e^{\gamma_k-\gamma_p}\sinh(\gamma_p-\gamma_k+\eta)+e^{-W}\prod_{k=1}^{N-M}2e^{\gamma_k-\gamma_p}\sinh(\gamma_p-\gamma_k-\eta)=2c,\\
+W=(M+1)\eta+\alpha_-+\beta_-+\alpha_++\beta_+ .
+\end{gathered}
+\end{equation}
+\item \emph{String arrangement.} Choose $\gamma_k=i\pi k/(N-M)$, $\omega=e^{i\pi/(N-M)}$. Using $\prod_{n=1}^{L}(1-\omega^{2n-2}z)=1-z^{L}$ (both sides are degree-$L$ polynomials in $z$ with the same zeros and constant term),
+\begin{equation}\label{eq:string-identity}
+\prod_{k=1}^{N-M}2e^{\gamma_k-\gamma_p}\sinh(\gamma_p-\gamma_k\pm\eta)=\pm2\sinh\big((N-M)\eta\big),
+\end{equation}
+independently of $p$ (verified \ver{C16}). The phantom equations become $4\sinh W\sinh((N-M)\eta)=2c$.
+\item \emph{Consistency.} Since $2c=2\cosh((N-M)\eta+W)-2\cosh(\vartheta_--\vartheta_+)$, the phantom equations hold iff $\cosh(\vartheta_--\vartheta_+)=\cosh((N-M)\eta-W)$, i.e.
+\begin{equation}\label{eq:PBR}
+\boxed{\ \vartheta_+-\vartheta_-=(2M-N+1)\eta+\alpha_-+\beta_-+\alpha_++\beta_+\pmod{2\pi i},\qquad 0\le M\le N-1\ }
+\end{equation}
+(the sign in front of $\vartheta_+-\vartheta_-$ can be fixed by the reparametrisation $\alpha_\pm\to-\alpha_\pm,\ \eta\to-\eta$ for Hermitian $H$, \ref{R2} eq.~(25)). For Hermitian easy-plane $H$ the real part of \eqref{eq:PBR} forces $\beta_++\beta_-=0$, the imaginary part is one real equation: \eqref{eq:PBR} is two real conditions, matching the codimension found in \cref{sec:forward}.
+\item \emph{Reduced equations.} The phantom roots then drop out and the $M$ regular roots obey a homogeneous (diagonal-type) BAE
+\begin{multline}\label{eq:BAEreduced}
+\left[\frac{\sinh(x_j+\frac\eta2)}{\sinh(x_j-\frac\eta2)}\right]^{2N}\prod_{\sigma=\pm}\frac{\sinh(x_j-\alpha_\sigma-\frac\eta2)\cosh(x_j-\beta_\sigma-\frac\eta2)}{\sinh(x_j+\alpha_\sigma+\frac\eta2)\cosh(x_j+\beta_\sigma+\frac\eta2)}\\=\prod_{k\neq j}^M\frac{\sinh(x_j-x_k+\eta)\sinh(x_j+x_k+\eta)}{\sinh(x_j-x_k-\eta)\sinh(x_j+x_k-\eta)},
+\end{multline}
+with $E=\sum_{j=1}^M\frac{4\sinh^2\eta}{\cosh2x_j-\cosh\eta}+E_0$; the complementary set has $\widetilde M=N-M-1$ regular roots, $\alpha_\pm,\beta_\pm\to-\alpha_\pm,-\beta_\pm$, and $-E_0$ (\ref{R2} eqs.~(18)--(22)). In momentum form ($e^{ip}=\sinh(x+\frac\eta2)/\sinh(x-\frac\eta2)$) the energy is $E=4\sum_j(\cos p_j-\Delta)+E_0$.
+\end{enumerate}
+The \emph{pure} helix corresponds to $M=0$: all $N$ roots phantom, $E=E_0$. For $M\ge1$ one gets ``semi-phantom'' states (\cref{sec:onekink}). For $\Delta>1$ Hermiticity requires $\alpha_\pm,\beta_\pm,\eta$ real and $\vartheta_+=\vartheta_-$ (\ref{R2} eq.~(24)).
+
+\subsection{Geometric form of the criterion}\label{sec:geom}
+The parametrisation \eqref{eq:ZKPfields} is not needed to decide whether a given pair of physical fields satisfies \eqref{eq:PBR}. The key observation is that \eqref{eq:ZKPfields} diagonalises the boundary operators \eqref{eq:Mops}:
+
+\begin{lemma}[Boundary eigenvectors in ZKP variables; verified for arbitrary complex parameters \ver{C17}]\label{lem:ZKPeig}
+With $\kappa=\sinh\eta$ and $s=+1$,
+\begin{align}
+\ML[+]\ket{y_{\rm L}}&=\lambda_{\rm L}\ket{y_{\rm L}},& y_{\rm L}&=\beta_-+i\pi-\vartheta_--\alpha_-,& \lambda_{\rm L}&=-\sinh\eta\,(\coth\alpha_--\tanh\beta_-),\\
+\MR[+]\ket{y_{\rm R}}&=\lambda_{\rm R}\ket{y_{\rm R}},& y_{\rm R}&=-\beta_++i\pi-\vartheta_++\alpha_+,& \lambda_{\rm R}&=-\sinh\eta\,(\coth\alpha_+-\tanh\beta_+).
+\end{align}
+\end{lemma}
+
+\begin{proposition}[PBR criterion = winding condition; derived, verified \ver{C8,C15}]\label{prop:geometric-criterion}
+For Hermitian $H$, the criterion \eqref{eq:PBR} with integer $M$ holds iff there are eigenvectors $\ket{y_{\rm L}}$ of $\ML[+]$ and $\ket{y_{\rm R}}$ of $\MR[+]$ such that
+\begin{equation}\label{eq:winding}
+\boxed{\ y_{\rm R}-y_{\rm L}\equiv i\gamma\,(N-1-2M)\pmod{2\pi i}\ }
+\end{equation}
+i.e.\ the two boundary-selected spin directions have the same polar angle and their azimuths differ by the winding of a path of $N-1$ steps $\pm\gamma$ with exactly $M$ backward steps. Moreover $E_0=\lambda_{\rm L}+\lambda_{\rm R}$.
+\end{proposition}
+\begin{proof}
+Insert \cref{lem:ZKPeig}: $y_{\rm R}-y_{\rm L}=(N-1-2M)\eta$ is $\vartheta_+-\vartheta_-=(2M-N+1)\eta+\alpha_-+\alpha_+-\beta_--\beta_+$, which equals \eqref{eq:PBR} because $\beta_++\beta_-=0$ in the Hermitian case; then also $\lambda_{\rm L}+\lambda_{\rm R}=E_0$.
+\end{proof}
+
+\begin{remark}[Left versus right eigenvectors; verified \ver{C18}]
+ZKP construct their states as \emph{bra} vectors $\phi_n(x)=(1,-e^{\vartheta_-+\alpha_-+\beta_-+(2x-n+1)\eta})$ acted on from the right. For non-Hermitian $H$, \eqref{eq:PBR} is the condition for left eigenvectors; the condition for the \emph{ket} helix is \eqref{eq:PBR} with $\beta_\pm\to-\beta_\pm$. Both coincide in the Hermitian case. For Hermitian $H$ the ket helix is the complex conjugate of the ZKP bra, $y_n=\beta_-+i\pi-\vartheta_--\alpha_-+i\gamma(n-1)$, which is \ref{R1}'s statement ``$\re y_0=\beta_-$, $\im y_0=\pi+i\alpha_-+i\vartheta_-$'' (verified \ver{C8}).
+\end{remark}
+
+\begin{remark}[Roots of unity: nested criteria; derived, verified \ver{C19}]
+\Cref{eq:winding} holds for $M$ and $M'$ simultaneously iff $2(M-M')\gamma\in2\pi\mathbb Z$. For $\gamma=\pi p/q$ (lowest terms) a field configuration satisfying the criterion with $M_0$ satisfies it for all $M\equiv M_0\pmod q$ in $[0,N-1]$, so there is a chain of nested invariant subspaces $G^+_{M_0}\subset G^+_{M_0+q}\subset\cdots$. Example verified: $N=7$, $\gamma=\pi/3$, fields tuned to $M=0$: $G^+_0$ and $G^+_3$ are invariant, $G^+_{1,2,4}$ are not. The case $M_0=0$, $M=N-1$ is the chirality duality of \cref{sec:forward}(a).
+\end{remark}
+
+\subsection{Splitting theorem and kink basis}\label{sec:splitting}
+\begin{theorem}[Chiral invariant subspaces; \ref{R2}, quoted; dimensions and invariance verified \ver{C9}]\label{thm:splitting}
+If \eqref{eq:PBR} holds with $0\le M\le N-1$, then $\Hil=G^+_M\oplus G^-_M$ with $H$-invariant $G^\pm_M$, $\dim G^+_M=\sum_{k=0}^M\binom Nk$, $\dim G^-_M=2^N-\dim G^+_M$, and $G^+_M\perp G^-_M$. Eigenvalues in $G^+_M$ are given by \eqref{eq:BAEreduced} with $M$ roots; those in $G^-_M$ by the dual set with $\widetilde M=N-1-M$ roots.
+\end{theorem}
+In ket form (Hermitian case) the spanning vectors of $G^+_M$ are product states built from the left-selected direction $y_{\rm L}$ (\cref{lem:ZKPeig}) with ``levels'' $x_n\in\{0,1,\dots\}$:
+\begin{equation}\label{eq:kinkbasis}
+\begin{gathered}\ket{\mathbf x}=\bigotimes_{n=1}^N\ket{y_{\rm L}+i\gamma(n-1)-2i\gamma x_n},\\ x_n=M-m+\#\{j:n_j<n\},\qquad 1\le n_1<\dots<n_m\le N,\quad m\le M .\end{gathered}
+\end{equation}
+A level increase between sites $n_j$ and $n_j+1$ turns the forward step $+i\gamma$ into a backward step $-i\gamma$: a \emph{kink} (chirality domain wall); $n_m=N$ denotes a kink ``behind'' the last site. A basis vector with $m$ kinks starts at level $M-m$ and, if $n_m<N$, ends at level $M$, i.e.\ at $y_{\rm L}+i\gamma(N-1-2M)=y_{\rm R}$ (\cref{prop:geometric-criterion}). The number of such vectors is $\sum_{m\le M}\binom Nm$. $G^-_M$ is spanned analogously by kets $\tilde\phi_n(x)=(1,e^{-\vartheta_--\alpha_--\beta_-+(2x-n+1)\eta})^T$ of opposite base chirality with at most $\widetilde M$ kinks (\ref{R2} eqs.~(27),(29)). Interpretation: the phantom roots build the helical background, each regular root is a mobile kink on top of it. $M=0$: $G_0^+$ is one-dimensional and contains the helix with $E=E_0$; $M=N-1$: $G^-_{N-1}$ is one-dimensional and contains the opposite-chirality helix (\ref{R2} eq.~(31)) with $E=-E_0$ \ver{C8}.
+
+\subsection{The one-kink (semi-phantom) sector, $M=1$}\label{sec:onekink}
+Let $\ket n$, $n=0,\dots,N$, be the kink basis \eqref{eq:kinkbasis} for $M=1$: sites $\le n$ on the helix $y_{\rm L}+i\gamma(k-1)$, sites $>n$ shifted by $-2i\gamma$ (so $\ket N$ is the helix from $y_{\rm L}$, $\ket 0$ the helix from $y_{\rm L}-2i\gamma$, and both end-points of $\ket n$, $1\le n\le N-1$, are boundary eigenvectors). Using \eqref{eq:divergence} on every bond (with $-\kappa$ on the backward bond) and \eqref{eq:sz-decomp} one finds (derived, verified \ver{C10}):
+\begin{equation}\label{eq:onekink}
+H\ket n=(E_0-4\Delta)\ket n+2e^{i\gamma}\ket{n-1}+2e^{-i\gamma}\ket{n+1},\qquad 1\le n\le N-1,
+\end{equation}
+\begin{equation}
+H\ket0=(\lambda_{\rm R}-\lambda_{\rm L})\ket0+B_{\rm L}\ket1,\qquad H\ket N=(\lambda_{\rm L}-\lambda_{\rm R})\ket N+B_{\rm R}\ket{N-1},
+\end{equation}
+where $B_{\rm L},B_{\rm R}$ are defined by $\ML[+]\ket{y_{\rm L}-2i\gamma}=-\lambda_{\rm L}\ket{y_{\rm L}-2i\gamma}+B_{\rm L}\ket{y_{\rm L}}$ and $\MR[+]\ket{y_{\rm R}+2i\gamma}=-\lambda_{\rm R}\ket{y_{\rm R}+2i\gamma}+B_{\rm R}\ket{y_{\rm R}}$ (the diagonal entries are $-\lambda$ because $\mathcal M$ is traceless). Hence:
+\begin{itemize}
+\item the $N+1$ eigenvalues in $G_1^+$ are those of a tridiagonal $(N+1)\times(N+1)$ matrix: a single kink hopping with amplitude $2$ (after the gauge $\ket n\to e^{in\gamma}\ket n$) with complex boundary potentials; in the bulk $E=E_0-4\Delta+4\cos p$, the dispersion of \ref{R2} eq.~(43);
+\item $p$ obeys the $M=1$ BAE (\ref{R2} eq.~(54)) $e^{2iNp}\prod_{\sigma}\frac{a_\sigma-e^{ip}}{1-a_\sigma e^{ip}}\frac{b_\sigma-e^{ip}}{1-b_\sigma e^{ip}}=1$, $a_\pm=\frac{\sinh(\alpha_\pm+\eta)}{\sinh\alpha_\pm}$, $b_\pm=\frac{\cosh(\beta_\pm+\eta)}{\cosh\beta_\pm}$; verified for all $13$ eigenvalues at $N=12$ \ver{C10b};
+\item \emph{special cases} \ref{R2}: $B_{\rm L}=0$ means $\ket{y_{\rm L}-2i\gamma}$ is the second eigenvector of $\ML[+]$, so $\ket0$ is itself a helix eigenstate (energy $\lambda_{\rm R}-\lambda_{\rm L}$); this is the case $d_-=0$ of \ref{R2} and, in the language of \cref{thm:classification}, a second helix from the other eigenvector pair. If $B_{\rm L}=B_{\rm R}=0$, both $\ket0,\ket N$ are helices and the remaining $N-1$ momenta satisfy $e^{2iNp}=1$;
+\item the states are chiral: each basis state carries the helix current $j^z_{(0)}=2\sin\gamma/\cosh^2\beta_+$ on all links except the kink link, where it is reversed; the multiplet-averaged current is $j^z_{(0)}\big(1-\frac{2}{N+1}\big)+O(N^{-2})$ (exact computation for $a_\pm b_\pm=1$, \ref{R2} eq.~(70); equal-amplitude estimate in general, eq.~(63); quoted).
+\end{itemize}
+\begin{remark}[Notation of \ref{R2}]
+In \ref{R2} eq.~(44) the same matrix is written for bras: $\langle n|H=2\langle n-1|+2\langle n+1|-d_0\langle n|$ with $d_0=a_++b_++a_-+b_-$, $\langle0|H=-\tilde d_0\langle0|+d_-\langle1|$, $\langle N|H=\tilde d_0\langle N|+d_+\langle N-1|$, $\tilde d_0=a_++b_+-a_--b_-$, $d_\pm=2-2a_\pm b_\pm$. One checks $E_0-4\Delta=-d_0$ via \ref{R2} eq.~(C4). The pdftotext rendering of \ref{R2} eq.~(C3) drops a bracket; the PDF is consistent.
+\end{remark}
+
+%=====================================================================
+\section{Related settings: dissipative targeting, non-eigenstate helices, non-integrable extensions}\label{sec:related}
+
+\subsection{Boundary-driven chains in the Zeno limit (\ref{R3})}
+\ref{R3} couples sites $1$ and $N$ of the open chain (no fields) to Lindblad baths that target the pure states $\ket{\psi(\theta,0)}$ and $\ket{\psi(\theta,\Phi)}$. In the Zeno limit $\Gamma\to\infty$ the steady state becomes the pure helix $\bigotimes_n\ket{\psi(\theta,(n-1)\varphi)}$ iff (quoted)
+\begin{equation}\label{eq:zeno}
+\Delta=\cos\varphi,\qquad \varphi=\frac{\Phi+2\pi m}{N-1},\quad m=0,\dots,N-2,
+\end{equation}
+i.e.\ at the ``resonant'' anisotropies $\Delta_{\rm cr}(m,\Phi)$. The mechanism is the same identity \eqref{eq:divergence}: the purity criterion $H\ket\Psi=\lambda\ket\Psi+\kappa'\ket{\psi^\perp_{\rm Zeno}}\otimes\ket{\psi_{\rm target}}$ (\ref{R3} eq.~(21)) is satisfied with $\lambda=0$ because the boundary remainder of \eqref{eq:telescoping} only flips the two dissipatively targeted spins. Comparison with the Hamiltonian problem:
+\begin{itemize}
+\item in the Hamiltonian chain the remainder must be cancelled by fields (\cref{thm:classification}); in the driven chain it is ``absorbed'' by the baths, which fix the full edge directions;
+\item \eqref{eq:zeno} is a winding condition between two prescribed edge directions, the dissipative analogue of \eqref{eq:winding} with $M=0$;
+\item for finite $\Gamma$, $1-\operatorname{tr}\rho^2=(\Gamma_{\rm ch}/\Gamma)^2+o(\Gamma^{-2})$ with an explicit $\Gamma_{\rm ch}$ (\ref{R3} eqs.~(50)--(55)); $\Gamma_{\rm ch}$ diverges at the twist angles $\varphi^*k=\pi d$, $k=2,\dots,N-1$ (two or more collinear spins in the target helix; number of such points $\approx0.304N^2$), and the free-fermion point $\varphi=\pi/2$ never converges to a pure state.
+\end{itemize}
+Remark: \ref{R3} eq.~(15) gives the helix current as $J\sin\theta\sin\varphi$; for the state (6) of \ref{R3} we obtain $J\sin^2\theta\sin\varphi$ (with $\hat\jmath=J(\sigma^x\sigma^y-\sigma^y\sigma^x)$), consistent with \eqref{eq:current} \ver{C14}. The two agree for $\theta=\pi/2$, the case used in \ref{R3}'s figures.
+
+\subsection{Helices that are not eigenstates (\ref{R4}, \ref{R5})}
+\begin{itemize}
+\item \textbf{Experiment \ref{R4}} (ultracold $^7$Li, tunable $\Delta$). Transverse helices relax slowest at $Q=Q_p$ with $\cos Q_pa=\Delta$ (``phantom helices''); the measured contrast decay rate fits $\gamma(Q)=\gamma_1|\Delta-\cos Qa|+\gamma_0$ (\ref{R4} eq.~(7)), which was used to \emph{measure} $\Delta$. For $|\Delta|>1$ the minimum moves to $Q=0$ or $\pi$. Symmetry: $c(t)_{Q,\Delta}=c(t)_{\pi-Q,-\Delta}$. In open chains without pinning fields the phantom helix is only metastable (edge contribution to $\gamma_0\sim J_{xy}/L$), in agreement with \cref{cor:consequences}(b).
+\item \textbf{Relaxation theory \ref{R5}} (Pauli units). Short-time expansion $S(t)=1-4t^2(\Delta-\cos Q)^2\sin^2\theta+O(t^4)$, characteristic time $t_{\rm char}=|2(\Delta-\cos Q)\sin\theta|^{-1}$; empirically $\gamma(Q,\Delta)\approx|\cos Q|\,\gamma(0,\Delta/\cos Q)$ (universal scaling); in periodic chains the profile stays exactly harmonic, $\langle\sigma^\pm_{n+1}(t)\rangle=e^{\pm iQ}\langle\sigma^\pm_n(t)\rangle$.
+\item \textbf{Energy variance under detuning (derived here, verified \ver{C12}).} If $\Delta$ is detuned by $\delta$ while the fields are kept at the values \eqref{eq:fields-plane}, the helix has
+\begin{equation}\label{eq:variance}
+\operatorname{Var}H=(N-1)\,\sin^2\theta\,(1+3\cos^2\theta)\,\delta^2+O(\delta^2 N^0),
+\end{equation}
+from $\operatorname{Var}\sum_n\sigma^z_n\sigma^z_{n+1}$ in a product state ($1-z^4$ per bond plus $2(z^2-z^4)$ per adjacent pair, $z=\cos\theta$). The Loschmidt echo then starts as $1-t^2\operatorname{Var}H$, a sensitive calibration of $\Delta$ (cf.\ \ref{R1}, ``simplest experimental setup'').
+\end{itemize}
+
+\subsection{Non-integrable and higher-dimensional extensions (quoted)}
+\begin{itemize}
+\item \ref{R4} Methods: on hypercubic lattices (any $d$, spin $S$, periodic and commensurate) the helix with $\mathbf Q_p=Q_p(\pm1,\dots,\pm1)$ and $\Delta=\cos Q_p$ is an exact eigenstate, $E=S^2\cos Q_p\times\#\text{links}$; on triangular and kagome lattices for $\Delta=-\frac12$; with longer-range couplings $\Delta_n=\cos(nQ_p)$ on infinite lattices (quantum many-body scars in a GOE spectrum). Their Theorem~1 states ``$L_i=2\pi/Q_p$ for some $m_i$''; the intended condition is $L_i=2\pi m_i/Q_p$.
+\item \ref{R6}: in the periodic chain the helix tower $\ket{\psi_n}\propto(s_q^+)^n\ket\Downarrow$ with $s^+_q=\sum_je^{iqj}s^+_j$ forms a restricted spectrum-generating algebra; a uniform field $h\sum s^z$ makes it equally spaced, $E_n=(n-N/2)h$, and the helix precesses rigidly (``dynamic helix''). The robustness estimate to random transverse fields uses the projection of $H_{\rm ran}$ onto the tower, which is not an invariant subspace, so it is an approximation. \emph{Open-chain remark (derived):} with transverse boundary fields, $\sum_n\sigma^z_n$ does not commute with $H$; in the frame rotating with $e^{-iht\sum\sigma^z}$ the boundary fields rotate at angular frequency $2h$. Hence an exactly precessing helix in an open chain requires edge fields co-rotating with it.
+\item \ref{R7}: Granovskii--Zhedanov states of the XYZ chain are inhomogeneous ``elliptic'' helices ($\langle S^x\rangle\propto\mathrm{cn}$, $\langle S^y\rangle\propto\mathrm{sn}$, $\langle S^z\rangle\propto\mathrm{dn}$) with $q=4pK(\kappa)/N$; XXZ limit $J_z/J_y=\cos q$. Treated for periodic chains and tori only (vertex rule: zero $z$-current at every site), so an open-chain version would need boundary terms analogous to \eqref{eq:fields-general}; this is open. Their claim that $B(\lambda)$ at a phantom root acts as $\tau_\pm$ is derived for a single root.
+\item \ref{R8}: see \cref{sec:PBR}. The exponential degeneracy concerns periodic and twisted chains; open chains are not treated.
+\end{itemize}
+
+\begin{remark}[Edge impurities, \ref{R9}]\label{rem:R9}
+\ref{R9} studies $\Delta=\cosh\eta>1$ with edge spins coupled by XXZ bonds of anisotropy $\Delta_q\neq\Delta$ and no fields; $S^z_{\rm tot}$ is conserved. Extending the proof of \cref{thm:classification} to inhomogeneous bonds: at a junction site between bonds with $\kappa\neq\kappa_q$ the single-flip amplitude is $(s\kappa-s'\kappa_q)\bra{y^\perp}\sigma^z\ket y\neq0$, and in any case the outermost (field-free) spin is a free end, which forces $\ket\uparrow$ or $\ket\downarrow$ (\cref{cor:consequences}(b)). Hence the model of \ref{R9} has no helix eigenstates; its boundary bound states and ``boundary strings'' are a different phenomenon (\ref{R9}'s zero energy of the boundary string is a thermodynamic dressed-energy statement, not an exact finite-$N$ zero mode).
+\end{remark}
+
+%=====================================================================
+\section{Numerical approach (Mathematica)}\label{sec:numerics}
+
+The companion package \texttt{HelixXXZ.wl} (listed in \cref{app:code}) implements everything below; \texttt{HelixXXZ\_checks.wl} runs the verification suite of \cref{app:checks}. Chain length is called \texttt{L} in the code because \texttt{N} is a protected symbol. All functions use the conventions of \cref{sec:notation}.
+
+\subsection{Overview: what needs numerics and what does not}
+\begin{center}
+\begin{tabular}{p{5.2cm}p{4.6cm}p{4.6cm}}
+\toprule
+Task & Method & Cost\\ \midrule
+Helix $\to$ fields and $\Delta$ (inverse) & closed form \eqref{eq:fields-general} & $O(1)$\\
+$(\Delta,\hL,\hR)\to$ all helix eigenstates (forward) & \cref{alg:finder}: two $2\times2$ eigenproblems per chirality & $O(1)$\\
+Which PBR sectors $M$ exist & scan \eqref{eq:winding} over eigenvector pairs & $O(N)$\\
+Exactness check & $O(N)$ energy variance of a product state & $O(N)$, any $N$\\
+Spectral position (index, degeneracy) & ED (dense, $N\lesssim13$) or shift-invert Arnoldi near $E$ & $O(8^N)$ / sparse\\
+Semi-phantom eigenvalues, $M=1$ & tridiagonal matrix \eqref{eq:onekink} & $O(N)$ build, $O(N^2)$ diag.\\
+Semi-phantom eigenvalues, $M\ge2$ & Rayleigh--Ritz in the kink basis \eqref{eq:kinkbasis} & $(\sum_{m\le M}\binom Nm)^2\times O(N)$\\ \bottomrule
+\end{tabular}
+\end{center}
+For exact helix eigenstates no search in the spectrum is required: by \cref{thm:classification} the closed-form construction is complete. Numerical diagonalisation is needed only to place them in the spectrum and for the semi-phantom sectors.
+
+\subsection{Building the chain}
+\begin{lstlisting}
+Get["HelixXXZ.wl"];                       (* or Needs["HelixXXZ`", "HelixXXZ.wl"] *)
+L = 10; g = 0.9; Delta = Cos[g];          (* easy plane, pitch gamma = 0.9 rad *)
+H = XXZOpenH[L, Delta, hL, hR];           (* sparse 2^L x 2^L, Pauli, shifted bonds *)
+\end{lstlisting}
+
+\subsection{Inverse problem: tune the chain for a given helix}
+\begin{lstlisting}
+th = 1.1; ph1 = 0.4; s = +1; cL = -0.3; cR = 0.5;
+y1 = YFromAngles[th, ph1];                (* y = Log[Tan[th/2]] + I ph *)
+{hL, hR} = HelixFields[y1, s, g, L, cL, cR];  (* eq. (fields-general) *)
+E = HelixEnergy[y1, s, g, L, cL, cR];         (* = cL + cR for |Delta|<1 *)
+psi = HelixKet[L, y1, s, g];
+Norm[XXZOpenH[L, Delta, hL, hR].psi - E psi]  (* ~ 1e-15 *)
+\end{lstlisting}
+For $\Delta>1$ or $\Delta<-1$ the same calls work with \texttt{g = GammaOf[Delta]} (complex).
+
+\subsection{Forward problem: all helix eigenstates for given parameters}
+\begin{lstlisting}
+FindHelixEigenstates[L, Delta, hL, hR]
+(* -> {<|"s"->1, "y1"->..., "theta1"->..., "phi1"->..., "E"->...|>, ...}  (0 to 4 entries) *)
+PhantomCriterionScan[L, Delta, hL, hR]
+(* -> detected (s, M): s=+1 gives the M of G_M^+, s=-1 the dual Mtilde = L-1-M *)
+\end{lstlisting}
+The finite-list finder is exhaustive when the left boundary operator is nonzero for each chirality. Its listing below explicitly rejects a zero left boundary operator; it does not represent a continuous family as an empty list. At the matched easy-axis fields of \cref{cor:consequences}(c), use the family $y_n=y_1+is\gamma(n-1)$ directly, with arbitrary finite $y_1$, and verify it using the product-state variance. The general theorem remains a classification by boundary eigenvector conditions, including zero boundary operators. The tolerance on the collinearity test (default $10^{-9}$) should be adapted if the fields are known only approximately; near-misses then quantify how far the fields are from the PBR manifold.
+
+\subsection{Verifying exactness for large $N$ without building $H$}
+For a product state $\bigotimes_n\ket{\psi_n}$, $\operatorname{Var}H=\sum_{a,b}\big(\langle T_aT_b\rangle-\langle T_a\rangle\langle T_b\rangle\big)$ over the local terms $T_a$; only overlapping pairs contribute, so the cost is $O(N)$:
+\begin{lstlisting}
+L1 = 2000; {hL1, hR1} = HelixFields[y1, 1, g, L1, cL, cR];
+ProductEnergyVariance[HelixLocal[L1, y1, 1, g], Delta, hL1, hR1]          (* {E, 0} *)
+ProductEnergyVariance[HelixLocal[L1, y1, 1, g], Delta + 10^-3, hL1, hR1]  (* Var = eq.(variance) *)
+\end{lstlisting}
+
+\subsection{Locating the helix in the spectrum}
+The eigenvalue is known in closed form, so ``locating'' means finding its index and degeneracy and identifying the ED eigenvector.
+\begin{enumerate}[label=(\alph*)]
+\item $N\lesssim13$: \texttt{ev = Sort@Eigenvalues[N@Normal@H]}; index $=1+\#\{E_k<E-\epsilon\}$, degeneracy $=\#\{|E_k-E|<\epsilon\}$. The eigenvector with $|\braket{\Psi|\phi_k}|=1$ is the helix (if non-degenerate).
+\item Larger $N$: \texttt{Eigenvalues[H, k, Method -> \{"Arnoldi", "Shift" -> E\}]} returns the $k$ eigenvalues closest to $E$ (shift-invert), which confirms the eigenvalue and the local level spacing; counting all levels below $E$ requires either full diagonalisation or a sparse $LDL^{T}$ inertia count (not built into Mathematica for sparse Hermitian matrices).
+\item There is no $U(1)$ block structure (transverse fields), so the full $2^N$ space must be handled; the antiunitary $z$-mirror of \cref{sec:forward}(b) does not block-diagonalise.
+\end{enumerate}
+Example (verified \ver{C20}): $N=10$, $\gamma=0.9$, $y_1=0.2+0.5i$, $s=+1$:
+\begin{center}
+\begin{tabular}{ccccc}
+\toprule
+$(c_{\rm L},c_{\rm R})$ & $E$ & index (of 1024, from below) & degeneracy & spectrum range\\ \midrule
+$(0,0)$ & $0$ & 892 & 2 (z-mirror partner) & $[-21.06,\,5.38]$\\
+$(-3,-3)$ & $-6$ & 482 & 1 & $[-24.93,\,9.91]$\\
+$(3,3)$ & $6$ & 993 & 1 & $[-25.10,\,9.69]$\\
+$(-10,-10)$ & $-20$ & 236 & 1 & $[-38.52,\,23.66]$\\ \bottomrule
+\end{tabular}
+\end{center}
+\paragraph{A supported helix is never the ground state for large $N$ (derived).} With $J=1$ the helix has zero bulk energy and $E=c_{\rm L}+c_{\rm R}\ge-|\hL|-|\hR|$ (since $c=\mathbf h\cdot\mathbf m$). The in-plane N\'eel product state has energy $\le-(N-1)(1+\Delta)+|\hL|+|\hR|$. Hence for $\Delta>-1$ and $(N-1)(1+\Delta)>2(|\hL|+|\hR|)$ the helix lies strictly above the ground state. For $J=-1$ use the uniform $x$-polarised state, giving the condition $(N-1)(1-\Delta)>2(|\hL|+|\hR|)$. Thus helices are excited (``scar-like'') eigenstates in the bulk of the spectrum, as in the table.
+
+\subsection{Semi-phantom sectors}
+\begin{lstlisting}
+{hL, hR} = HelixFieldsM[yL, g, L, 1, cL, cR];      (* fields with criterion M = 1 *)
+Eigenvalues[OneKinkMatrix[L, Delta, hL, hR, yL]["T"]]   (* the L+1 eigenvalues of G_1^+ *)
+{hL, hR} = HelixFieldsM[yL, g, L, 2, cL, cR];
+KinkSectorSpectrum[L, Delta, hL, hR, yL, 2]          (* the 1+L+L(L-1)/2 eigenvalues of G_2^+ *)
+\end{lstlisting}
+\texttt{KinkSectorSpectrum} solves the generalised eigenproblem $\mathsf H c=E\,\mathsf G c$ with $\mathsf G_{ab}=\braket{a|b}$, $\mathsf H_{ab}=\braket{a|H|b}$ evaluated with product-state algebra (prefix/suffix products, $O(N)$ per element). Because $G_M^+$ is exactly invariant, the Ritz values are exact eigenvalues (verified \ver{C11}). The Gram matrix becomes ill-conditioned when $\sin\theta\to0$ (kink states become nearly parallel); then prefer the Bethe equations \eqref{eq:BAEreduced}.
+
+\subsection{Methods available in the literature}
+\begin{itemize}
+\item \ref{R2} and the chiral coordinate Bethe ansatz (cited in \ref{R1} as arXiv:2107.13266; not among the sources used here) give explicit Bethe vectors in the kink basis.
+\item \ref{R8} App.~D: degenerate eigenspaces of periodic chains via the kernel of $M=H-\varepsilon$, computed by conjugate gradients on $M^2x=Mb$ for random $b$, projection $n=b-Mx$ and Gram--Schmidt.
+\item \ref{R7}: product (GZ) states generated for many parameter values and Gram--Schmidt orthonormalised to obtain the scar subspace; local generators found by numerical optimisation.
+\item \ref{R3}: $\Gamma_{\rm ch}$ from Zeno-limit perturbation theory (evaluated in Mathematica for $N\le12$).
+\item \ref{R5}: TEBD and exact Taylor coefficients from nested commutators for non-eigenstate helices.
+\end{itemize}
+None of these is a direct ``construct and locate'' method for open-chain helices; for that task \cref{alg:finder} plus the $O(N)$ variance is complete and exact, and ED is only needed for the spectral index.
+
+%=====================================================================
+\section{Summary: answers in one place}\label{sec:summary}
+\begin{enumerate}[label=\arabic*.]
+\item \textbf{What is an exact helix eigenstate of the open chain?} A product state $\bigotimes_n\ket{y_1+is\gamma(n-1)}$ with uniform chirality, $\Delta=\cos\gamma$, whose end spins are eigenvectors of $\hL\cdot\bsig-s\kappa\sigma^z$ and $\hR\cdot\bsig+s\kappa\sigma^z$ ($\kappa=i\sin\gamma$). These, plus $\ket\Uparrow,\ket\Downarrow$ for $z$-fields, are \emph{all} product eigenstates (\cref{thm:classification}).
+\item \textbf{Shape.} $|\Delta|<1$: cone helix of pitch $\gamma$, any polar angle; $\Delta>1$: polar helix at fixed azimuth, $\tan\frac{\theta_{n+1}}2=e^{\mp\eta_0}\tan\frac{\theta_n}2$; $\Delta<-1$: staggered polar helix. No helix eigenstate with a chirality kink exists.
+\item \textbf{Given a helix, how to tune?} $\Delta=\cos(\text{pitch})$ and fields \eqref{eq:fields-plane} (or \eqref{eq:fields-general}); two free parameters $c_{\rm L},c_{\rm R}$; $E=c_{\rm L}+c_{\rm R}$ in the easy plane.
+\item \textbf{Given $\Delta$ and fields, which helices?} Generically none; on the codimension-2 PBR manifold ($M=0$) exactly one; at most four isolated candidates when the left boundary operators are nonzero; the matched easy-axis fields can instead support a continuous family; coincidences: chirality duality when $(N-1)\gamma\in\pi\mathbb Z$ (energies $\pm E$), $z$-mirror pair when both fields are in-plane. \Cref{alg:finder} gives the finite list in its stated non-scalar domain; use the family in \cref{cor:consequences}(c) at matched easy-axis fields.
+\item \textbf{Relation to phantom roots.} The helix is the Bethe state with all $N$ roots phantom ($\re\mu\to\infty$, string spacing $i\pi/N$), each a zero-energy magnon of momentum $\pm\gamma$; the PBR criterion with $M=0$ is the boundary condition of item 1, and in general it is the winding condition \eqref{eq:winding}. $M\ge1$ gives invariant subspaces spanned by helices with up to $M$ kinks, whose eigenstates are semi-phantom (chiral, quasi-periodic, high current) but not product states.
+\item \textbf{Periodic chain.} Helices with $N\gamma\in2\pi\mathbb Z$ (any $y_1$, both chiralities) are $E=0$ eigenstates spanning $2N$ dimensions inside a larger root-of-unity degenerate space of dimension $2^{N/\ell}\ell$.
+\item \textbf{Numerics.} Construction and classification are closed-form; exactness can be certified for any $N$ in $O(N)$; ED or shift-invert is only needed for spectral position; semi-phantom sectors are reduced to $\sum_{m\le M}\binom Nm$-dimensional problems.
+\end{enumerate}
+
+%=====================================================================
+\appendix
+\section{Verification log}\label{app:checks}
+All checks were run in Mathematica (Wolfram Language kernel) with the package of \cref{app:code}; they are reproduced by \texttt{HelixXXZ\_checks.wl}. ``Residual'' means $\|H\psi-E\psi\|/\|\psi\|$; ED is dense exact diagonalisation.
+\begin{center}
+\small
+\begin{longtable}{p{0.9cm}p{6.6cm}p{6.6cm}}
+\toprule
+Label & What is tested & Result\\ \midrule
+\endhead
+C1 & divergence identity \eqref{eq:divergence}, $s=\pm1$, symbolic & identically $0$\\
+C2 & double-flip amplitude \eqref{eq:doubleflip}, symbolic & identically $0$\\
+C3--C4 & helix + fields \eqref{eq:fields-general}, $N=8$, $\Delta\in\{\cos0.83,\cos2.4,1.7,-1.7\}$, $s=\pm1$, random $y_1,c_{\rm L,R}$ & fields real; residuals $\le3.6\times10^{-15}$ with $E$ from \eqref{eq:E-general}; $E=c_{\rm L}+c_{\rm R}$ exactly in the easy plane, not in the easy axis\\
+C5 & \cref{alg:finder}, $N=9$, $\gamma=0.77$ & recovers $y_1$ (error $7\times10^{-16}$), $E=c_{\rm L}+c_{\rm R}$; random fields: no helix\\
+C6 & duality, $N=7$: $\gamma=\pi/6$ ($(N-1)\gamma=\pi$) and $\gamma=\pi/4$ & 2 helices with $E=\pm0.44$; 1 helix\\
+C7 & in-plane tangential fields, $N=7$: $\gamma=0.71$ and $\gamma=\pi/3$ & 2 helices (mirror pair); 4 helices\\
+C8 & ZKP parametrisation, $N=7$, criterion with $M=0$ and $M=N-1$ & SHS residual $1.0\times10^{-15}$ ($E_0$) and $1.0\times10^{-15}$ ($-E_0$)\\
+C9 & splitting theorem, $N=7$, $M=0..3$ (also $M=6$ in ZKP variables) & $\operatorname{rank}=1,8,29,64=\sum_{k\le M}\binom7k$; invariance defect $0$; $\max|\braket{g_+|g_-}|\approx10^{-14}$\\
+C10 & one-kink matrix \eqref{eq:onekink}, $N=9$ & all 10 eigenvalues in ED spectrum (max distance $1.2\times10^{-14}$)\\
+C10b & BAE (\ref{R2} eq.~(54)) from the one-kink eigenvalues, $N=12$ & residual $\le4\times10^{-9}$ for all 13\\
+C11 & Rayleigh--Ritz $M=2$, $N=8$ & 37 Ritz values, max distance to ED $1.2\times10^{-13}$\\
+C12 & $O(N)$ variance vs.\ ED ($N=8$); $N=2000$ tuned; $N=2000$ with $\delta=10^{-3}$ & $3\times10^{-16}$; $0$; ratio to \eqref{eq:variance} $=0.99997$\\
+C13 & periodic, $(N,\gamma)=(8,\pi/4),(9,2\pi/3),(10,2\pi/5)$ & helix residual $\le6\times10^{-15}$; $\dim\ker H=16,24,20$; helix span $=16,18,20=2N$\\
+C14 & current \eqref{eq:current}, $s=-1$ & exact\\
+C15 & criterion scan on ZKP fields with $M=2$, $N=9$ & detects $(s,M)=(+,2)$ and $(-,\widetilde M=6)$\\
+C16 & string identity \eqref{eq:string-identity}, $n\le7$, three $\eta$ & $\le4.5\times10^{-12}$\\
+C17 & \cref{lem:ZKPeig} for real, imaginary and complex parameters & residuals $\le4.6\times10^{-16}$\\
+C18 & non-Hermitian: ZKP criterion vs.\ ket criterion & bra left-eigenvector $2\times10^{-13}$; ket right-eigenvector (ket criterion) $1\times10^{-14}$; ket with ZKP criterion fails ($5.9$)\\
+C19 & nesting at $\gamma=\pi/3$, $N=7$, fields tuned to $M=0$ & invariance defects $0,6,15,0,15$ for $M=0,\dots,4$\\
+C20 & spectral position, $N=10$ & table in \cref{sec:numerics}\\ \bottomrule
+\end{longtable}
+\end{center}
+
+\section{Inconsistencies and typos noticed in the references}\label{app:errata}
+Items marked (checked) were confirmed by our own computation; the others were noticed while reading and are listed for caution.
+\begin{itemize}
+\item \ref{R3} eq.~(15): helix current $J\sin\theta\sin\varphi$; we obtain $J\sin^2\theta\sin\varphi$ (checked, \ver{C14}); identical for $\theta=\pi/2$.
+\item \ref{R4} Theorem~1: ``$L_i=2\pi/Q_p$ for some $m_i$'' should read $L_i=2\pi m_i/Q_p$.
+\item \ref{R8} Fig.~1 caption: ``20 projected product states'' for $N=9$; the product-state span has dimension $2N=18$ (checked, \ver{C13}), consistent with \ref{R8} eq.~(8). Also reported: the twist enters the Temperley--Lieb generator as $w^2$ while eq.~(9) uses $w$.
+\item \ref{R2}: the bra/ket distinction of \cref{sec:geom} matters for non-Hermitian $H$ (checked, \ver{C18}); the Hermitian statements are unaffected.
+\item \ref{R5} eq.~(40): the scaling $\gamma(Q,\Delta)\approx\cos Q\,\gamma(0,\Delta/\cos Q)$ needs $|\cos Q|$ for $\cos Q<0$ (the figure collapses $\gamma/|\cos Q|$).
+\item \ref{R6}: the basis convention changes between eqs.~(8) and (12) ($\theta\to\pi-\theta$ plus a phase); the random-field spectrum eq.~(21) is a projection onto a non-invariant subspace.
+\item \ref{R7}: the rotation $e^{+iS^z\phi_n}e^{-iS^y\theta_n}\ket\Uparrow$ has azimuth $-\phi_n$, opposite to the stated $\langle S^y\rangle$; define states by Bloch angles to avoid sign ambiguity.
+\item \ref{R9}: dressed boundary-string energy $E_{bs}=0$ is a thermodynamic-limit statement; normalisations of eqs.~(1) ($J/2$) and (B12) ($J$) differ.
+\end{itemize}
+
+\section{Mathematica package}\label{app:code}
+File \texttt{HelixXXZ.wl} (load with \texttt{Get["HelixXXZ.wl"]}). Conventions as in \cref{sec:notation}; chain length \texttt{L}.
+\begin{lstlisting}
+(* ::Package:: *)
+(* HelixXXZ.wl -- spin-helix (phantom-Bethe-root) eigenstates of the open spin-1/2 XXZ chain.
+   Companion code of the notes "Spin-helix eigenstates of the open XXZ chain and phantom Bethe roots".
+
+   Conventions (identical to the notes):
+     H = J Sum_{n=1}^{L-1} [ sx sx + sy sy + Delta (sz sz - 1) ] + hl.sigma_1 + hr.sigma_L      (Pauli matrices)
+     Delta = Cos[gamma], gamma complex in general:
+        |Delta|<1 : gamma real in (0,Pi)      (easy plane)
+        Delta>1   : gamma = I eta              (easy axis)
+        Delta<-1  : gamma = Pi + I eta
+     kappa = I Sin[gamma]
+     local (unnormalised) qubit |y> = {1, Exp[y]},  y = Log[Tan[theta/2]] + I phi
+     helix of chirality s = +/-1 : y_n = y_1 + I s gamma (n-1)
+   Chain length is called L in the code (N is a protected Mathematica symbol).            *)
+
+BeginPackage["HelixXXZ`"];
+
+XXZOpenH::usage = "XXZOpenH[L, Delta, hl, hr, J:1] sparse open-chain Hamiltonian (Pauli, shifted bonds).";
+XXZPeriodicH::usage = "XXZPeriodicH[L, Delta, J:1] sparse periodic Hamiltonian (Pauli, shifted bonds).";
+GammaOf::usage = "GammaOf[Delta] principal complex gamma with Cos[gamma]==Delta.";
+QubitKet::usage = "QubitKet[y] normalised {1,E^y}.";
+BlochY::usage = "BlochY[y] Bloch vector of |y>.";
+YFromAngles::usage = "YFromAngles[theta, phi] = Log[Tan[theta/2]] + I phi.";
+HelixLocal::usage = "HelixLocal[L, y1, s, gamma] list of normalised local states of the helix.";
+HelixKet::usage = "HelixKet[L, y1, s, gamma] full 2^L state vector of the helix.";
+HelixFields::usage = "HelixFields[y1, s, gamma, L, cl, cr] -> {hl, hr}: Hermitian boundary fields making the helix exact (energy cl+cr).";
+HelixFieldsM::usage = "HelixFieldsM[yL, gamma, L, M, cl, cr] -> {hl, hr}: fields satisfying the phantom-root criterion with M kinks (yR = yL + I gamma (L-1-2M)), chirality +.";
+KinkBasis::usage = "KinkBasis[L, gamma, yL, M] list of product states (lists of local {1,E^y}) spanning the ket subspace G_M^+.";
+HelixEnergy::usage = "HelixEnergy[y1, s, gamma, L, cl, cr] eigenvalue of the helix in the fields HelixFields[y1, s, gamma, L, cl, cr].";
+FindHelixEigenstates::usage = "FindHelixEigenstates[L, Delta, hl, hr] all product (helix) eigenstates; list of associations.";
+PhantomCriterionScan::usage = "PhantomCriterionScan[L, Delta, hl, hr] tests y_R - y_L == I s gamma (L-1-2M) for all eigenvector pairs; returns detected (s,M).";
+PZKFields::usage = "PZKFields[eta, alpha, beta, theta, side] boundary field of Zhang-Kluemper-Popkov parametrisation; side=-1 left, +1 right.";
+PZKThetaPlus::usage = "PZKThetaPlus[L, M, eta, am, bm, ap, bp, thm] theta_+ solving the PBR criterion (bra/ZKP form, '+' sign).";
+ProductEnergyVariance::usage = "ProductEnergyVariance[states, Delta, hl, hr, J:1] -> {<H>, Var H} of a product state in O(L).";
+OneKinkMatrix::usage = "OneKinkMatrix[L, Delta, hl, hr, yL] (L+1)x(L+1) matrix of H in the one-kink (M=1) invariant subspace.";
+KinkSectorSpectrum::usage = "KinkSectorSpectrum[L, Delta, hl, hr, yL, M] exact eigenvalues of H in G_M^+ by Rayleigh-Ritz in the kink basis.";
+HelixProfile::usage = "HelixProfile[L, y1, s, gamma] list of Bloch vectors <sigma_n>.";
+HelixCurrent::usage = "HelixCurrent[y1, s, gamma] spin current <2(sx sy - sy sx)> = 2 s Sin[gamma] Sin[theta]^2 (easy plane).";
+
+Begin["`Private`"];
+
+sx = SparseArray[{{0, 1}, {1, 0}}]; sy = SparseArray[{{0, -I}, {I, 0}}]; sz = SparseArray[{{1, 0}, {0, -1}}];
+pv[h_] := h[[1]] Normal[sx] + h[[2]] Normal[sy] + h[[3]] Normal[sz];
+op[o_, n_, L_] := KroneckerProduct[SparseArray[IdentityMatrix[2^(n - 1)]], o, SparseArray[IdentityMatrix[2^(L - n)]]];
+bondOp[n_, m_, L_, d_] := op[sx, n, L].op[sx, m, L] + op[sy, n, L].op[sy, m, L] + d (op[sz, n, L].op[sz, m, L] - SparseArray[IdentityMatrix[2^L]]);
+
+XXZOpenH[L_Integer, d_, hl_, hr_, J_: 1] := J Sum[bondOp[n, n + 1, L, d], {n, 1, L - 1}] +
+   hl.{op[sx, 1, L], op[sy, 1, L], op[sz, 1, L]} + hr.{op[sx, L, L], op[sy, L, L], op[sz, L, L]};
+XXZPeriodicH[L_Integer, d_, J_: 1] := J Sum[bondOp[n, Mod[n, L] + 1, L, d], {n, 1, L}];
+
+GammaOf[d_] := ArcCos[N[d] + 0. I];
+QubitKet[y_] := {1, Exp[y]}/Sqrt[1 + Abs[Exp[y]]^2];
+BlochY[y_] := With[{t = 2 ArcTan[Exp[Re[y]]]}, {Sin[t] Cos[Im[y]], Sin[t] Sin[Im[y]], Cos[t]}];
+YFromAngles[th_, ph_] := Log[Tan[th/2]] + I ph;
+HelixLocal[L_, y1_, s_, g_] := Table[QubitKet[y1 + I s g (n - 1)], {n, L}];
+HelixKet[L_, y1_, s_, g_] := Flatten[Fold[KroneckerProduct, First[#], Rest[#]] &[HelixLocal[L, y1, s, g]]];
+HelixProfile[L_, y1_, s_, g_] := Table[BlochY[y1 + I s g (n - 1)], {n, L}];
+HelixCurrent[y1_, s_, g_] := 2 Sin[2 ArcTan[Exp[Re[y1]]]]^2 Sin[s g];
+
+(* Hermitian field h with (h.sigma + w sz)|m> = lambda |m>,  w complex:  h = c m - (wR)_perp + wI x m *)
+fieldFor[m_, w_, c_] := Module[{wR = Re[w], wI = Im[w]}, c m - (wR - (wR.m) m) + Cross[wI, m]];
+HelixFields[y1_, s_, g_, L_, cl_, cr_] := Module[{k = I Sin[g]},
+   {fieldFor[BlochY[y1], -s k {0, 0, 1}, cl], fieldFor[BlochY[y1 + I s g (L - 1)], s k {0, 0, 1}, cr]}];
+HelixFieldsM[yL_, g_, L_, M_, cl_, cr_] := Module[{k = I Sin[g]},
+   {fieldFor[BlochY[yL], -k {0, 0, 1}, cl], fieldFor[BlochY[yL + I g (L - 1 - 2 M)], k {0, 0, 1}, cr]}];
+(* eigenvalue of the helix for the fields above:  E = cl + cr - s kappa (cos th_1 - cos th_L)  (= cl + cr for |Delta|<1) *)
+HelixEnergy[y1_, s_, g_, L_, cl_, cr_] := Chop[cl + cr - s I Sin[g] (BlochY[y1][[3]] - BlochY[y1 + I s g (L - 1)][[3]])];
+
+collinear[M_, u_] := With[{r = M.u}, Abs[r[[1]] u[[2]] - r[[2]] u[[1]]]/(Norm[r] Norm[u] + 10^-300)];
+
+FindHelixEigenstates[L_, d_, hl_, hr_, tol_: 10^-9] := Module[{g = GammaOf[d], out = {}},
+   If[AnyTrue[{1, -1}, Norm[N[pv[hl] - # I Sin[g] Normal[sz]], "Frobenius"] <= tol &],
+     Return[Failure["ScalarBoundaryOperator", <|"MessageTemplate" ->
+       "The finite-list finder excludes zero left boundary operators. At matched easy-axis fields use the arbitrary-y1 polar-helix family."|>]]];
+   Do[Module[{Ml = pv[hl] - s I Sin[g] Normal[sz], Mr = pv[hr] + s I Sin[g] Normal[sz], vs},
+      vs = Eigenvectors[N[Ml]];
+      Do[If[Abs[v[[1]]] > 10^-14,
+        Module[{y1 = Log[v[[2]]/v[[1]]], yN, u, lam},
+         yN = y1 + I s g (L - 1); u = {1, Exp[yN]};
+         If[collinear[Mr, u] < tol,
+          lam = (Ml.{1, Exp[y1]})[[1]] + (Mr.u)[[1]];
+          AppendTo[out, <|"s" -> s, "y1" -> Chop[y1], "theta1" -> 2 ArcTan[Abs[Exp[y1]]],
+             "phi1" -> Mod[Im[y1], 2 Pi], "E" -> Chop[lam]|>]]]], {v, vs}]], {s, {1, -1}}];
+   DeleteDuplicatesBy[out, Round[{#s, Re[#y1], Mod[Im[#y1], 2 Pi]}, 10^-7] &]];
+
+(* phantom-root criterion in geometric form: y_R - y_L = I s gamma (L-1-2M) mod 2 Pi I, 0<=M<=L-1 *)
+PhantomCriterionScan[L_, d_, hl_, hr_, tol_: 10^-7] := Module[{g = GammaOf[d], res = {}},
+   Do[Module[{Ml = pv[hl] - s I Sin[g] Normal[sz], Mr = pv[hr] + s I Sin[g] Normal[sz], vl, vr},
+      vl = Select[Eigenvectors[N[Ml]], Abs[#[[1]]] > 10^-14 &]; vr = Select[Eigenvectors[N[Mr]], Abs[#[[1]]] > 10^-14 &];
+      Do[Module[{dy = Log[b[[2]]/b[[1]]] - Log[a[[2]]/a[[1]]]},
+         Do[If[Abs[Exp[dy] - Exp[I s g (L - 1 - 2 M)]] < tol,
+            AppendTo[res, <|"s" -> s, "M" -> M, "yL" -> Log[a[[2]]/a[[1]]], "yR" -> Log[b[[2]]/b[[1]]]|>]], {M, 0, L - 1}]],
+       {a, vl}, {b, vr}]], {s, {1, -1}}];
+   res];
+
+PZKFields[eta_, al_, be_, th_, side_] := Sinh[eta]/(Sinh[al] Cosh[be]) {Cosh[th], I Sinh[th], -side Cosh[al] Sinh[be]};
+PZKThetaPlus[L_, M_, eta_, am_, bm_, ap_, bp_, thm_] := thm + (2 M - L + 1) eta + am + bm + ap + bp;
+
+hloc[d_] := {{0, 0, 0, 0}, {0, -2 d, 2, 0}, {0, 2, -2 d, 0}, {0, 0, 0, 0}};
+ProductEnergyVariance[ps_, d_, hl_, hr_, J_: 1] := Module[{L = Length[ps], h2 = J hloc[d], id2 = IdentityMatrix[2], e2, el, er, ex, var, v2, v3},
+   v2[n_] := Flatten[KroneckerProduct[ps[[n]], ps[[n + 1]]]];
+   e2 = Table[Conjugate[v2[n]].h2.v2[n], {n, L - 1}];
+   el = Conjugate[ps[[1]]].pv[hl].ps[[1]]; er = Conjugate[ps[[L]]].pv[hr].ps[[L]];
+   ex = Total[e2] + el + er;
+   var = Sum[Conjugate[v2[n]].h2.h2.v2[n] - e2[[n]]^2, {n, L - 1}] +
+     (Conjugate[ps[[1]]].pv[hl].pv[hl].ps[[1]] - el^2) + (Conjugate[ps[[L]]].pv[hr].pv[hr].ps[[L]] - er^2) +
+     2 Re@Sum[v3 = Flatten[KroneckerProduct[ps[[n]], ps[[n + 1]], ps[[n + 2]]]];
+        Conjugate[v3].KroneckerProduct[h2, id2].KroneckerProduct[id2, h2].v3 - e2[[n]] e2[[n + 1]], {n, L - 2}] +
+     2 Re[Conjugate[v2[1]].KroneckerProduct[pv[hl], id2].h2.v2[1] - el e2[[1]]] +
+     2 Re[Conjugate[v2[L - 1]].h2.KroneckerProduct[id2, pv[hr]].v2[L - 1] - er e2[[L - 1]]];
+   Chop[{ex, var}]];
+
+(* M = 1 sector: |n> = kink on bond (n,n+1); |L> = helix from yL, |0> = helix from yL - 2 I gamma *)
+OneKinkMatrix[L_, d_, hl_, hr_, yL_] := Module[{g = GammaOf[d], k, Ml, Mr, yR, ll, lr, Al, Bl, Ar, Br, T},
+   k = I Sin[g]; Ml = pv[hl] - k Normal[sz]; Mr = pv[hr] + k Normal[sz]; yR = yL + I g (L - 3);
+   ll = (Ml.{1, Exp[yL]})[[1]]; lr = (Mr.{1, Exp[yR]})[[1]];
+   {Al, Bl} = LinearSolve[Transpose[{{1, Exp[yL - 2 I g]}, {1, Exp[yL]}}], Ml.{1, Exp[yL - 2 I g]}];
+   {Ar, Br} = LinearSolve[Transpose[{{1, Exp[yR + 2 I g]}, {1, Exp[yR]}}], Mr.{1, Exp[yR + 2 I g]}];
+   T = ConstantArray[0. I, {L + 1, L + 1}];
+   Do[T[[n + 1, n + 1]] = ll + lr - 4 d; T[[n, n + 1]] = 2 Exp[I g]; T[[n + 2, n + 1]] = 2 Exp[-I g], {n, 1, L - 1}];
+   T[[1, 1]] = lr + Al; T[[2, 1]] = Bl; T[[L + 1, L + 1]] = ll + Ar; T[[L, L + 1]] = Br;
+   <|"T" -> T, "E0" -> ll + lr, "lambdaL" -> ll, "lambdaR" -> lr|>];
+
+(* general M: kink basis (ket form of ZKP eq. 28) and Rayleigh-Ritz with product-state algebra *)
+levelSeqs[L_, M_] := Flatten[Table[Table[M - m + Count[ks, _?(# < kk &)], {kk, L}], {m, 0, M}, {ks, Subsets[Range[L], {m}]}], 1];
+KinkBasis[L_, g_, yL_, M_] := Table[Table[{1, Exp[yL + I g (kk - 1) - 2 I g x[[kk]]]}, {kk, L}], {x, levelSeqs[L, M]}];
+psME[a_, b_, d_, hl_, hr_] := Module[{L = Length[a], ov, pre, suf, h2 = hloc[d], tot},
+   ov = Table[Conjugate[a[[kk]]].b[[kk]], {kk, L}]; pre = FoldList[Times, 1, ov]; suf = Reverse@FoldList[Times, 1, Reverse[ov]];
+   tot = Sum[pre[[n]] suf[[n + 2]] (Conjugate[Flatten[KroneckerProduct[a[[n]], a[[n + 1]]]]].h2.Flatten[KroneckerProduct[b[[n]], b[[n + 1]]]]), {n, 1, L - 1}] +
+     suf[[2]] (Conjugate[a[[1]]].pv[hl].b[[1]]) + pre[[L]] (Conjugate[a[[L]]].pv[hr].b[[L]]);
+   {pre[[L + 1]], tot}];
+KinkSectorSpectrum[L_, d_, hl_, hr_, yL_, M_] := Module[{g = GammaOf[d], B, m},
+   B = KinkBasis[L, g, yL, M];
+   m = Table[psME[B[[i]], B[[j]], d, hl, hr], {i, Length[B]}, {j, Length[B]}];
+   Eigenvalues[{m[[All, All, 2]], m[[All, All, 1]]}]];
+
+End[];
+EndPackage[];
+\end{lstlisting}
+
+\end{document}

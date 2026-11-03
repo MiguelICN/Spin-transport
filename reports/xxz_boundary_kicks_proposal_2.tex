@@ -1,0 +1,132 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=1.65cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage{amsmath,amssymb}
+\usepackage[colorlinks=true,urlcolor=blue,citecolor=blue]{hyperref}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\abovedisplayskip}{5pt}
+\setlength{\belowdisplayskip}{5pt}
+\newcommand{\tr}{\operatorname{Tr}}
+\begin{document}
+\begin{center}
+{\Large\bfseries XXZ chains driven through two edge spins}\\[2pt]
+{\normalsize Research proposal}
+\end{center}
+\vspace{-5pt}
+
+\textbf{Main question.}
+How do periodic kicks at the two ends change the spectrum and dynamics of an XXZ chain?
+Can we detect those changes by measuring only the two attached impurity spins?
+
+\textbf{1. The model between kicks.}
+The system contains an open XXZ chain of $L$ spins and two additional spins, $A$ and $B$.
+Spin $A$ couples only to site $1$; spin $B$ couples only to site $L$.
+There are $L+2$ spins in total. All spin operators are $S^\mu=\sigma^\mu/2$, and $\hbar=1$.
+Between kicks the Hamiltonian is
+\[
+\begin{aligned}
+H_{\mathrm{XXZ}}&=J\sum_{j=1}^{L-1}
+ \left(S_j^xS_{j+1}^x+S_j^yS_{j+1}^y+\Delta S_j^zS_{j+1}^z\right),\\
+H_A&=g_A^{xy}\left(S_A^xS_1^x+S_A^yS_1^y\right)+g_A^zS_A^zS_1^z,\\
+H_B&=g_B^{xy}\left(S_L^xS_B^x+S_L^yS_B^y\right)+g_B^zS_L^zS_B^z,\\
+H_0&=H_{\mathrm{XXZ}}+H_A+H_B+h_AS_A^z+h_BS_B^z .
+\end{aligned}
+\]
+Here $J$ sets the chain interaction strength and $\Delta$ its anisotropy.
+The four $g$ parameters set the constant impurity--chain couplings; $h_A,h_B$ are constant local fields.
+The bare XXZ chain is integrable; the attached spins and kicks can change that property.
+
+\textbf{2. Two types of periodic driving.}
+The system evolves under $H_0$ for a time $T$, then both ends receive an instantaneous kick (for the Floquet operator to factorize exactly, but we could study a continuous driving too).
+This sequence repeats every period $T$. The one-period evolution operator is
+\[
+U_F=K_BK_Ae^{-iH_0T},\qquad K_A=e^{-ik_AV_A},\qquad K_B=e^{-ik_BV_B}.
+\]
+The dimensionless numbers $k_A,k_B$ are the independently chosen \emph{kick strengths}.
+For a field kick, $k$ is a spin rotation angle. For a bond kick, it multiplies the two-spin interaction in the exponential.
+We compare the following choices:
+\[
+\renewcommand{\arraystretch}{1.12}
+\begin{array}{lll}
+\text{Driving} & V_A & V_B\\ \hline
+\text{Field along }x,y,\text{ or }z
+ & S_A^\mu & S_B^\mu\quad(\mu=x,y,z)\\
+XX\text{ bond} & S_A^xS_1^x & S_L^xS_B^x\\
+YY\text{ bond} & S_A^yS_1^y & S_L^yS_B^y\\
+ZZ\text{ bond} & S_A^zS_1^z & S_L^zS_B^z\\
+XY\text{ exchange bond} & S_A^xS_1^x+S_A^yS_1^y & S_L^xS_B^x+S_L^yS_B^y\\
+\text{Heisenberg bond} &
+ S_A^xS_1^x+S_A^yS_1^y+S_A^zS_1^z &
+ S_L^xS_B^x+S_L^yS_B^y+S_L^zS_B^z
+\end{array}
+\]
+For $L\geq2$, the two kicks act on separate supports, so $[V_A,V_B]=0$ and their factorization is exact.
+In field driving the impurity fields are kicked; in bond driving the connecting interactions are kicked.
+All parameters in $H_0$, the chain length, the period, and both kick strengths can be varied.
+
+\textbf{2.5 Dissipative driving.}
+I have only considered unitary periodic driving because I'm more familiar with it. There are several examples of introducing dissipation by connecting the system to polarized reservoirs or baths. However, I'm not sure how to implement or interpret that kind of periodic driving. If you find this direction interesting, I'd be glad to help with it too.
+
+\textbf{3. Relevance, novelty, and questions to investigate.}
+Only the two ends are driven, while the bulk XXZ interactions remain fixed.
+This gives a controlled setting to ask whether boundary forcing can change spectral correlations, create Floquet states concentrated near the ends, or prolong impurity coherence and slow relaxation.
+Static XXZ boundary impurities~\cite{kattel2025} and periodically driven central impurities~\cite{lin2025} have already been studied.
+
+To my knowledge, a systematic comparison of the two-edge kick families above, together with detection through the two-impurity dynamical map or reduced density matrix, has not been investigated in detail (there are some variations and very particular setups but not exactly the proposed here).
+
+The proposed contribution is to connect these boundary drives to measurable local signatures.
+First, compute the full Floquet spectrum within verified symmetry sectors and compare quasienergy densities and mean gap ratios.
+Then test candidate dynamical effects across chain sizes.
+Use zero-kick and disconnected-impurity controls to distinguish chain-mediated effects from direct spin rotations.
+Spectral statistics and dynamical behavior need independent checks.
+
+\textbf{4. Detecting the effects through the impurities.}
+Prepare the chain in a fixed state $\rho_C$ and the impurities in a chosen state $\rho_{AB}(0)$, initially without correlations between them.
+After $n$ periods, their reduced state is
+\[
+\rho_{AB}(nT)=\mathcal E_n[\rho_{AB}(0)],\qquad
+\mathcal E_n[X]=\operatorname{Tr}_C
+ \left[U_F^n(X\otimes\rho_C)(U_F^\dagger)^n\right].
+\]
+This defines the dynamical map of the two impurities. The chain is not reset between kicks.
+Study impurity magnetization, coherence, purity, and correlations, alongside the map's Choi-state purity and its ability to preserve distinguishable inputs.
+Compare these signals with the spectral and dynamical changes found above.
+The goal is to identify which new effects (if we find some) can be detected using controlled impurity inputs and measurements on $A,B$ alone, and to determine the limitations of such detection.
+
+\textbf{5. Immediate goal.}
+Characterize all the driving protocols, at least through their spectral statistics, to decide whether to focus on a single protocol or study them all.
+
+\begin{thebibliography}{9}
+\bibitem{kattel2025}
+Pradip Kattel, Parameshwar R.~Pasnoori, J.~H.~Pixley, and Natan Andrei,
+``Edge modes and boundary impurities in the anisotropic Heisenberg spin chain,''
+\href{https://doi.org/10.1103/PhysRevB.111.174430}{Phys.\ Rev.\ B \textbf{111}, 174430 (2025)}.
+
+\bibitem{lin2025}
+Zhi-Xing Lin, Abhinav Prem, Shinsei Ryu, and Bastien Lapierre,
+``Local-to-Global Entanglement Dynamics by Periodically Driving Impurities,''
+\href{https://arxiv.org/abs/2510.20908}{arXiv:2510.20908 (2025; revised 2026)}.
+
+\bibitem{aleiner2021}
+I.~L.~Aleiner, ``Bethe Ansatz Solutions for Certain Periodic Quantum Circuits,''
+\href{https://arxiv.org/abs/2107.05715}{arXiv:2107.05715 (2021)}.
+
+\bibitem{tripathi2026}
+Anshuman Tripathi, Mircea Trif, and Thore Posske,
+``Universal Topological Power Transfer with Arbitrarily Large Chern Number in Driven Quantum Spin Chains,''
+\href{https://arxiv.org/abs/2604.24851}{arXiv:2604.24851 (2026)}.
+
+\bibitem{lai2008}
+Cheng-Yan Lai, Jo-Tzu Hung, Chung-Yu Mou, and Pochung Chen,
+``Induced Decoherence and Entanglement by Interacting Quantum Spin Baths,''
+\href{https://arxiv.org/abs/0803.0364}{Phys.\ Rev.\ B \textbf{77}, 205419 (2008)}.
+
+\bibitem{posske2019}
+Thore Posske and Michael Thorwart,
+``Winding Up Quantum Spin Helices: How Avoided Level Crossings Exile Classical Topological Protection,''
+\href{https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.122.097204}{Phys.\ Rev.\ Lett.\ \textbf{122}, 097204 (2019)}.
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,176 @@
+\documentclass[11pt]{beamer}
+\usetheme{Madrid}
+\usecolortheme{beaver}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,physics}
+\renewcommand{\Tr}{\mathrm{Tr}}
+\newcommand{\sigx}{\sigma^x}
+\newcommand{\sigy}{\sigma^y}
+\newcommand{\sigz}{\sigma^z}
+\newcommand{\sigp}{\sigma^+}
+\newcommand{\sigm}{\sigma^-}
+
+\title[Thermal Channel: Eqs.\ (1)--(8)]{Entanglement Dynamics of Two Spin-1/2 Particles\\ Coupled Through an Open XXZ Spin Chain}
+\subtitle{Thermal Kraus Formalism, adapted from Bayat \& Karimipour, PRA \textbf{71}, 042330 (2005)}
+\author{}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Setup: Open XXZ Chain (Channel)}
+Channel Hamiltonian, $L$-site open XXZ with boundary fields:
+\[
+\hat H_C = -\frac14\sum_{n=1}^{L-1}\Bigl[\sigx_n\sigx_{n+1}+\sigy_n\sigy_{n+1}+\Delta\bigl(\sigz_n\sigz_{n+1}-\mathbb{I}\bigr)\Bigr]
+\]
+
+\begin{itemize}
+\item $\Delta$: XXZ anisotropy ($\Delta=0$ free XX, $\Delta=1$ isotropic Heisenberg, $\Delta>1$ Ising-dominated).
+\item Plays the role of $H_c$ in the paper's Eq.\ (1): here XXZ, not isotropic Heisenberg.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Full Hamiltonian: Coupling, Local Fields, Total}
+Flip-flop boundary coupling ($A$\,--\,chain site 1, chain site $L$\,--\,$B$):
+\[
+\hat H_{AC} = J\bigl(\sigp_A\sigm_{c,1}+\sigm_A\sigp_{c,1}\bigr),\qquad
+\hat H_{CB} = J\bigl(\sigp_{c,L}\sigm_B+\sigm_{c,L}\sigp_B\bigr)
+\]
+Local Zeeman fields on system spins:
+\[
+\hat H_A = \Delta_A\,\sigz_A, \qquad \hat H_B = \Delta_B\,\sigz_B
+\]
+Total Hamiltonian (plays the role of $H$, Eq.\ 2):
+\[
+\boxed{\;\hat H = \hat H_A + \mathbb{I}_A\otimes\hat H_C\otimes\mathbb{I}_B + \hat H_B + \hat H_{AC}+\hat H_{CB}\;}
+\]
+\begin{itemize}
+\item Conserves total magnetisation $M=\sigz_A+\sum_n\sigz_n+\sigz_B$
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Thermal Initial State of the Channel}
+\[
+\rho_{\text{th}} = \frac{e^{-\beta \hat H_C}}{Z} = \sum_\alpha \frac{e^{-\beta E_\alpha}}{Z}\ket{\alpha}\bra{\alpha}, \qquad Z = \Tr\!\left(e^{-\beta \hat H_C}\right) \tag{3}
+\]
+
+\begin{itemize}
+\item $\ket{\alpha}$, $E_\alpha$: eigenstates/eigenvalues of the \emph{channel} Hamiltonian $\hat H_C$, not of $\hat H$.
+\item At $\beta\to\infty$: $\rho_{\text{th}}\to\ket{\alpha_0}\bra{\alpha_0}$ (ground state) — the case treated in the original (T=0) protocol.
+\item Finite $\beta$: excited states populated $\Rightarrow$ mixed channel input.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Full Evolution and the Reduced Output State}
+Input pair in pure state $\rho_{AB}(0)=\ket{\Phi^+}\bra{\Phi^+}$, channel thermal. Joint state evolves unitarily under the \emph{full} Hamiltonian $\hat H$ (boxed equation, previous slide):
+\[
+\rho(t) = e^{-i\hat H t}\left(\rho_{AB}(0)\otimes\rho_{\text{th}}\right)e^{i\hat H t} \tag{4}
+\]
+
+Trace out the chain $C$ only — the edge spins $A,B$ are kept:
+\[
+\rho_{AB}(t) = \Tr_{C}\!\left[e^{-i\hat H t}\left(\rho_{AB}(0)\otimes\rho_{\text{th}}\right)e^{i\hat H t}\right] \tag{5}
+\]
+
+\vspace{4pt}
+This defines a map $\rho_{AB}(0) \mapsto \rho_{AB}(t)$: the object we want in Kraus (operator-sum) form.
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Matrix Elements of $\rho_{AB}(t)$}
+Insert complete sets: $c$ runs over a basis of $\mathcal{H}_C$ (traced-out part), $\alpha$ over channel eigenstates; $i,j,k,l$ label the $A\otimes B$ system. Expanding Eq.\ (5):
+\[
+\langle k|\rho_{AB}(t)|l\rangle
+= \sum_{c,i,j,\alpha} \langle c,k|e^{-i\hat H t}|i,\alpha\rangle\, \rho_{AB}(0)_{i,j} \,\langle j,\alpha|e^{i\hat H t}|c,l\rangle\, \frac{e^{-\beta E_\alpha}}{Z} \tag{6}
+\]
+
+\vspace{4pt}
+\begin{itemize}
+\item Structure: bilinear in matrix elements of $e^{-i\hat H t}$, weighted by the Boltzmann factor $e^{-\beta E_\alpha}/Z$ of the channel eigenstate $\alpha$.
+\item This is exactly the form needed to extract Kraus operators labeled by $(c,\alpha)$.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Kraus Operators $M_{c,\alpha}$}
+Define, for each pair $(c,\alpha)$, the $4\times4$ matrix (acting on $\mathcal{H}_A\otimes\mathcal{H}_B$, indices $i,j,k,l$):
+\[
+\langle k|M_{c,\alpha}|j\rangle := \frac{e^{-\beta E_\alpha/2}}{\sqrt{Z}}\, \langle c,k|e^{-i\hat H t}|j,\alpha\rangle \tag{7}
+\]
+
+\begin{itemize}
+\item $\sqrt{Z}$, $e^{-\beta E_\alpha/2}$ split the Boltzmann weight symmetrically between $M$ and $M^\dagger$ in Eq.\ (6).
+\item Number of matrices: one per $(c,\alpha)$ pair, $c\in\{1,\dots,d_E\}$, $d_E=2^L$ — large, but symmetry (e.g.\ conserved $M=\sigz_A+\sum_n\sigz_n+\sigz_B$) collapses most to zero in practice.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Kraus Decomposition of the Channel}
+Substituting Eq.\ (7) into Eq.\ (6) gives the operator-sum (Kraus) representation:
+\[
+\boxed{\;\rho_{AB}(t) = \sum_{c,\alpha} M_{c,\alpha}\,\rho_{AB}(0)\,M_{c,\alpha}^\dagger\;} \tag{8}
+\]
+
+\vspace{6pt}
+\begin{itemize}
+\item Completely positive, trace-preserving map $\rho_{AB}(0) \mapsto \rho_{AB}(t)$, valid for \emph{any} temperature $\beta$.
+\item $\beta\to\infty$ limit recovers the pure-state (ground-state channel) map.
+\item Same construction as the transfer-tensor / $K$-matrix pipeline used for production sweeps, with the sum over $(c,\alpha)$ reorganised into the $\alpha$-diagonal phase contraction actually implemented.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{From Kraus Form to the Quantum Channel}
+Eq.\ (8) is a special case ($\hat O = \rho_{AB}(0)$) of a map defined on \emph{any} operator $\hat O$ on $\mathcal{H}_{AB}$:
+\[
+\mathcal{E}_t(\hat O) \;\equiv\; \Tr_C\!\Bigl[e^{-i\hat H t}\bigl(\hat O\otimes\rho_C(0)\bigr)e^{+i\hat H t}\Bigr], \qquad \hat O\in\mathcal{B}(\mathcal{H}_{AB}) \tag{9}
+\]
+
+\begin{itemize}
+\item $\mathcal{E}_t$: completely positive, trace-preserving (CPTP) — a genuine quantum channel.
+\item $\mathcal{E}_t(\rho_{AB}(0)) = \rho_{AB}(t)$ recovers Eq.\ (8); $\mathcal{E}_t$ produces $\rho_{AB}(t)$ for \emph{every} possible input state, not just the Bell state.
+\item The chain-induced evolution of the edge spins is non-unitary in general: this is precisely the object that encodes it.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Choi--Jamio{\l}kowski Matrix}
+Auxiliary reference space $\mathcal{H}_R\cong\mathcal{H}_{AB}$, basis $\{\ket{i}\}_{i=1}^{d_S}$ ($d_S=4$), maximally entangled reference state:
+\[
+\ket{\Omega} = \frac{1}{\sqrt{d_S}}\sum_{i=1}^{d_S}\ket{i}_R\ket{i}_{AB}
+\]
+Choi matrix of $\mathcal{E}_t$:
+\[
+\boxed{\;\hat\chi(t) \;\equiv\; (\mathrm{id}_R\otimes\mathcal{E}_t)\bigl(\ketbra{\Omega}{\Omega}\bigr) \;=\; \frac{1}{d_S}\sum_{i,j=1}^{d_S}\ketbra{i}{j}\otimes\mathcal{E}_t\bigl(\ketbra{i}{j}\bigr)\;} \tag{10}
+\]
+
+\begin{itemize}
+\item $\hat\chi(t)$ is $d_S^2\times d_S^2 = 16\times16$, positive semidefinite, unit trace.
+\item $\ket{\Omega}$ is a fixed reference state, distinct from the physical Bell state $\ket{\Phi^+}$ used as $\rho_{AB}(0)$.
+\item Encodes $\mathcal{E}_t$ completely: the channel acting on any input is recovered from $\hat\chi(t)$ alone.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------
+\begin{frame}{Purity of the Choi State}
+\[
+\boxed{\;\mathcal{P}_\chi(t) = \Tr\!\bigl[\hat\chi^2(t)\bigr]\;} \tag{11}
+\]
+
+\begin{itemize}
+\item General bound for a unit-trace positive semidefinite matrix on a $16$-dimensional space: $1/16 \le \mathcal{P}_\chi(t) \le 1$.
+\item $\mathcal{P}_\chi = 1$: $\hat\chi(t)$ is rank-1, i.e.\ $\mathcal{E}_t$ is a unitary (noiseless) map.
+\item $\mathcal{P}_\chi < 1$: the chain has scrambled the channel — quantifies the departure from unitarity at time $t$, independent of which input state is used.
+\item Distinct from $\mathcal{P}(t)=\Tr[\rho_{AB}^2(t)]$: that quantity depends on the specific input $\rho_{AB}(0)$; $\mathcal{P}_\chi(t)$ characterises the channel $\mathcal{E}_t$ itself.
+\end{itemize}
+\end{frame}
+
+\end{document}
