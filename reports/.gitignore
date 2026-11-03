@@ -1,0 +1,29 @@
+# LaTeX temporary compilation files
+*.aux
+*.log
+*.out
+*.toc
+*.nav
+*.snm
+*.synctex.gz
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.spl
+*.run.xml
+*.bcf
+*.lof
+*.lot
+
+# Keep LaTeX source files and PDFs
+!*.tex
+!*.pdf
+
+# Python temporary files
+__pycache__/
+*.pyc
+
+# Operating system temporary files
+Thumbs.db
+.DS_Store
