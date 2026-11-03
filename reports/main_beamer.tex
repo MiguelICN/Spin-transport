@@ -1,12 +1,15 @@
-% Self-contained, image-free Beamer source, companion to current_status_report.tex.
-% Build: pdflatex -synctex=1 -interaction=nonstopmode -halt-on-error verified_results_beamer.tex
-% Run pdflatex twice. No images, external inputs, or BibTeX are required.
+% Image-free Beamer source sharing references.bib with main_report.tex.
+% Build: pdflatex -synctex=1 -interaction=nonstopmode -halt-on-error main_beamer.tex
+% Then run: bibtex main_beamer; pdflatex -synctex=1 main_beamer.tex (twice).
 % Requires the standard Beamer class and its translator dependency.
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{amsmath,amssymb,mathtools,booktabs}
+\usepackage[numbers,sort&compress]{natbib}
+\renewcommand{\bibsection}{}
+\providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{doi:#1}}}
 \definecolor{ink}{RGB}{25,43,60}
 \definecolor{accent}{RGB}{0,110,125}
 \setbeamercolor{normal text}{fg=ink,bg=white}
@@ -113,21 +116,22 @@ P_cE_{ab}P_d=\delta_{ca}\delta_{db}E_{ab}.
 \]
 Only one conditional pair survives the partial trace:
 \[
-\Lambda_t(E_{ab})=\Gamma_{ab}(t)E_{ab},\qquad
-\Gamma_{ab}(t)=\Tr_E[U_a(t)\omega_EU_b(t)^\dagger].
+\Lambda_t(E_{ab})=\gamma_{ab}(t)E_{ab},\qquad
+\gamma_{ab}(t)=\Tr_E[U_a(t)\omega_EU_b(t)^\dagger].
 \]
 By linearity,
 \[
 \boxed{\Lambda_t(X)=\Gamma(t)\circ X.}
 \]
-For a pure bulk, $\Gamma_{ab}=\bra{\phi_0}U_b^\dagger U_a\ket{\phi_0}$.
-Its complex phase is part of the channel data.
+For a pure bulk, $\gamma_{ab}=\bra{\phi_0}U_b^\dagger U_a\ket{\phi_0}$.
+Here $\Gamma(t)=(\gamma_{ab}(t))$ is the Schur matrix;
+$\gamma_{ab}$ are its complex, dimensionless entries.
 \end{frame}
 
 \begin{frame}{Ising channel constraints}
 \[
 \Gamma=\Gamma^\dagger\succeq0,\qquad
-\Gamma_{aa}=1,\qquad |\Gamma_{ab}|\le1.
+\gamma_{aa}=1,\qquad |\gamma_{ab}|\le1.
 \]
 These follow from a Gram factorization of the conditional bulk amplitudes.
 \medskip
@@ -165,7 +169,7 @@ Use output--reference order and
 $\ket{\Phi_4}=\frac12\sum_a\ket{aa}$:
 \[
 J_t=(\Lambda_t\otimes\id)(\ket{\Phi_4}\bra{\Phi_4})
-=\frac14\sum_{a,b}\Gamma_{ab}\ket{aa}\bra{bb}.
+=\frac14\sum_{a,b}\gamma_{ab}\ket{aa}\bra{bb}.
 \]
 With $W\ket a=\ket{aa}$,
 \[
@@ -174,7 +178,7 @@ With $W\ket a=\ket{aa}$,
 The Choi eigenvalues are those of $\rho_f$, with twelve extra zeros.
 \[
 S(J_t)=S(\rho_f),\qquad
-\Tr J_t^2=\Tr\rho_f^2=\frac1{16}\sum_{a,b}|\Gamma_{ab}|^2.
+\Tr J_t^2=\Tr\rho_f^2=\frac1{16}\sum_{a,b}|\gamma_{ab}|^2.
 \]
 If $\Gamma=\sum_k\lambda_kv_kv_k^\dagger$, a minimal Kraus family is
 $D_k=\sqrt{\lambda_k}\diag(v_k)$.
@@ -183,38 +187,127 @@ $D_k=\sqrt{\lambda_k}\diag(v_k)$.
 \begin{frame}{Ising channel: unitarity and loss of reference entanglement}
 The map is unitary iff $\rank\Gamma=1$:
 \[
-\Gamma_{ab}=u_au_b^*,\quad |u_a|=1,\qquad
+\gamma_{ab}=u_au_b^*,\quad |u_a|=1,\qquad
 \Lambda_t(X)=\diag(u)X\diag(u)^\dagger.
 \]
 The partial-transpose eigenvalues of its Choi state are
 \[
 \frac14\text{ (four times)},\qquad
-\pm\frac{|\Gamma_{ab}|}{4}\quad(a<b).
+\pm\frac{|\gamma_{ab}|}{4}\quad(a<b).
 \]
 Therefore it is entanglement breaking iff
 \[
-\Gamma_{ab}=0\quad\text{for every }a\ne b.
+\gamma_{ab}=0\quad\text{for every }a\ne b.
 \]
 This is entanglement between the probe pair and a reference.
 Entanglement of $A$ with $B$ is a separate question.
 \end{frame}
 
 \begin{frame}{Ising channel: exact tests between different times}
-The superoperator eigenvalues are $\Gamma_{ab}(t)$.
+The superoperator eigenvalues are $\gamma_{ab}(t)$.
 It is invertible iff every factor is nonzero.
 \[
-\mathcal L_t(E_{ab})=\frac{\dot\Gamma_{ab}(t)}{\Gamma_{ab}(t)}E_{ab}
+\mathcal L_t(E_{ab})=\frac{\dot\gamma_{ab}(t)}{\gamma_{ab}(t)}E_{ab}
 \qquad\text{at regular times}.
 \]
 If $\Lambda_s$ is invertible, define
 \[
-Q_{ab}(t,s)=\frac{\Gamma_{ab}(t)}{\Gamma_{ab}(s)}.
+Q_{ab}(t,s)=\frac{\gamma_{ab}(t)}{\gamma_{ab}(s)}.
 \]
 \[
 \boxed{\Lambda_t\Lambda_s^{-1}\text{ is CPTP}\iff Q(t,s)\succeq0.}
 \]
 At singular times this division is undefined. A coherence factor that
 vanishes and later revives prevents divisibility through that time.
+\end{frame}
+
+\begin{frame}{Ising channel: canonical form of the generator}
+\small
+The multipliers $\gamma_{ab}$ are dimensionless; $\kappa_{ab}$ and the
+canonical rates $\gamma_k$ have units of inverse time.
+Time arguments are suppressed below.
+\medskip
+At invertible times, $\dot\rho_{ab}=\ell_{ab}\rho_{ab}$ with
+\[
+\ell_{ab}=\frac{\dot\gamma_{ab}}{\gamma_{ab}}=-\kappa_{ab}+i\omega_{ab},\qquad
+\kappa_{ab}=-\tfrac{d}{dt}\ln|\gamma_{ab}|,\quad
+\omega_{ab}=\tfrac{d}{dt}\arg\gamma_{ab}.
+\]
+With $G_A=\tfrac{\sigma_A^z}{2}$, $G_B=\tfrac{\sigma_B^z}{2}$,
+$G_Z=\tfrac{\sigma_A^z\sigma_B^z}{2}$ and
+$G_j\ket a=g^a_j\ket a$, $\mathbf g^a=(s_A,s_B,2s_As_B)$,
+the canonical form \cite{Hall2014} is
+\[
+\boxed{\dot\rho=-i[H_{\mathrm{can}},\rho]+\sum_{k=1}^{3}\gamma_k
+\Bigl(L_k\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\rho\}\Bigr),
+\quad H_{\mathrm{can}}=\diag(h_a).}
+\]
+\begin{itemize}\setlength\itemsep{3pt}
+\item At most three canonical rates are nonzero; the other twelve vanish.
+\item Valid for every probe input and every fixed bulk preparation $\omega_E$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Ising channel: canonical rates from the coherence factors}
+\small
+Decoherence matrix $\mathsf d=S+iA$ on $\{G_A,G_B,G_Z\}$, with
+$\Delta_{ab}=\mathbf g^a-\mathbf g^b$:
+\[
+\kappa_{ab}=\tfrac12\Delta_{ab}^{\mathsf T}S\Delta_{ab},\qquad
+\omega_{ab}=-(h_a-h_b)+\mathbf g^{a\mathsf T}A\,\mathbf g^b.
+\]
+With $K_A=\kappa_{00,10}+\kappa_{01,11}$,
+$K_B=\kappa_{00,01}+\kappa_{10,11}$,
+$K_{AB}=\kappa_{00,11}+\kappa_{01,10}$:
+\[
+S_{AA}=\tfrac{K_A+K_{AB}-K_B}2,\ \
+S_{BB}=\tfrac{K_B+K_{AB}-K_A}2,\ \
+S_{ZZ}=\tfrac{K_A+K_B-K_{AB}}2,
+\]
+\[
+S_{AB}=\tfrac{\kappa_{00,11}-\kappa_{01,10}}2,\ \
+S_{AZ}=\tfrac{\kappa_{00,10}-\kappa_{01,11}}2,\ \
+S_{BZ}=\tfrac{\kappa_{00,01}-\kappa_{10,11}}2.
+\]
+$A_{jk}=\epsilon_{jkl}a_l$ from loop sums
+$C_{abc}=\omega_{ab}+\omega_{bc}+\omega_{ca}$:
+\[
+a_A=\tfrac{C_1-C_2}2,\ \ a_B=\tfrac{C_1+C_3}2,\ \ a_Z=\tfrac{C_3-C_2}2,
+\quad (C_1,C_2,C_3)=(C_{00,01,10},C_{00,01,11},C_{00,10,11}).
+\]
+\[
+\boxed{\{\gamma_k\}_{k=1}^3=\operatorname{spec}(S+iA)},\qquad
+h_a=\tfrac14\sum_b\bigl(-\omega_{ab}+\mathbf g^{a\mathsf T}A\,\mathbf g^b\bigr).
+\]
+The coefficients $S_{jj}$ are generally not the canonical rates $\gamma_k$.
+\end{frame}
+
+\begin{frame}{Ising channel: canonical Lindblad operators and rate signs}
+\small
+With $\mathsf d\,\mathbf u_k=\gamma_k\mathbf u_k$,
+\[
+\boxed{L_k=\tfrac12\bigl(u_{Ak}\sigma_A^z+u_{Bk}\sigma_B^z
++u_{Zk}\sigma_A^z\sigma_B^z\bigr),\qquad
+L_k\ket a=(\mathbf u_k\cdot\mathbf g^a)\ket a.}
+\]
+\begin{itemize}\setlength\itemsep{4pt}
+\item Diagonal, traceless, orthonormal; Hermitian when $A=0$.
+\item No raising or lowering operators: populations stay fixed.
+\item Projections: $\kappa_{ab}=\mathbf e_{ab}^{\mathsf T}\mathsf d\,\mathbf e_{ab}$,
+$\mathbf e_{ab}=\Delta_{ab}/\sqrt2$, e.g.\
+$G_{01,10}=\frac{\sigma_A^z-\sigma_B^z}{2\sqrt2}$.
+\end{itemize}
+Let $\gamma_{\min}$ and $\gamma_{\max}$ be the extreme eigenvalues of
+the $3\times3$ block $\mathsf d$. For $a\ne b$,
+\[
+\gamma_{\min}\le\lambda_{\min}(S),\qquad
+\gamma_{\min}\le\kappa_{ab}\le\gamma_{\max},\qquad
+\gamma_{\min}\le S_{ZZ}.
+\]
+A negative rate (non-Markovian in the sense of \cite{Hall2014}) appears
+whenever some $|\gamma_{ab}|$ grows, or whenever $S\not\succeq0$.
+Full positivity requires $S+iA\succeq0$.
+At a zero multiplier the inverse-map generator is undefined.
 \end{frame}
 
 \begin{frame}{Ising channel: maximum concurrence from separable inputs}
@@ -377,8 +470,8 @@ reconstruction. Eight local Pauli settings suffice.
 \begin{frame}{Ising texture gives two channel fidelities}
 Using $\rho_f=\Gamma/4$,
 \[
-p_f=\frac1{16}\sum_{a,b}\Gamma_{ab}
-=\frac14+\frac18\sum_{a<b}\Re\Gamma_{ab}.
+p_f=\frac1{16}\sum_{a,b}\gamma_{ab}
+=\frac14+\frac18\sum_{a<b}\Re\gamma_{ab}.
 \]
 The entanglement fidelity relative to the identity satisfies
 \[
@@ -406,7 +499,7 @@ For the Ising Schur map,
 The transpose is ordinary.
 \medskip
 Within this family, either $\Lambda_t(f_1)=f_1$ or
-$\Lambda_t^*(f_1)=f_1$ forces every $\Gamma_{ab}=1$.
+$\Lambda_t^*(f_1)=f_1$ forces every $\gamma_{ab}=1$.
 Thus vanishing fidelity texture identifies the identity channel within
 the known Ising family.
 \end{frame}
@@ -461,7 +554,7 @@ The symmetry reduction fixes the allowed mixing of probe operators.
 Their time-dependent coefficients require the bulk dynamics.
 \end{frame}
 
-\begin{frame}{Entanglement conventions and references}
+\begin{frame}{Entanglement conventions}
 \small
 Probe entropy is $S(\rho)=-\Tr\rho\ln\rho$ in nats.
 For a globally pure state, $S(\rho_{AB})$ measures entanglement across
@@ -469,16 +562,12 @@ $AB|E$. Probe concurrence and negativity concern $A|B$.
 \medskip
 The normalized Choi state has trace one. Its reference--output
 entanglement is distinct from entanglement between the two probes.
-\medskip
-\begin{thebibliography}{9}
-\bibitem{texture} F. Parisio, Phys. Rev. Lett. \textbf{133}, 260801 (2024).
-\href{https://doi.org/10.1103/PhysRevLett.133.260801}{Quantum-state texture}.
-\bibitem{dynamics} C. H. S. Vieira et al.,
-\href{https://arxiv.org/abs/2609.05248}{arXiv:2609.05248} (2026).
-\bibitem{fidelity} M. A. Nielsen, Phys. Lett. A \textbf{303}, 249 (2002).
-\href{https://arxiv.org/abs/quant-ph/0205035}{Average gate fidelity}.
-\bibitem{concurrence} W. K. Wootters, Phys. Rev. Lett. \textbf{80}, 2245 (1998).
-\href{https://doi.org/10.1103/PhysRevLett.80.2245}{Concurrence}.
-\end{thebibliography}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
+\footnotesize
+\nocite{Parisio2024,Vieira2026,Nielsen2002,Wootters1998}
+\bibliographystyle{unsrtnat}
+\bibliography{references}
 \end{frame}
 \end{document}
