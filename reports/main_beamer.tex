@@ -2,6 +2,8 @@
 % Build: pdflatex -synctex=1 -interaction=nonstopmode -halt-on-error main_beamer.tex
 % Then run: bibtex main_beamer; pdflatex -synctex=1 main_beamer.tex (twice).
 % Requires the standard Beamer class and its translator dependency.
+% The slides state results and their physical meaning; every derivation
+% is given step by step in main_report.tex (cited as "Report, ...").
 \documentclass[aspectratio=169,11pt]{beamer}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -12,6 +14,7 @@
 \providecommand{\doi}[1]{\href{https://doi.org/#1}{\nolinkurl{doi:#1}}}
 \definecolor{ink}{RGB}{25,43,60}
 \definecolor{accent}{RGB}{0,110,125}
+\definecolor{muted}{RGB}{95,110,125}
 \setbeamercolor{normal text}{fg=ink,bg=white}
 \setbeamercolor{structure}{fg=accent}
 \setbeamercolor{frametitle}{fg=accent}
@@ -28,10 +31,13 @@
 \newcommand{\rank}{\operatorname{rank}}
 \newcommand{\ZZ}{\mathrm{ZZ}}
 \newcommand{\ex}{\mathrm{ex}}
+\newcommand{\dmat}{\mathsf d}
+\newcommand{\Heff}{H_{\rm eff}}
+\newcommand{\report}[1]{{\color{muted}\footnotesize Derivation: report, #1.}}
 \title{Two spins coupled to an XXZ bulk}
 \subtitle{Reduced channels and quantum-state texture}
 \author{Spin transport project}
-\date{3 November 2026}
+\date{5 November 2026}
 
 \begin{document}
 \begin{frame}[plain]
@@ -40,16 +46,19 @@
 
 \begin{frame}{Two-probe reduced dynamics}
 Two spin-$1/2$ probes, $A$ and $B$, attach to opposite ends of a finite
-XXZ bulk. The total Hamiltonian drives the dynamics.
+XXZ bulk. The total Hamiltonian drives the dynamics; we follow only the probes.
 \medskip
 \begin{itemize}\setlength\itemsep{9pt}
-\item Ising contacts give an exact time-dependent Schur channel.
-\item Exchange contacts admit a magnetization-based block reduction
-under explicit symmetry assumptions.
-\item The texture study uses only $\ket+_A\otimes\ket+_B$ as probe input.
+\item \textbf{Ising contacts:} the probes act as conserved controls on the
+bulk. The result is an exact, time-dependent dephasing (Schur) channel.
+\item \textbf{Exchange contacts:} spin flows between probes and bulk.
+Magnetization conservation splits the channel into five blocks.
+\item \textbf{Texture:} a single probe input, $\ket{++}$, and a single
+measurement setting.
 \end{itemize}
 \medskip
-The bulk preparation determines the time-dependent channel coefficients.
+The slides give results and their meaning. All derivations are in the
+accompanying report.
 \end{frame}
 
 \begin{frame}{Hamiltonian and normalization}
@@ -75,498 +84,355 @@ with no direct $A$--$B$ interaction and no applied fields in the reference model
 
 \begin{frame}{A fixed product preparation defines a channel}
 Group the Hilbert space as $\mathcal H_{AB}\otimes\mathcal H_E$.
-Fix the same bulk density matrix $\omega_E$ for every probe input.
+Fix the same bulk density matrix $\omega_E$ for every probe input:
 \[
-\rho(0)=\rho_{AB}(0)\otimes\omega_E,\qquad U_t=e^{-iH^{(r)}t}.
+\rho(0)=\rho_{AB}(0)\otimes\omega_E,\qquad
+\boxed{\Lambda_t(X)=\Tr_E[U_t(X\otimes\omega_E)U_t^\dagger],\quad U_t=e^{-iH^{(r)}t}.}
 \]
-\[
-\boxed{\Lambda_t(X)=\Tr_E[U_t(X\otimes\omega_E)U_t^\dagger].}
-\]
-This map is completely positive and trace preserving (CPTP).
-\medskip
 \begin{itemize}\setlength\itemsep{7pt}
-\item The channel acts on the joint two-probe input, of dimension four.
-\item Changing $\omega_E$ changes the channel.
-\item The derivation uses exact unitary dynamics and a partial trace.
+\item $\Lambda_t$ is completely positive and trace preserving (CPTP) on the
+four-dimensional two-probe space.
+\item $\omega_E$ may be pure or mixed, thermal or not; changing it changes the channel.
+\item Exact unitary dynamics plus a partial trace: no weak-coupling or Markov
+approximation.
+\item Initially correlated probe--bulk states have reduced trajectories,
+but no universal channel.
 \end{itemize}
+\report{Sec.~2}
 \end{frame}
 
-\begin{frame}{Ising coupling: four conditional bulk Hamiltonians}
-Both probe projections are conserved:
+% ==============================================================
+\section{Ising contacts}
+% ==============================================================
+
+\begin{frame}{Ising coupling: the probes control the bulk}
+Both probe spins are conserved, $[H^{(\ZZ)},S_A^z]=[H^{(\ZZ)},S_B^z]=0$.
+For each configuration $a=(s_A,s_B)\in\{00,01,10,11\}$ the bulk feels
+a different boundary field:
 \[
-[H^{(\ZZ)},S_A^z]=[H^{(\ZZ)},S_B^z]=0.
+H_a=H_E+g_As_AS_1^z+g_Bs_BS_N^z,\qquad
+\boxed{U_t=\sum_a\ket a\bra a\otimes e^{-iH_at}.}
 \]
-Label the probe basis by $a=(s_A,s_B)$, $s_A,s_B=\pm\frac12$,
-and set $P_a=\ket a\bra a$.
-\[
-\boxed{H^{(\ZZ)}=\sum_aP_a\otimes H_a,\qquad
-H_a=H_E+g_As_AS_1^z+g_Bs_BS_N^z.}
-\]
-Since $P_aP_b=\delta_{ab}P_a$,
-\[
-U_t=\sum_aP_a\otimes U_a(t),\qquad U_a(t)=e^{-iH_at}.
-\]
-The input can coherently occupy all four branches.
+\begin{itemize}\setlength\itemsep{7pt}
+\item Four conditional bulk evolutions start from one common $\omega_E$.
+\item The probes may occupy all four branches coherently.
+\item Exact for any bulk Hamiltonian on $E$, even with transverse fields.
+\end{itemize}
+\report{Sec.~3.1}
 \end{frame}
 
-\begin{frame}{Ising coupling: derivation of the Schur channel}
-For each matrix unit $E_{ab}=\ket a\bra b$,
+\begin{frame}{The reduced state: frozen populations, evolving coherences}
+For an arbitrary probe input $\rho_{AB}(0)=(r_{ab})$,
 \[
-P_cE_{ab}P_d=\delta_{ca}\delta_{db}E_{ab}.
+\boxed{[\rho_{AB}(t)]_{ab}=\Gamma_{ab}(t)\,r_{ab},\qquad
+\Gamma_{ab}(t)=\Tr_E\bigl[\omega_E\,U_b(t)^\dagger U_a(t)\bigr].}
 \]
-Only one conditional pair survives the partial trace:
-\[
-\Lambda_t(E_{ab})=\gamma_{ab}(t)E_{ab},\qquad
-\gamma_{ab}(t)=\Tr_E[U_a(t)\omega_EU_b(t)^\dagger].
-\]
-By linearity,
-\[
-\boxed{\Lambda_t(X)=\Gamma(t)\circ X.}
-\]
-For a pure bulk, $\gamma_{ab}=\bra{\phi_0}U_b^\dagger U_a\ket{\phi_0}$.
-Here $\Gamma(t)=(\gamma_{ab}(t))$ is the Schur matrix;
-$\gamma_{ab}$ are its complex, dimensionless entries.
+\begin{itemize}\setlength\itemsep{7pt}
+\item $\Gamma_{aa}=1$: the four populations never change.
+\item $\Gamma_{ab}$ ($a\ne b$) is the overlap of two conditional bulk
+histories. For a pure bulk, $|\Gamma_{ab}|^2$ is a conditional Loschmidt echo;
+the channel also needs its phase.
+\item Only six complex numbers evolve. They depend only on the boundary
+difference $H_a-H_b=g_A\Delta s_A\,S_1^z+g_B\Delta s_B\,S_N^z$.
+\item At $t=0$, $\dot\Gamma_{ab}$ is purely imaginary: the motion starts
+coherently, and dephasing appears only later.
+\end{itemize}
+\report{Secs.~3.2 and 3.4}
 \end{frame}
 
-\begin{frame}{Ising channel constraints}
+\begin{frame}{A legitimate dephasing channel}
 \[
-\Gamma=\Gamma^\dagger\succeq0,\qquad
-\gamma_{aa}=1,\qquad |\gamma_{ab}|\le1.
+\boxed{\Lambda_t(X)=\Gamma(t)\circ X}\qquad(\circ:\ \text{entrywise product})
 \]
-These follow from a Gram factorization of the conditional bulk amplitudes.
-\medskip
+\begin{itemize}\setlength\itemsep{6pt}
+\item $\Gamma$ is a correlation matrix: $\Gamma\succeq0$, unit diagonal,
+$|\Gamma_{ab}|\le1$. Hence CPTP and unital for every $\omega_E$.
+\item Choi state $J_t=W\,(\Gamma/4)\,W^\dagger$, $W\ket a=\ket{aa}$: rank $\le4$.
+\item Kraus operators are diagonal: $D_k=\sqrt{\lambda_k}\,\diag(v_k)$ from
+$\Gamma=\sum_k\lambda_kv_kv_k^\dagger$.
+\item Not depolarizing; not, in general, a product of single-probe channels.
+\item Dephasing includes coherent phases and revivals. It need not be
+irreversible.
+\end{itemize}
+\report{Secs.~3.3, 3.5 and 3.7}
+\end{frame}
+
+\begin{frame}{The $\ket{++}$ output is the whole channel}
+Since $\ket{++}\bra{++}$ has all entries equal to $1/4$,
+\[
+\boxed{\rho_f(t)=\Lambda_t(\ket{++}\bra{++})=\tfrac14\Gamma(t),\qquad
+\Lambda_t(X)=[4\rho_f(t)]\circ X.}
+\]
+\begin{itemize}\setlength\itemsep{7pt}
+\item One input preparation, plus tomography of its six output coherences,
+reconstructs the channel.
+\item Populations are fixed at $1/4$, so eight local Pauli settings
+$(\alpha,\beta)\ne(z,z)$ suffice.
+\item Time derivatives of the same output give the time-local generator.
+\item Special to the Ising family: it fails for general two-probe channels.
+\end{itemize}
+\report{Sec.~3.6}
+\end{frame}
+
+\begin{frame}{When can the channel be inverted?}
+\[
+\det\Lambda_t=\prod_{a<b}|\Gamma_{ab}(t)|^2 .
+\]
+\begin{itemize}\setlength\itemsep{6pt}
+\item Invertible iff no coherence factor vanishes. Then the time-local
+generator is entrywise:
+\[
+\dot\rho_{ab}=\eta_{ab}\rho_{ab},\qquad
+\eta_{ab}=\frac{\dot\Gamma_{ab}}{\Gamma_{ab}}=-\kappa_{ab}+i\omega_{ab}.
+\]
+\item $\kappa_{ab}$ is the observed fractional damping rate of one
+coherence; $\omega_{ab}$ is its phase rate.
+\item Intermediate map $\Lambda_t\Lambda_s^{-1}$: Schur multiplication by
+$\Gamma_{ab}(t)/\Gamma_{ab}(s)$. It is CPTP iff that matrix is $\succeq0$.
+\item A coherence that vanishes and later revives rules out any
+intermediate map through that time.
+\end{itemize}
+\report{Secs.~3.8 and 4.1}
+\end{frame}
+
+\begin{frame}{Canonical master equation: at most three rates}
+At every invertible time, the canonical form of Hall \emph{et al.}~\cite{Hall2014} is
+\[
+\boxed{\dot\rho=-i[\Heff,\rho]+\sum_{k=1}^{3}\gamma_k(t)
+\Bigl(L_k\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\rho\}\Bigr).}
+\]
+\begin{itemize}\setlength\itemsep{6pt}
+\item $\Heff$ and all $L_k$ are diagonal combinations of
+$\sigma_A^z,\ \sigma_B^z,\ \sigma_A^z\sigma_B^z$. No population transfer.
+\item Twelve of the fifteen canonical rates vanish identically.
+\item $\Heff$ is a bulk-induced configuration energy, which can include an
+effective $\sigma_A^z\sigma_B^z$ coupling.
+\item Everything follows in closed form from the six $\eta_{ab}(t)$ alone.
+\end{itemize}
+\report{Secs.~4.2--4.8}
+\end{frame}
+
+\begin{frame}{How the canonical data are obtained}
+Let $F_\mu=\tfrac12(\sigma_A^z,\ \sigma_B^z,\ \sigma_A^z\sigma_B^z)$ and $G$ be the
+$4\times3$ table of their eigenvalues $\pm\tfrac12$ ($G^{\mathsf T}G=I_3$,
+$G^{\mathsf T}\mathbf1=0$). Then
+\[
+\boxed{\dmat=G^{\mathsf T}\eta\,G,\qquad
+h_a=-\tfrac14\sum_b\operatorname{Im}\eta_{ab},\qquad
+\gamma_k=\operatorname{spec}\dmat,\quad L_k=\textstyle\sum_\mu V_{\mu k}F_\mu.}
+\]
+\begin{itemize}\setlength\itemsep{6pt}
+\item Only a $3\times3$ Hermitian matrix is diagonalized, never $16\times16$.
+\item The solution is unique, so this \emph{is} the canonical form.
+\item At $t=0$: $\dmat(0)=0$. The probes first see only the averaged
+energies $\Tr(\omega_EH_a)$.
+\end{itemize}
+\report{Secs.~4.3--4.5, 4.8, 4.9 and 4.12}
+\end{frame}
+
+\begin{frame}{Physical reading: correlated damping and phase loops}
+Write $\dmat=S+iA$ ($S$ real symmetric, $A$ real antisymmetric).
+\begin{itemize}\setlength\itemsep{6pt}
+\item \textbf{Damping:} $\kappa_{ab}=\tfrac12\Delta_{ab}^{\mathsf T}S\Delta_{ab}$
+with $\Delta_{ab}=\mathbf g^a-\mathbf g^b$; the six $\kappa_{ab}$ fix $S$
+uniquely.
+\item Independent single-probe dephasing gives $S=\diag(2\kappa^A,2\kappa^B,0)$
+and $A=0$. Any other entry signals dephasing \emph{correlated through the bulk}.
+\item $S_{12}>0$: $00\leftrightarrow11$ decays faster than
+$01\leftrightarrow10$ (common noise). $S_{12}<0$: anticorrelated noise.
+\item \textbf{Phases:} $A$ is fixed by the three loop sums
+$\omega_{ab}+\omega_{bc}+\omega_{ca}$. These are phases that no set of four
+configuration energies can produce.
+\end{itemize}
+\report{Secs.~4.6 and 4.7}
+\end{frame}
+
+\begin{frame}{Negative rates, memory and singular times}
+\begin{itemize}\setlength\itemsep{7pt}
+\item Observed damping is bounded by the canonical rates:
+$\gamma_{\min}\le\kappa_{ab}\le\gamma_{\max}$.
+\item A coherence $|\Gamma_{ab}|$ that \emph{grows} implies a negative
+canonical rate. The converse fails: $S_{33}<0$ also gives one.
+\item CP divisibility $\iff\dmat(t)\succeq0$. A negative rate means
+non-Markovian memory, \emph{not} an unphysical $\Lambda_t$, which stays CPTP.
+\item At a zero of $\Gamma_{ab}$ the damping rate has a pole and some
+$\gamma_k$ diverges, while the phase rate stays bounded.
+\item $\rho_{AB}(t)$ itself remains smooth throughout.
+\end{itemize}
+\report{Secs.~4.10 and 4.11}
+\end{frame}
+
+\begin{frame}{Reference entanglement and probe entanglement}
+\begin{itemize}\setlength\itemsep{7pt}
+\item Unitary iff $\rank\Gamma=1$, i.e.\ $\Gamma_{ab}=u_au_b^*$: a diagonal
+phase gate, possibly non-local.
+\item Choi state versus reference:
+$\mathcal N_{AB|R}=\tfrac14\sum_{a<b}|\Gamma_{ab}|$. The channel is
+entanglement breaking iff every $\Gamma_{ab}=0$.
+\item Between the probes:
+\[
+\boxed{\max_{\rho\in\mathrm{Sep}(A:B)}C[\Lambda_t(\rho)]=C[\rho_f(t)].}
+\]
+The channel can entangle $A$ with $B$ iff its $\ket{++}$ output is entangled,
+and $\ket{++}$ is the optimal separable input.
+\end{itemize}
+\report{Secs.~3.7 and 3.9}
+\end{frame}
+
+% ==============================================================
+\section{Exchange contacts}
+% ==============================================================
+
+\begin{frame}{Exchange coupling: spin flows, total magnetization survives}
+\[
+M_S=S_A^z+S_B^z,\quad M_E=\sum_{j=1}^NS_j^z,\qquad
+[H^{(\ex)},M_S+M_E]=0.
+\]
 \begin{itemize}\setlength\itemsep{8pt}
-\item All four computational-basis populations stay fixed.
-\item The map is unital: $\Lambda_t(I_4)=I_4$.
-\item Six complex coherence factors specify its nontrivial action.
-\item A common bulk can correlate the two probes.
-\end{itemize}
-\medskip
-This is generalized \textbf{dephasing}. A depolarizing map
-$\lambda X+(1-\lambda)\Tr(X)I_4/4$ fixes every population only at
-$\lambda=1$, the identity.
-\end{frame}
-
-\begin{frame}{The $\ket{++}$ output determines the Ising channel}
-\[
-\ket{f_1}=\ket{++}=\frac12\sum_{a=1}^4\ket a,\qquad
-f_1=\ket{f_1}\bra{f_1},\qquad (f_1)_{ab}=\frac14.
-\]
-The full output is $\rho_f(t)=\Lambda_t(f_1)$, so
-\[
-\boxed{\rho_f(t)=\frac{\Gamma(t)}4,\qquad \Gamma(t)=4\rho_f(t).}
-\]
-\[
-\Lambda_t(X)=[4\rho_f(t)]\circ X.
-\]
-One known preparation and \emph{full output tomography} identify the
-instantaneous channel. The scalar texture is only part of this information.
-\end{frame}
-
-\begin{frame}{Ising channel: normalized Choi state and Kraus operators}
-\small
-Use output--reference order and
-$\ket{\Phi_4}=\frac12\sum_a\ket{aa}$:
-\[
-J_t=(\Lambda_t\otimes\id)(\ket{\Phi_4}\bra{\Phi_4})
-=\frac14\sum_{a,b}\gamma_{ab}\ket{aa}\bra{bb}.
-\]
-With $W\ket a=\ket{aa}$,
-\[
-\boxed{J_t=W\rho_f(t)W^\dagger,\qquad \rank J_t=\rank\Gamma\le4.}
-\]
-The Choi eigenvalues are those of $\rho_f$, with twelve extra zeros.
-\[
-S(J_t)=S(\rho_f),\qquad
-\Tr J_t^2=\Tr\rho_f^2=\frac1{16}\sum_{a,b}|\gamma_{ab}|^2.
-\]
-If $\Gamma=\sum_k\lambda_kv_kv_k^\dagger$, a minimal Kraus family is
-$D_k=\sqrt{\lambda_k}\diag(v_k)$.
-\end{frame}
-
-\begin{frame}{Ising channel: unitarity and loss of reference entanglement}
-The map is unitary iff $\rank\Gamma=1$:
-\[
-\gamma_{ab}=u_au_b^*,\quad |u_a|=1,\qquad
-\Lambda_t(X)=\diag(u)X\diag(u)^\dagger.
-\]
-The partial-transpose eigenvalues of its Choi state are
-\[
-\frac14\text{ (four times)},\qquad
-\pm\frac{|\gamma_{ab}|}{4}\quad(a<b).
-\]
-Therefore it is entanglement breaking iff
-\[
-\gamma_{ab}=0\quad\text{for every }a\ne b.
-\]
-This is entanglement between the probe pair and a reference.
-Entanglement of $A$ with $B$ is a separate question.
-\end{frame}
-
-\begin{frame}{Ising channel: exact tests between different times}
-The superoperator eigenvalues are $\gamma_{ab}(t)$.
-It is invertible iff every factor is nonzero.
-\[
-\mathcal L_t(E_{ab})=\frac{\dot\gamma_{ab}(t)}{\gamma_{ab}(t)}E_{ab}
-\qquad\text{at regular times}.
-\]
-If $\Lambda_s$ is invertible, define
-\[
-Q_{ab}(t,s)=\frac{\gamma_{ab}(t)}{\gamma_{ab}(s)}.
-\]
-\[
-\boxed{\Lambda_t\Lambda_s^{-1}\text{ is CPTP}\iff Q(t,s)\succeq0.}
-\]
-At singular times this division is undefined. A coherence factor that
-vanishes and later revives prevents divisibility through that time.
-\end{frame}
-
-\begin{frame}{Ising channel: canonical form of the generator}
-\small
-The multipliers $\gamma_{ab}$ are dimensionless; $\kappa_{ab}$ and the
-canonical rates $\gamma_k$ have units of inverse time.
-Time arguments are suppressed below.
-\medskip
-At invertible times, $\dot\rho_{ab}=\ell_{ab}\rho_{ab}$ with
-\[
-\ell_{ab}=\frac{\dot\gamma_{ab}}{\gamma_{ab}}=-\kappa_{ab}+i\omega_{ab},\qquad
-\kappa_{ab}=-\tfrac{d}{dt}\ln|\gamma_{ab}|,\quad
-\omega_{ab}=\tfrac{d}{dt}\arg\gamma_{ab}.
-\]
-With $G_A=\tfrac{\sigma_A^z}{2}$, $G_B=\tfrac{\sigma_B^z}{2}$,
-$G_Z=\tfrac{\sigma_A^z\sigma_B^z}{2}$ and
-$G_j\ket a=g^a_j\ket a$, $\mathbf g^a=(s_A,s_B,2s_As_B)$,
-the canonical form \cite{Hall2014} is
-\[
-\boxed{\dot\rho=-i[H_{\mathrm{can}},\rho]+\sum_{k=1}^{3}\gamma_k
-\Bigl(L_k\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\rho\}\Bigr),
-\quad H_{\mathrm{can}}=\diag(h_a).}
-\]
-\begin{itemize}\setlength\itemsep{3pt}
-\item At most three canonical rates are nonzero; the other twelve vanish.
-\item Valid for every probe input and every fixed bulk preparation $\omega_E$.
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Ising channel: canonical rates from the coherence factors}
-\small
-Decoherence matrix $\mathsf d=S+iA$ on $\{G_A,G_B,G_Z\}$, with
-$\Delta_{ab}=\mathbf g^a-\mathbf g^b$:
-\[
-\kappa_{ab}=\tfrac12\Delta_{ab}^{\mathsf T}S\Delta_{ab},\qquad
-\omega_{ab}=-(h_a-h_b)+\mathbf g^{a\mathsf T}A\,\mathbf g^b.
-\]
-With $K_A=\kappa_{00,10}+\kappa_{01,11}$,
-$K_B=\kappa_{00,01}+\kappa_{10,11}$,
-$K_{AB}=\kappa_{00,11}+\kappa_{01,10}$:
-\[
-S_{AA}=\tfrac{K_A+K_{AB}-K_B}2,\ \
-S_{BB}=\tfrac{K_B+K_{AB}-K_A}2,\ \
-S_{ZZ}=\tfrac{K_A+K_B-K_{AB}}2,
-\]
-\[
-S_{AB}=\tfrac{\kappa_{00,11}-\kappa_{01,10}}2,\ \
-S_{AZ}=\tfrac{\kappa_{00,10}-\kappa_{01,11}}2,\ \
-S_{BZ}=\tfrac{\kappa_{00,01}-\kappa_{10,11}}2.
-\]
-$A_{jk}=\epsilon_{jkl}a_l$ from loop sums
-$C_{abc}=\omega_{ab}+\omega_{bc}+\omega_{ca}$:
-\[
-a_A=\tfrac{C_1-C_2}2,\ \ a_B=\tfrac{C_1+C_3}2,\ \ a_Z=\tfrac{C_3-C_2}2,
-\quad (C_1,C_2,C_3)=(C_{00,01,10},C_{00,01,11},C_{00,10,11}).
-\]
-\[
-\boxed{\{\gamma_k\}_{k=1}^3=\operatorname{spec}(S+iA)},\qquad
-h_a=\tfrac14\sum_b\bigl(-\omega_{ab}+\mathbf g^{a\mathsf T}A\,\mathbf g^b\bigr).
-\]
-The coefficients $S_{jj}$ are generally not the canonical rates $\gamma_k$.
-\end{frame}
-
-\begin{frame}{Ising channel: canonical Lindblad operators and rate signs}
-\small
-With $\mathsf d\,\mathbf u_k=\gamma_k\mathbf u_k$,
-\[
-\boxed{L_k=\tfrac12\bigl(u_{Ak}\sigma_A^z+u_{Bk}\sigma_B^z
-+u_{Zk}\sigma_A^z\sigma_B^z\bigr),\qquad
-L_k\ket a=(\mathbf u_k\cdot\mathbf g^a)\ket a.}
-\]
-\begin{itemize}\setlength\itemsep{4pt}
-\item Diagonal, traceless, orthonormal; Hermitian when $A=0$.
-\item No raising or lowering operators: populations stay fixed.
-\item Projections: $\kappa_{ab}=\mathbf e_{ab}^{\mathsf T}\mathsf d\,\mathbf e_{ab}$,
-$\mathbf e_{ab}=\Delta_{ab}/\sqrt2$, e.g.\
-$G_{01,10}=\frac{\sigma_A^z-\sigma_B^z}{2\sqrt2}$.
-\end{itemize}
-Let $\gamma_{\min}$ and $\gamma_{\max}$ be the extreme eigenvalues of
-the $3\times3$ block $\mathsf d$. For $a\ne b$,
-\[
-\gamma_{\min}\le\lambda_{\min}(S),\qquad
-\gamma_{\min}\le\kappa_{ab}\le\gamma_{\max},\qquad
-\gamma_{\min}\le S_{ZZ}.
-\]
-A negative rate (non-Markovian in the sense of \cite{Hall2014}) appears
-whenever some $|\gamma_{ab}|$ grows, or whenever $S\not\succeq0$.
-Full positivity requires $S+iA\succeq0$.
-At a zero multiplier the inverse-map generator is undefined.
-\end{frame}
-
-\begin{frame}{Ising channel: maximum concurrence from separable inputs}
-For the chosen fixed bulk preparation,
-\[
-\boxed{\max_{\rho\in\mathrm{Sep}(A:B)}C[\Lambda_t(\rho)]
-=C[\rho_f(t)]=C[\Gamma(t)/4].}
-\]
-\textbf{Proof idea.} A pure product input with amplitudes
-$(a_0,a_1)\otimes(b_0,b_1)$ gives a local diagonal filter of $\rho_f$.
-The concurrence transforms as
-\[
-C_{\mathrm{out}}=4|a_0a_1b_0b_1|C(\rho_f)\le C(\rho_f).
-\]
-Convexity extends the bound to separable mixtures.
-The preparation $\ket{++}$ attains it.
-\medskip
-Thus $\rho_f$ is entangled iff this channel can entangle some separable input.
-\end{frame}
-
-\begin{frame}{Exchange coupling: total magnetization sectors}
-Define
-\[
-M_S=S_A^z+S_B^z,\quad M_E=\sum_{j=1}^NS_j^z,\quad M=M_S+M_E.
-\]
-For the field-free model,
-\[
-[H^{(\ex)},M]=0,\qquad
-\dim\mathcal H_m=\binom{N+2}{(N+2)/2-m}.
-\]
-\begin{itemize}\setlength\itemsep{9pt}
-\item Exchange transfers spin between a probe and the bulk.
+\item Each contact moves one unit of $S^z$ between a probe and the bulk.
 \item Probe populations and coherences can both change.
-\item The four conditional-Hamiltonian construction does not apply.
+\item There is no four-branch controlled propagator.
+\item A reduced-channel symmetry also needs a condition on the bulk
+preparation.
 \end{itemize}
-\medskip
-These Hamiltonian sectors exist for any input. A reduced-channel
-symmetry also needs a condition on the bulk preparation.
+\report{Sec.~5.1}
 \end{frame}
 
-\begin{frame}{Exchange channel: the bulk assumption and covariance}
-Assume the fixed bulk preparation satisfies
+\begin{frame}{Exchange channel: covariance and five blocks}
+If the bulk preparation has no coherence between magnetization sectors,
+$[\omega_E,M_E]=0$, then
 \[
-\boxed{[\omega_E,M_E]=0.}
+\boxed{\Lambda_t(e^{-i\theta M_S}Xe^{i\theta M_S})
+=e^{-i\theta M_S}\Lambda_t(X)e^{i\theta M_S}.}
 \]
-A single bulk magnetization sector, or an incoherent mixture of sectors,
-satisfies this condition.
-\[
-V_\theta=e^{-i\theta M_S},\quad W_\theta=e^{-i\theta M_E},
-\quad [U_t,V_\theta\otimes W_\theta]=0.
-\]
-Moving these rotations through the propagator and partial trace gives
-\[
-\boxed{\Lambda_t(V_\theta XV_\theta^\dagger)
-=V_\theta\Lambda_t(X)V_\theta^\dagger.}
-\]
-This covariance preserves coherence order. It permits a change in
-probe magnetization and does not require a unital channel.
-\end{frame}
-
-\begin{frame}{Exchange channel: five coherence-order blocks}
-The basis charges are $(m_{00},m_{01},m_{10},m_{11})=(1,0,0,-1)$.
-An operator $E_{ab}$ has order $q=m_a-m_b$.
-\[
-\mathcal V_q=\operatorname{span}\{E_{ab}:m_a-m_b=q\},\qquad
-\Lambda_t(\mathcal V_q)\subseteq\mathcal V_q.
-\]
+Matrix units $\ket a\bra b$ have coherence order $q=m_a-m_b\in\{-2,\dots,2\}$,
+with probe charges $(1,0,0,-1)$. Covariance forbids mixing different $q$:
 \begin{center}
+\small
 \begin{tabular}{@{}ccl@{}}
 \toprule
-$q$&Dimension&Content\\\midrule
-$0$&6&Four populations and $01\leftrightarrow10$ coherences\\
-$+1,-1$&4 each&Single-unit coherences\\
-$+2,-2$&1 each&$00\leftrightarrow11$ coherences\\\bottomrule
+$q$&Size&Content\\\midrule
+$0$&6&Populations and the $01\leftrightarrow10$ coherence\\
+$\pm1$&4 each&Single-flip coherences\\
+$\pm2$&1 each&$00\leftrightarrow11$ coherence\\\bottomrule
 \end{tabular}
 \end{center}
-\[
-\boxed{\Lambda_t\simeq T^{(-2)}\oplus T^{(-1)}\oplus T^{(0)}
-\oplus T^{(+1)}\oplus T^{(+2)}.}
-\]
-The block dimensions are $1,4,6,4,1$. Their entries remain dynamical quantities.
+The Choi matrix has blocks of the same sizes (at most 70 real parameters,
+not 256). Kraus operators move $0,\pm1,\pm2$ units of charge.
+\report{Secs.~5.2--5.5}
 \end{frame}
 
-\begin{frame}{Exchange channel: Choi blocks and charge-transfer Kraus operators}
-\small
-For the normalized Choi state in output--reference order,
-\[
-[J_t,M_S\otimes I-I\otimes M_S^{\mathsf T}]=0.
-\]
-Grouping $\ket c_{\mathrm{out}}\ket a_R$ by $m_c-m_a$ also gives
-Choi block sizes $1,4,6,4,1$.
-\medskip
-Choose bulk eigenstates of magnetization in the spectral decomposition
-$\omega_E=\sum_\nu p_\nu\ket{\phi_\nu}\bra{\phi_\nu}$ and output basis $\ket r$.
-Then
-\[
-K_{r\nu}=\sqrt{p_\nu}\,{}_E\bra rU_t\ket{\phi_\nu}_E,\qquad
-[M_S,K_{r\nu}]=(\mu_\nu-\mu_r)K_{r\nu}.
-\]
-The two probes permit charge transfers only in $\{-2,-1,0,1,2\}$.
-\medskip
-Choi blocks and superoperator blocks are different rearrangements of the
-coefficients. Equal dimensions do not give equal spectra.
-\end{frame}
-
-\begin{frame}{A fixed total charge gives a restricted state trajectory}
-If the \emph{global} preparation lies in one total-$M$ sector,
-orthogonality of the conditional bulk charges gives
+\begin{frame}{Fixed total charge gives an $X$-shaped state}
+If the \emph{global} state lies in one total-$M$ sector, bulk kets of
+different charge are orthogonal, and
 \[
 \rho_{AB}(t)=\begin{pmatrix}
 p_{00}&0&0&0\\
 0&p_{01}&c&0\\
 0&c^*&p_{10}&0\\
 0&0&0&p_{11}
-\end{pmatrix}.
-\]
-\[
+\end{pmatrix},\qquad
 C=2\max\{0,|c|-\sqrt{p_{00}p_{11}}\}.
 \]
-For fixed bulk charge, $\ket{++}$ instead occupies \emph{three} total-charge
-sectors. Its reduced output need not have this restricted $X$ form.
-\end{frame}
-
-\begin{frame}{Quantum-state texture and the return probability}
-In the computational basis, prepare the probes in $f_1=\ket{++}\bra{++}$.
-For its output $\rho_f(t)=\Lambda_t(f_1)$, define
-\[
-\Sigma(\rho_f)=\sum_{a,b}(\rho_f)_{ab},\qquad
-p_f=\bra{++}\rho_f\ket{++}=\frac{\Sigma(\rho_f)}4.
-\]
-\[
-\boxed{\Omega_{T_F}=1-p_f,\qquad \Omega_R=-\ln p_f.}
-\]
-Initially $p_f=1$. Always $0\le p_f\le1$.
-Rugosity diverges at $p_f=0$.
-\medskip
-These definitions apply in both coupling regimes.
-Texture depends on phases in the chosen basis and is distinct from purity
-and probe entanglement.
-\end{frame}
-
-\begin{frame}{One measurement setting gives the grand sum}
-Since $4f_1=(I+\sigma_A^x)(I+\sigma_B^x)$,
-\[
-\boxed{\Sigma(\rho_f)=1+\langle\sigma_A^x\rangle
-+\langle\sigma_B^x\rangle+\langle\sigma_A^x\sigma_B^x\rangle.}
-\]
-Measure both probes along $x$:
-\[
-p_f=P_{++}^{(x)}.
-\]
-\begin{itemize}\setlength\itemsep{9pt}
-\item This setting gives the texture scalar in either regime.
-\item The Ising channel requires six complex output coherences for full
-reconstruction. Eight local Pauli settings suffice.
-\item All measurements use the same input preparation $\ket{++}$.
+\begin{itemize}\setlength\itemsep{6pt}
+\item Only the $01\leftrightarrow10$ coherence survives. It carries all
+probe--probe entanglement.
+\item With a fixed-charge bulk, $\ket{++}$ occupies \emph{three} total-charge
+sectors, so its output need not have this form.
 \end{itemize}
+\report{Sec.~5.6}
 \end{frame}
 
-\begin{frame}{Ising texture gives two channel fidelities}
-Using $\rho_f=\Gamma/4$,
+% ==============================================================
+\section{Texture}
+% ==============================================================
+
+\begin{frame}{Quantum-state texture from one measurement setting}
+Prepare $f_1=\ket{++}\bra{++}$, the textureless state of the
+computational basis, and let $\rho_f(t)=\Lambda_t(f_1)$:
 \[
-p_f=\frac1{16}\sum_{a,b}\gamma_{ab}
-=\frac14+\frac18\sum_{a<b}\Re\gamma_{ab}.
+p_f=\bra{++}\rho_f\ket{++}=\tfrac14\sum_{a,b}(\rho_f)_{ab},\qquad
+\boxed{\Omega_{T_F}=1-p_f,\qquad \Omega_R=-\ln p_f}
+\quad\text{\cite{Parisio2024,Vieira2026}.}
 \]
-The entanglement fidelity relative to the identity satisfies
-\[
-F_e=\bra{\Phi_4}J_t\ket{\Phi_4}=p_f.
-\]
-Consequently,
-\[
-\boxed{F_{\mathrm{avg}}=\frac{4F_e+1}{5}
-=\frac{1+\Sigma(\rho_f)}5.}
-\]
-These concern the two-probe channel relative to the identity.
-They are not an $A$-to-$B$ state-transfer fidelity.
+\begin{itemize}\setlength\itemsep{6pt}
+\item $p_f$ is the return probability. Measure both probes along $x$:
+$p_f=P^{(x)}_{++}$.
+\item Equivalently,
+$4p_f=1+\langle\sigma_A^x\rangle+\langle\sigma_B^x\rangle+\langle\sigma_A^x\sigma_B^x\rangle$.
+\item This holds in both regimes. Texture depends on phases, and is distinct
+from purity and from entanglement.
+\end{itemize}
+\report{Sec.~2.4}
 \end{frame}
 
-\begin{frame}{Ising texture: response and preservation}
-For any channel, its grand-sum response operator is
+\begin{frame}{Ising texture is a channel fidelity}
+Using $\rho_f=\Gamma/4$:
 \[
-\mathcal R_t=4\Lambda_t^*(f_1),\qquad
-\Sigma[\Lambda_t(X)]=\Tr(\mathcal R_tX).
+p_f=\frac14+\frac18\sum_{a<b}\operatorname{Re}\Gamma_{ab},\qquad
+\boxed{F_e=p_f,\qquad F_{\rm avg}=\frac{4p_f+1}{5}}\quad\text{\cite{Nielsen2002}.}
 \]
-For the Ising Schur map,
-\[
-\boxed{\mathcal R_t=\Gamma(t)^{\mathsf T}.}
-\]
-The transpose is ordinary.
-\medskip
-Within this family, either $\Lambda_t(f_1)=f_1$ or
-$\Lambda_t^*(f_1)=f_1$ forces every $\gamma_{ab}=1$.
-Thus vanishing fidelity texture identifies the identity channel within
-the known Ising family.
+\begin{itemize}\setlength\itemsep{6pt}
+\item These are fidelities of the two-probe map relative to the identity.
+They are not $A\to B$ transfer fidelities.
+\item The grand-sum response operator is $\mathcal R_t=\Gamma^{\mathsf T}$.
+\item $\Omega_{T_F}=0$ only for the identity channel within the Ising family.
+\item One real number: it does not fix the six coherences, purity,
+entanglement or divisibility.
+\end{itemize}
+\report{Secs.~3.10 and 3.11}
 \end{frame}
 
 \begin{frame}{Exchange texture: what the same input determines}
 With a magnetization-invariant bulk, $f_1$ probes all five coherence orders.
-\medskip
-One output gives the action of each block on \emph{one vector} in that
-block. The $6$- and $4$-dimensional blocks remain undetermined.
-\medskip
-The one-dimensional highest-order sector is an exception:
-\[
-\Lambda_t(E_{00,11})=\eta_{+2}(t)E_{00,11},\qquad
-\boxed{\eta_{+2}(t)=4[\rho_f(t)]_{00,11}.}
-\]
-The scalar texture remains $1-p_f$ or $-\ln p_f$.
-Its equality with a channel identity-fidelity expression requires the
-Ising Schur structure and is not a general exchange result.
-\end{frame}
-
-\begin{frame}{Applicability of the symmetry reduction}
-The exchange block decomposition needs both
-\[
-[H,M_S+M_E]=0\qquad\text{and}\qquad[\omega_E,M_E]=0.
-\]
-\begin{itemize}\setlength\itemsep{9pt}
-\item Transverse bulk fields generally violate total-magnetization conservation.
-\item Coherence between bulk magnetization sectors generally removes channel
-phase covariance, even for a conserving Hamiltonian.
-\item The Ising Schur channel and $\Gamma=4\rho_f$ remain valid in both cases,
-because the probe $z$ components are still conserved.
+\begin{itemize}\setlength\itemsep{7pt}
+\item One output fixes each block's action on \emph{one vector} only. The
+$6$- and $4$-dimensional blocks remain undetermined.
+\item Exception, the one-dimensional sector:
+$\Lambda_t(\ket{00}\bra{11})=\xi_{+2}(t)\ket{00}\bra{11}$, with
+$\boxed{\xi_{+2}=4[\rho_f]_{00,11}}$.
+\item $F_e=p_f$ requires the Schur structure; $F_{\rm avg}=(4F_e+1)/5$
+always holds.
 \end{itemize}
-\medskip
-With transverse bulk fields, exchange dynamics generally couples different
-total-magnetization sectors.
+\report{Sec.~5.7}
 \end{frame}
 
-\begin{frame}{Channel structure and dynamical coefficients}
+\begin{frame}{Summary}
 \begin{center}
 \small
-\begin{tabular}{@{}p{2.5cm}p{4.7cm}p{5.2cm}@{}}
+\begin{tabular}{@{}p{2.7cm}p{4.9cm}p{5.0cm}@{}}
 \toprule
 &Ising contacts&Exchange contacts\\\midrule
-Map structure&$\Gamma\circ X$&Five coherence-order blocks under the symmetry assumptions\\[5pt]
-Populations&Fixed&Allowed\\[5pt]
-Information in $\rho_f$&Complete channel&Partial block information\\[5pt]
-Coefficients&Six complex conditional overlaps&Entries of the symmetry blocks\\\bottomrule
+Map structure&$\Gamma\circ X$, exact&Five coherence-order blocks\\[4pt]
+Populations&Frozen&Can move\\[4pt]
+Generator&$\le3$ rates, diagonal $L_k$, closed form&Block entries from dynamics\\[4pt]
+Information in $\rho_f$&Complete channel&Partial block information\\[4pt]
+Assumptions&Any fixed $\omega_E$, even with transverse fields&$[H,M]=0$ and $[\omega_E,M_E]=0$\\\bottomrule
 \end{tabular}
 \end{center}
 \medskip
-The symmetry reduction fixes the allowed mixing of probe operators.
-Their time-dependent coefficients require the bulk dynamics.
+Symmetry fixes which probe operators can mix. The time dependence of the
+coefficients requires the many-body bulk dynamics.
 \end{frame}
 
-\begin{frame}{Entanglement conventions}
+\begin{frame}{Conventions}
 \small
-Probe entropy is $S(\rho)=-\Tr\rho\ln\rho$ in nats.
-For a globally pure state, $S(\rho_{AB})$ measures entanglement across
-$AB|E$. Probe concurrence and negativity concern $A|B$.
-\medskip
-The normalized Choi state has trace one. Its reference--output
-entanglement is distinct from entanglement between the two probes.
+\begin{itemize}\setlength\itemsep{6pt}
+\item Probe entropy $S(\rho)=-\Tr\rho\ln\rho$ in nats. For a globally pure
+state, $S(\rho_{AB})$ measures entanglement across $AB|E$.
+\item Concurrence and negativity concern $A|B$. For two qubits,
+$C>0\iff\mathcal N>0$ \cite{Wootters1998}.
+\item The normalized Choi state has trace one. Its reference--output
+entanglement is distinct from entanglement between the probes.
+\item Notation: $\Gamma_{ab}$ coherence factors, $\eta_{ab}$ their
+logarithmic derivatives, $\gamma_k$ canonical rates, $\xi_{\pm2}$ exchange
+multipliers.
+\end{itemize}
 \end{frame}
 
 \begin{frame}[allowframebreaks]{References}
 \footnotesize
-\nocite{Parisio2024,Vieira2026,Nielsen2002,Wootters1998}
+\nocite{Parisio2024,Vieira2026,Nielsen2002,Wootters1998,Hall2014}
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 \end{frame}

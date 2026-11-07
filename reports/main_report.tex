@@ -1,6 +1,7 @@
 % Image-free report with a shared BibTeX bibliography in references.bib.
 % Build from reports/: pdflatex -synctex=1 -interaction=nonstopmode -halt-on-error main_report.tex
 % Then run: bibtex main_report; pdflatex -synctex=1 main_report.tex (twice).
+% This report contains every derivation; main_beamer.tex states the results.
 \documentclass[11pt,a4paper]{article}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
@@ -26,7 +27,10 @@
 \newcommand{\ex}{\mathrm{ex}}
 \newcommand{\OmF}{\Omega_{T_F}}
 \newcommand{\OmR}{\Omega_R}
+\newcommand{\dmat}{\mathsf d}
+\newcommand{\Heff}{H_{\mathrm{eff}}}
 \newtheorem{proposition}{Proposition}[section]
+\newtheorem{lemma}[proposition]{Lemma}
 \title{Two spins coupled to an XXZ bulk\\[3pt]
 \large Reduced dynamics and quantum-state texture}
 \author{Spin transport project}
@@ -99,6 +103,28 @@ or Markov approximation. The channel structure fixes which probe
 operators can mix; their time dependence depends on the bulk Hamiltonian
 and its initial state.
 
+\paragraph{Notation.}
+To avoid collisions between symbols, we use the following conventions
+throughout.
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Symbol & Meaning\\\midrule
+$\Gamma(t)$, $\Gamma_{ab}(t)$ & Ising Schur matrix and its complex, dimensionless entries\\
+$\eta_{ab}(t)=\dot\Gamma_{ab}/\Gamma_{ab}$ & logarithmic derivative of a coherence factor\\
+$\kappa_{ab}$, $\omega_{ab}$ & coherence damping rate and phase rate, $\eta_{ab}=-\kappa_{ab}+i\omega_{ab}$\\
+$\dmat=S+iA$ & $3\times3$ decoherence matrix on the diagonal operator sector\\
+$\gamma_k(t)$ & canonical decoherence rates (eigenvalues of $\dmat$)\\
+$F_\mu$, $G=(g^a_\mu)$ & diagonal traceless operators and their eigenvalue matrix\\
+$\Heff=\diag(h_a)$ & canonical (effective) probe Hamiltonian\\
+$\xi_{\pm2}$ & exchange-channel multiplier of the one-dimensional sectors $q=\pm2$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Configuration labels $a,b,c,d$ run over $00,01,10,11$. The index
+$\mu,\nu\in\{1,2,3\}$ labels $F_1,F_2,F_3$; $k$ labels canonical modes.
+The couplings $g_A,g_B$ are unrelated to the eigenvalues $g^a_\mu$.
+
 \section{Model, conventions and the reduced channel}
 \label{sec:model}
 
@@ -129,6 +155,8 @@ The reference bulk and the two alternative interactions are
    +\frac{g_B}{2}(S_N^+S_B^-+S_N^-S_B^+).
  \label{eq:exchange}
 \end{align}
+The second line of Eq.~\eqref{eq:exchange} follows from
+$S^+S'^-+S^-S'^+=2(S^xS'^x+S^yS'^y)$ for commuting spins $S$ and $S'$.
 Thus $H^{(r)}=H_E+V_r$, with $r=\ZZ$ or $\ex$.
 Identity operators on the remaining spins are implicit. The parameters
 $J,g_A,g_B$ have energy units and $\Delta$ is dimensionless. Equal
@@ -156,15 +184,31 @@ The initial state and reduced evolution are
 The product assumption separates the pair from the bulk; it imposes no
 factorization between $A$ and $B$ for the definition of the channel.
 Only the texture protocol fixes their input to $\ket{++}$.
+The bulk state $\omega_E$ may be pure or mixed, thermal or nonthermal,
+and need not commute with $H_E$ or with the bulk magnetization unless a
+specific result states otherwise. Changing $\omega_E$ changes the channel.
 
 To see complete positivity and trace preservation directly, write
-$\omega_E=\sum_\nu p_\nu\ket{\phi_\nu}\bra{\phi_\nu}$ and choose any
-orthonormal bulk output basis $\{\ket r\}$. Then
+$\omega_E=\sum_\nu p_\nu\ket{\phi_\nu}\bra{\phi_\nu}$ with $p_\nu\ge0$,
+$\sum_\nu p_\nu=1$, and choose any orthonormal bulk output basis
+$\{\ket r\}$. Inserting $I_E=\sum_r\ket r\bra r$ into the partial trace,
+\begin{equation}
+ \Lambda_t(X)=\sum_{r,\nu}p_\nu\,{}_E\bra rU_t\ket{\phi_\nu}_E\,X\,
+ {}_E\bra{\phi_\nu}U_t^\dagger\ket r_E .
+\end{equation}
+Each ${}_E\bra rU_t\ket{\phi_\nu}_E$ is an operator on $\HH_{AB}$. Hence
 \begin{equation}
  K_{r\nu}(t)=\sqrt{p_\nu}\,{}_E\bra r U_t\ket{\phi_\nu}_E,
  \quad \Lambda_t(X)=\sum_{r,\nu}K_{r\nu}XK_{r\nu}^\dagger,
- \quad \sum_{r,\nu}K_{r\nu}^\dagger K_{r\nu}=I_4.
  \label{eq:kraus}
+\end{equation}
+and
+\begin{equation}
+ \sum_{r,\nu}K_{r\nu}^\dagger K_{r\nu}
+ =\sum_\nu p_\nu\,{}_E\bra{\phi_\nu}U_t^\dagger
+ \Bigl(\sum_r\ket r\bra r\Bigr)U_t\ket{\phi_\nu}_E
+ =\sum_\nu p_\nu\,\langle\phi_\nu|\phi_\nu\rangle\,I_4=I_4 .
+ \label{eq:krausTP}
 \end{equation}
 These are formal exact expressions in both regimes; evaluating them for
 an interacting bulk remains a many-body problem. Correlated probe--bulk
@@ -178,6 +222,12 @@ The \emph{normalized} Choi state, with the output factor first, is
  \ket{\Phi_4}=\frac12\sum_{a=1}^4\ket a_{AB}\ket a_R,
  \qquad J_t=(\Lambda_t\otimes\id_R)(\ket{\Phi_4}\bra{\Phi_4}).
  \label{eq:choi}
+\end{equation}
+Since $\ket{\Phi_4}\bra{\Phi_4}=\frac14\sum_{a,b}E_{ab}\otimes E_{ab}$
+with $E_{ab}=\ket a\bra b$,
+\begin{equation}
+ J_t=\frac14\sum_{a,b}\Lambda_t(E_{ab})\otimes E_{ab}.
+ \label{eq:choigeneral}
 \end{equation}
 It obeys $J_t\succeq0$, $\Tr J_t=1$ and
 $\Tr_{AB}J_t=I_R/4$. The corresponding unnormalized Choi matrix is
@@ -201,6 +251,8 @@ probe state, the grand sum is real and satisfies
  \Sigma(\rho)=\sum_{a,b}\rho_{ab}=4\bra{f_1}\rho\ket{f_1},
  \qquad 0\le\Sigma(\rho)\le4.
 \end{equation}
+The equality follows from $\bra{f_1}\rho\ket{f_1}=\frac14\sum_{a,b}\rho_{ab}$;
+the bounds follow because $\bra{f_1}\rho\ket{f_1}$ is a probability.
 For the single physical input $f_1\otimes\omega_E$, set
 \begin{equation}
  p_f(t)=\bra{f_1}\rho_f(t)\ket{f_1}=\Sigma(\rho_f(t))/4,
@@ -213,9 +265,9 @@ $p_f=1$ and both textures vanish. The texturizing powers evaluated on
 the unique textureless input are $\OmF(t)=T_F[\Lambda_t(f_1)]$ and
 $\OmR(t)=R[\Lambda_t(f_1)]$.
 
-Since $4f_1=(I+\sigma_A^x)(I+\sigma_B^x)$,
+Since $\ket+\bra+=(I+\sigma^x)/2$, we have $4f_1=(I+\sigma_A^x)(I+\sigma_B^x)$, and
 \begin{equation}
- \Sigma(\rho_f)=1+\langle\sigma_A^x\rangle
+ \Sigma(\rho_f)=\Tr[4f_1\rho_f]=1+\langle\sigma_A^x\rangle
  +\langle\sigma_B^x\rangle+\langle\sigma_A^x\sigma_B^x\rangle.
  \label{eq:measurement}
 \end{equation}
@@ -225,10 +277,11 @@ This uses one measurement setting, whereas full channel reconstruction
 in the Ising case uses the additional coherence measurements described
 in Section~\ref{sec:oneinput}.
 
-For any channel, the dual map gives the grand-sum response operator
+For any channel, the dual map $\Lambda_t^*$, defined by
+$\Tr[Y\Lambda_t(X)]=\Tr[\Lambda_t^*(Y)X]$, gives the grand-sum response operator
 \begin{equation}
  \mathcal R_t=4\Lambda_t^*(f_1),\qquad
- \Sigma[\Lambda_t(X)]=\Tr(\mathcal R_tX).
+ \Sigma[\Lambda_t(X)]=\Tr[4f_1\Lambda_t(X)]=\Tr(\mathcal R_tX).
  \label{eq:response}
 \end{equation}
 These definitions apply in both coupling regimes. Their consequences
@@ -243,18 +296,31 @@ and~\ref{sec:extexture}.
 
 \subsection{Four conditional Hamiltonians}
 
-Since $[H^{(\ZZ)},S_A^z]=[H^{(\ZZ)},S_B^z]=0$, label each probe basis
-state by $a=(s_A,s_B)$ with $s_A,s_B=\pm1/2$, and set
-$P_a=\ket a\bra a$. The Hamiltonian and propagator are
-\begin{align}
- H^{(\ZZ)}&=\sum_a P_a\otimes H_a,
- &H_a&=H_E+g_A s_A S_1^z+g_B s_B S_N^z,\label{eq:conditional}\\
- U_t&=\sum_aP_a\otimes U_a(t),
- &U_a(t)&=e^{-iH_at}.
-\end{align}
-This follows by inserting the spectral decompositions of $S_A^z,S_B^z$;
-orthogonal projectors exponentiate independently. It is exact for any
-bulk Hamiltonian acting only on $E$, including one with transverse fields.
+The probe operators $S_A^z,S_B^z$ commute with $H_E$ (which acts only on
+$E$) and with $V_{\ZZ}$ (which contains only $z$ operators on the probes).
+Hence $[H^{(\ZZ)},S_A^z]=[H^{(\ZZ)},S_B^z]=0$. Label each probe basis
+state by $a=(s_A^a,s_B^a)$ with $s_A^a,s_B^a=\pm1/2$, and set
+$P_a=\ket a\bra a$. The projectors satisfy
+\begin{equation}
+ P_aP_b=\delta_{ab}P_a,\qquad \sum_aP_a=I_{AB},\qquad
+ S_A^z=\sum_as_A^aP_a,\qquad S_B^z=\sum_as_B^aP_a .
+\end{equation}
+Inserting these resolutions into
+$H^{(\ZZ)}=I_{AB}\otimes H_E+g_AS_A^z\otimes S_1^z+g_BS_B^z\otimes S_N^z$ gives
+\begin{equation}
+ H^{(\ZZ)}=\sum_a P_a\otimes H_a,\qquad
+ H_a=H_E+g_A s_A^a S_1^z+g_B s_B^a S_N^z.
+ \label{eq:conditional}
+\end{equation}
+By induction, $(H^{(\ZZ)})^n=\sum_aP_a\otimes H_a^n$: if it holds for $n$,
+then $(H^{(\ZZ)})^{n+1}=\sum_{a,b}P_aP_b\otimes H_a^nH_b=\sum_aP_a\otimes H_a^{n+1}$.
+Summing the exponential series term by term,
+\begin{equation}
+ U_t=\sum_aP_a\otimes U_a(t),\qquad U_a(t)=e^{-iH_at}.
+ \label{eq:controlled}
+\end{equation}
+This is exact for any bulk Hamiltonian acting only on $E$, including one
+with transverse fields.
 
 For equal couplings, the four perturbations are
 \begin{equation}
@@ -267,57 +333,161 @@ For equal couplings, the four perturbations are
 \end{array}.
 \end{equation}
 These configurations label invariant branches. The input may still
-coherently occupy all four branches.
+coherently occupy all four branches. In general, the differences
+\begin{equation}
+ H_a-H_b=g_A(s_A^a-s_A^b)S_1^z+g_B(s_B^a-s_B^b)S_N^z
+ \label{eq:difference}
+\end{equation}
+involve only the two bulk boundary operators.
+
+\subsection{Reduced state for an arbitrary probe input}
+\label{sec:reducedstate}
+
+Take an arbitrary probe state and the fixed bulk state,
+\begin{equation}
+ \rho_{AB}(0)=\sum_{a,b}r_{ab}E_{ab},\qquad
+ \rho_{ABE}(0)=\sum_{a,b}r_{ab}\,E_{ab}\otimes\omega_E .
+\end{equation}
+Inserting Eq.~\eqref{eq:controlled} on both sides,
+\begin{equation}
+ \rho_{ABE}(t)=U_t\rho_{ABE}(0)U_t^\dagger
+ =\sum_{c,d}\sum_{a,b}r_{ab}\,(P_cE_{ab}P_d)\otimes(U_c\omega_EU_d^\dagger).
+\end{equation}
+Since $P_cE_{ab}P_d=\delta_{ca}\delta_{db}E_{ab}$,
+\begin{equation}
+ \rho_{ABE}(t)=\sum_{a,b}r_{ab}\,E_{ab}\otimes U_a(t)\,\omega_E\,U_b(t)^\dagger .
+ \label{eq:jointstate}
+\end{equation}
+The bulk operator multiplying $E_{ab}$ depends on the ordered pair
+$(a,b)$, although the initial bulk state is the same for all pairs.
+Taking the partial trace term by term,
+\begin{equation}
+ \rho_{AB}(t)=\sum_{a,b}r_{ab}\,\Gamma_{ab}(t)\,E_{ab},\qquad
+ \Gamma_{ab}(t)=\Tr_E[U_a(t)\omega_EU_b(t)^\dagger]
+ =\Tr_E[\omega_EU_b(t)^\dagger U_a(t)],
+ \label{eq:gamma}
+\end{equation}
+where the last form uses cyclicity of the trace on $E$. In the
+computational order $(00,01,10,11)$ the full output is
+\begin{equation}
+\rho_{AB}(t)=
+\begin{pmatrix}
+ r_{00,00}&r_{00,01}\Gamma_{00,01}&r_{00,10}\Gamma_{00,10}&r_{00,11}\Gamma_{00,11}\\
+ r_{01,00}\Gamma_{01,00}&r_{01,01}&r_{01,10}\Gamma_{01,10}&r_{01,11}\Gamma_{01,11}\\
+ r_{10,00}\Gamma_{10,00}&r_{10,01}\Gamma_{10,01}&r_{10,10}&r_{10,11}\Gamma_{10,11}\\
+ r_{11,00}\Gamma_{11,00}&r_{11,01}\Gamma_{11,01}&r_{11,10}\Gamma_{11,10}&r_{11,11}
+\end{pmatrix},
+\label{eq:sixteen}
+\end{equation}
+where $\Gamma_{aa}=1$ and $\Gamma_{ba}=\Gamma_{ab}^*$ have been used
+(Section~\ref{sec:schurconstraints}). All populations $r_{aa}$ are
+unchanged; only the six independent complex coherences evolve.
+
+For a pure bulk $\omega_E=\ket{\phi_0}\bra{\phi_0}$ and a pure probe input
+$\sum_ac_a\ket a$, the global state is
+$\sum_ac_a\ket a\otimes U_a\ket{\phi_0}$ and
+$\Gamma_{ab}=\bra{\phi_0}U_b^\dagger U_a\ket{\phi_0}$ is the complex overlap
+of two conditional bulk histories. Its squared modulus is a conditional
+Loschmidt echo; the complex amplitude, including its phase, is needed
+for the channel.
 
 \subsection{Schur form and its physical constraints}
+\label{sec:schurconstraints}
 
-Let $E_{ab}=\ket a\bra b$. Since
-$P_cE_{ab}P_d=\delta_{ca}\delta_{db}E_{ab}$, tracing the controlled
-propagator gives
+Since Eq.~\eqref{eq:gamma} holds for every input, the channel acts on
+each matrix unit as
 \begin{equation}
- \boxed{\Lambda_t(E_{ab})=\gamma_{ab}(t)E_{ab},\qquad
+ \boxed{\Lambda_t(E_{ab})=\Gamma_{ab}(t)E_{ab},\qquad
  \Lambda_t(X)=\Gamma(t)\circ X,}
  \label{eq:schur}
 \end{equation}
-where $\circ$ is the entrywise Schur product and
-\begin{equation}
- \gamma_{ab}(t)=\Tr_E[U_a(t)\omega_E U_b(t)^\dagger].
- \label{eq:gamma}
-\end{equation}
-We write $\Gamma(t)=(\gamma_{ab}(t))_{a,b=1}^4$: uppercase $\Gamma$
-denotes the Schur matrix, and lowercase $\gamma_{ab}$ its complex,
-dimensionless entries. The channel itself is $\Lambda_t$.
-For a pure bulk, this is the complex conditional overlap
-$\bra{\phi_0}U_b^\dagger U_a\ket{\phi_0}$. Its squared modulus is a
-conditional Loschmidt echo; the complex amplitude, including its phase,
-is needed for the channel.
+where $\circ$ is the entrywise Schur (Hadamard) product and
+$\Gamma(t)=(\Gamma_{ab}(t))_{a,b=1}^4$. The sixteen $E_{ab}$ are
+superoperator eigenoperators, with eigenvalues $\Gamma_{ab}$, four of
+which equal one.
 
 The matrix $\Gamma$ is a correlation matrix:
 \begin{equation}
- \Gamma=\Gamma^\dagger\succeq0,\qquad \gamma_{aa}=1,
- \qquad |\gamma_{ab}|\le1,\qquad \gamma_{ab}(0)=1.
+ \Gamma=\Gamma^\dagger\succeq0,\qquad \Gamma_{aa}=1,
+ \qquad |\Gamma_{ab}|\le1,\qquad \Gamma_{ab}(0)=1.
  \label{eq:correlation}
 \end{equation}
-Indeed, setting $k_{r\nu,a}=\sqrt{p_\nu}\bra rU_a\ket{\phi_\nu}$
-gives $\gamma_{ab}=\sum_{r,\nu}k_{r\nu,a}k_{r\nu,b}^*$, a positive
-Gram factorization. The unit diagonal follows from unitarity and
-$\Tr\omega_E=1$; $2\times2$ principal minors give the modulus bound.
-Conversely, every positive matrix with unit diagonal defines a CPTP
-Schur map. This converse characterizes the map class, not which members
-a specified XXZ Hamiltonian realizes at a given time.
+\emph{Proof.} Set $A_a(t)=U_a(t)\sqrt{\omega_E}$, so that
+$\Gamma_{ab}=\Tr_E(A_aA_b^\dagger)$. For any $v\in\mathbb C^4$,
+\begin{equation}
+ v^\dagger\Gamma v=\sum_{a,b}v_a^*\Gamma_{ab}v_b
+ =\Tr_E\Bigl[\Bigl(\sum_av_a^*A_a\Bigr)\Bigl(\sum_bv_b^*A_b\Bigr)^\dagger\Bigr]\ge0,
+\end{equation}
+because $(\sum_bv_b^*A_b)^\dagger=\sum_bv_bA_b^\dagger$ and $\Tr(YY^\dagger)\ge0$.
+Hence $\Gamma=\Gamma^\dagger\succeq0$. Unitarity and $\Tr\omega_E=1$
+give $\Gamma_{aa}=\Tr_E(U_a\omega_EU_a^\dagger)=1$. Nonnegativity of each
+$2\times2$ principal minor gives
+$\Gamma_{aa}\Gamma_{bb}-|\Gamma_{ab}|^2=1-|\Gamma_{ab}|^2\ge0$.
+Finally $U_a(0)=I$ gives $\Gamma_{ab}(0)=1$. Equivalently, for a
+decomposition $\omega_E=\sum_\nu p_\nu\ket{\phi_\nu}\bra{\phi_\nu}$ and an
+output basis $\{\ket r\}$, the numbers
+$k_{r\nu,a}=\sqrt{p_\nu}\bra rU_a\ket{\phi_\nu}$ give the Gram
+factorization $\Gamma_{ab}=\sum_{r,\nu}k_{r\nu,a}k_{r\nu,b}^*$.\qed
 
-All four populations are fixed and $\Lambda_t(I_4)=I_4$. Six complex
-off-diagonal factors specify the nontrivial action, subject to positivity.
-The common interacting bulk can correlate the two probes, so a product
-of independent single-probe dephasing channels cannot be assumed.
-There is no general monotonicity of $|\gamma_{ab}(t)|$.
+Conversely, every positive matrix with unit diagonal defines a CPTP
+Schur map, by the Kraus construction of Eq.~\eqref{eq:diagkraus}. This
+converse characterizes the map class, not which members a specified XXZ
+Hamiltonian realizes at a given time.
+
+All four populations are fixed and $\Lambda_t(I_4)=\sum_a\Gamma_{aa}E_{aa}=I_4$,
+so the channel is unital. Six complex off-diagonal factors specify the
+nontrivial action, subject to positivity. Because the superoperator is
+diagonal in the Hilbert--Schmidt orthonormal basis $\{E_{ab}\}$, its
+singular values are $|\Gamma_{ab}|$. The common interacting bulk can
+correlate the two probes, so a product of independent single-probe
+dephasing channels cannot be assumed. There is no general monotonicity
+of $|\Gamma_{ab}(t)|$.
+
+\subsection{Exact expressions for the coherence factors and their derivatives}
+\label{sec:gammaderivative}
+
+For any convex decomposition $\omega_E=\sum_\nu p_\nu\ket{\phi_\nu}\bra{\phi_\nu}$,
+Eq.~\eqref{eq:gamma} reads
+\begin{equation}
+ \Gamma_{ab}(t)=\sum_\nu p_\nu
+ \bra{\phi_\nu}U_b(t)^\dagger U_a(t)\ket{\phi_\nu}.
+ \label{eq:gammaensemble}
+\end{equation}
+With $\dot U_a=-iH_aU_a$ and $\dot U_b^\dagger=iU_b^\dagger H_b$
+(both using $[H_a,U_a]=[H_b,U_b]=0$),
+\begin{equation}
+ \dot\Gamma_{ab}
+ =\Tr_E\bigl[\omega_E(iU_b^\dagger H_b)U_a+\omega_EU_b^\dagger(-iH_aU_a)\bigr]
+ =-i\Tr_E\bigl[\omega_EU_b(t)^\dagger(H_a-H_b)U_a(t)\bigr].
+ \label{eq:gammadot}
+\end{equation}
+With Eq.~\eqref{eq:difference},
+\begin{equation}
+ \dot\Gamma_{ab}=-i\Bigl[g_A(s_A^a-s_A^b)\Tr_E(\omega_EU_b^\dagger S_1^zU_a)
+ +g_B(s_B^a-s_B^b)\Tr_E(\omega_EU_b^\dagger S_N^zU_a)\Bigr].
+ \label{eq:gammadotboundary}
+\end{equation}
+Only the two boundary operators enter. No numerical time
+differentiation is required once the conditional states and the matrix
+elements of $S_1^z$ and $S_N^z$ are available.
+
+At $t=0$, $U_a(0)=I$ gives
+\begin{equation}
+ \Gamma_{ab}(0)=1,\qquad
+ \dot\Gamma_{ab}(0)=-i(\varepsilon_a-\varepsilon_b),\qquad
+ \varepsilon_a=\Tr_E(\omega_EH_a)\in\mathbb R .
+ \label{eq:initialderivative}
+\end{equation}
+The initial derivative is purely imaginary. Its consequence for the
+canonical generator is derived in Section~\ref{sec:initial}.
 
 \subsection{Dephasing and depolarization}\label{sec:depolarizing}
 
 A depolarizing map has the form
 $\mathcal D_\lambda(X)=\lambda X+(1-\lambda)\Tr(X)I_4/4$.
 The Ising map fixes every $P_a$. Requiring
-$\mathcal D_\lambda(P_a)=P_a$ forces $\lambda=1$.
+$\mathcal D_\lambda(P_a)=\lambda P_a+(1-\lambda)I_4/4=P_a$ gives
+$(1-\lambda)(I_4/4-P_a)=0$, which forces $\lambda=1$.
 Thus a nonidentity Ising Schur map cannot be a depolarizing map.
 Dephasing includes coherent diagonal rotations and revivals; it does
 not imply irreversible or strictly dissipative evolution.
@@ -327,6 +497,7 @@ not imply irreversible or strictly dissipative evolution.
 
 For the texture preparation $f_1$ of Eq.~\eqref{eq:f1}, with full
 output state $\rho_f(t)=\Lambda_t(f_1)$, the Schur form gives
+$[\rho_f(t)]_{ab}=\Gamma_{ab}(t)(f_1)_{ab}=\Gamma_{ab}(t)/4$, hence
 \begin{equation}
  \boxed{\rho_f(t)=\Gamma(t)/4,\qquad
  \Gamma(t)=4\rho_f(t),\qquad
@@ -336,82 +507,153 @@ output state $\rho_f(t)=\Lambda_t(f_1)$, the Schur form gives
 Consequently the \emph{entire density matrix} of one known output
 determines every property of the instantaneous Ising channel. Temporal
 properties require these outputs at the relevant times. A single scalar
-texture value cannot replace this matrix.
+texture value cannot replace this matrix. This identity is special to
+the Ising Schur family; it does not hold for arbitrary two-probe channels.
 
 The populations of $\rho_f$ are $1/4$, so its $12$ remaining real
 parameters are its six complex coherences. In a Pauli expansion,
 $\langle ZI\rangle=\langle IZ\rangle=\langle ZZ\rangle=0$.
 The eight local measurement settings $(\alpha,\beta)\ne(z,z)$,
-$\alpha,\beta\in\{x,y,z\}$, recover the other Pauli coefficients,
+$\alpha,\beta\in\{x,y,z\}$, recover the other twelve Pauli coefficients,
 including single-spin expectations from their marginals. Thus one
 input preparation together with output tomography suffices.
 
-\subsection{Choi, Kraus and spectral consequences}
-
-Let $W:\HH_{AB}\to\HH_{AB}\otimes\HH_R$ be the isometry
-$W\ket a=\ket{aa}$. Equations~\eqref{eq:choi} and \eqref{eq:schur} give
+The time-local data of Section~\ref{sec:canonical} follow from the same
+output and its time derivative:
 \begin{equation}
- J_t=\frac14\sum_{a,b}\gamma_{ab}\ket{aa}\bra{bb}
-     =W\rho_f(t)W^\dagger.
+ \dot\Gamma(t)=4\dot\rho_f(t),\qquad
+ \eta_{ab}(t)=\frac{\dot\Gamma_{ab}(t)}{\Gamma_{ab}(t)}
+ =\frac{[\dot\rho_f(t)]_{ab}}{[\rho_f(t)]_{ab}}
+ \quad(a\ne b,\ [\rho_f(t)]_{ab}\ne0).
+ \label{eq:etafromrho}
+\end{equation}
+
+\subsection{Choi, Kraus and spectral consequences}
+\label{sec:choikraus}
+
+Inserting Eq.~\eqref{eq:schur} into Eq.~\eqref{eq:choigeneral},
+\begin{equation}
+ J_t=\frac14\sum_{a,b}\Gamma_{ab}\,E_{ab}\otimes E_{ab}
+ =\frac14\sum_{a,b}\Gamma_{ab}\ket{aa}\bra{bb}.
+\end{equation}
+Let $W:\HH_{AB}\to\HH_{AB}\otimes\HH_R$ be the isometry $W\ket a=\ket{aa}$.
+Then $W(\Gamma/4)W^\dagger=\frac14\sum_{a,b}\Gamma_{ab}\ket{aa}\bra{bb}$, so
+\begin{equation}
+ J_t=W\frac{\Gamma(t)}4W^\dagger=W\rho_f(t)W^\dagger.
  \label{eq:choizz}
 \end{equation}
+Since $W^\dagger W=I_4$, conjugation by $W$ preserves nonzero spectra.
 The Choi support has dimension at most four. In particular,
 \begin{align}
  \rank J_t&=\rank\Gamma\le4,\\
  \spec(J_t)&=\spec(\Gamma/4)\ \text{with twelve additional zeros},\\
  S(J_t)&=S(\rho_f),\qquad
- \Tr J_t^2=\Tr\rho_f^2=\frac1{16}\sum_{a,b}|\gamma_{ab}|^2.
+ \Tr J_t^2=\Tr\rho_f^2=\frac1{16}\sum_{a,b}|\Gamma_{ab}|^2.
  \label{eq:choipurity}
 \end{align}
-If $\Gamma=\sum_k\lambda_kv_kv_k^\dagger$ with normalized eigenvectors,
-one minimal Kraus family is
+
+If $\Gamma=\sum_k\lambda_kv_kv_k^\dagger$ with $\lambda_k\ge0$ and
+normalized eigenvectors $v_k$, one minimal Kraus family is
 \begin{equation}
  D_k=\sqrt{\lambda_k}\,\diag(v_{k,1},\ldots,v_{k,4}),
  \qquad \Lambda_t(X)=\sum_k D_kXD_k^\dagger.
+ \label{eq:diagkraus}
 \end{equation}
-The superoperator is diagonal in the $E_{ab}$ basis, with eigenvalues
-$\gamma_{ab}$ and singular values $|\gamma_{ab}|$. Choi rank and
-superoperator rank are distinct: the identity has Choi rank one and
-superoperator rank sixteen.
+Indeed $\sum_kD_kE_{ab}D_k^\dagger=\sum_k\lambda_kv_{k,a}v_{k,b}^*E_{ab}
+=\Gamma_{ab}E_{ab}$, and $\sum_kD_k^\dagger D_k=\diag(\Gamma_{aa})=I_4$.
+Choi rank and superoperator rank are distinct: the identity has Choi
+rank one and superoperator rank sixteen.
 
-The map is unitary iff $\rank\Gamma=1$, in which case
-$\gamma_{ab}=u_au_b^*$ with $|u_a|=1$, giving the diagonal unitary
-$\diag(u_1,\ldots,u_4)$. This does not require that the unitary factor
-into two local rotations.
+The Kraus decomposition diagonalizes the positive $4\times4$ matrix
+$\Gamma$. The canonical time-local generator of Section~\ref{sec:canonical}
+requires a \emph{different} diagonalization, that of a $3\times3$
+decoherence matrix built from logarithmic derivatives of $\Gamma$.
+The eigenvalues of $\Gamma$ are not the canonical decoherence rates.
 
-The partial transpose of $J_t$ has eigenvalues $1/4$ (four times) and
-$\pm|\gamma_{ab}|/4$ for each $a<b$. Hence its reference--output
-negativity is
+\paragraph{Unitarity.}
+The map is unitary iff $\rank\Gamma=1$. If $\rank\Gamma=1$, then
+$\Gamma=\lambda vv^\dagger$; unit diagonal gives $\lambda|v_a|^2=1$, so
+$u_a=\sqrt\lambda\,v_a$ obeys $|u_a|=1$ and $\Gamma_{ab}=u_au_b^*$. Then
+$\Lambda_t(X)=\diag(u)X\diag(u)^\dagger$. Conversely, a unitary channel has
+a pure Choi state, and by Eq.~\eqref{eq:choizz} $\rank\Gamma=\rank J_t=1$.
+This does not require that the unitary factor into two local rotations.
+
+\paragraph{Reference entanglement.}
+Take the partial transpose of $J_t$ on $R$:
+$\ket{aa}\bra{bb}\mapsto\ket{ab}\bra{ba}$, so
+$J_t^{T_R}=\frac14\sum_{a,b}\Gamma_{ab}\ket{ab}\bra{ba}$. The terms with
+$a=b$ give the eigenvalue $1/4$ four times, on $\ket{aa}$. For each pair
+$a<b$, the two-dimensional block on $\{\ket{ab},\ket{ba}\}$ is
 \begin{equation}
- \mathcal N_{AB|R}(J_t)=\frac14\sum_{a<b}|\gamma_{ab}|.
+ \frac14\begin{pmatrix}0&\Gamma_{ab}\\\Gamma_{ab}^*&0\end{pmatrix},
+ \qquad\text{eigenvalues }\pm\frac{|\Gamma_{ab}|}{4}.
+\end{equation}
+Hence its reference--output negativity is
+\begin{equation}
+ \mathcal N_{AB|R}(J_t)=\frac14\sum_{a<b}|\Gamma_{ab}|.
 \end{equation}
 This is distinct from physical $A|B$ entanglement. The Ising map is
-entanglement breaking iff all off-diagonal $\gamma_{ab}$ vanish:
-otherwise its Choi state has a negative partial transpose, while the
-diagonal case has the explicitly separable Choi state
-$\frac14\sum_a\ket{aa}\bra{aa}$.
+entanglement breaking iff all off-diagonal $\Gamma_{ab}$ vanish:
+otherwise its Choi state has a negative partial transpose and is
+entangled, while the diagonal case has the explicitly separable Choi
+state $\frac14\sum_a\ket{aa}\bra{aa}$.
 
-\subsection{Time-local dynamics and intermediate maps}
+\subsection{Invertibility, time-local generator and intermediate maps}
+\label{sec:invertibility}
 
-The map is invertible iff every $\gamma_{ab}(t)$ is nonzero. At regular
-times its exact time-local generator obeys
+Because the superoperator is diagonal on $\{E_{ab}\}$,
 \begin{equation}
- \mathcal L_t(E_{ab})=\frac{\dot\gamma_{ab}(t)}{\gamma_{ab}(t)}E_{ab}.
+ \det\Lambda_t=\prod_{a,b}\Gamma_{ab}(t)
+ =\prod_{a<b}\Gamma_{ab}\Gamma_{ba}=\prod_{a<b}|\Gamma_{ab}(t)|^2 ,
 \end{equation}
-If $\Lambda_s$ is invertible, the unique intermediate linear map is
-Schur multiplication by $Q_{ab}(t,s)=\gamma_{ab}(t)/\gamma_{ab}(s)$.
-Its diagonal is one, so
+using $\Gamma_{aa}=1$ and $\Gamma_{ba}=\Gamma_{ab}^*$. Therefore
 \begin{equation}
- \Lambda_t\Lambda_s^{-1}\text{ is CPTP}\quad\Longleftrightarrow\quad
+ \Lambda_t\ \text{invertible}\iff\Gamma_{ab}(t)\ne0\quad\forall a<b,
+ \qquad \Lambda_t^{-1}(E_{ab})=\Gamma_{ab}(t)^{-1}E_{ab}.
+\end{equation}
+At such times the exact time-local generator
+$\mathcal L_t=\dot\Lambda_t\Lambda_t^{-1}$ acts as
+\begin{equation}
+ \mathcal L_t(E_{ab})=\frac{\dot\Gamma_{ab}(t)}{\Gamma_{ab}(t)}E_{ab}
+ \equiv\eta_{ab}(t)E_{ab}.
+ \label{eq:generatorschur}
+\end{equation}
+
+If $\Lambda_s$ is invertible, the unique intermediate linear map
+$\Lambda_{t,s}$ with $\Lambda_t=\Lambda_{t,s}\Lambda_s$ is
+$\Lambda_{t,s}=\Lambda_t\Lambda_s^{-1}$, i.e.\ Schur multiplication by
+$Q_{ab}(t,s)=\Gamma_{ab}(t)/\Gamma_{ab}(s)$. The matrix $Q$ is Hermitian,
+since $Q_{ba}=\Gamma_{ab}^*(t)/\Gamma_{ab}^*(s)=Q_{ab}^*$, and has unit
+diagonal. A Schur map with unit diagonal is trace preserving, and it is
+completely positive iff its multiplier is positive semidefinite (its
+normalized Choi state is $WQW^\dagger/4$). Hence
+\begin{equation}
+ \Lambda_{t,s}\text{ is CPTP}\quad\Longleftrightarrow\quad
  Q(t,s)\succeq0.
  \label{eq:divisibility}
 \end{equation}
 At singular times the division is undefined and this test cannot be
-applied. A vanished coherence factor that later becomes nonzero already
-precludes divisibility through that time, since a linear intermediate
-map cannot recover the annihilated matrix unit.
-Section~\ref{sec:canonical} brings $\mathcal L_t$ to its canonical
-Lindblad-like form and gives the corresponding decoherence rates.
+applied.
+
+\begin{lemma}\label{lem:nosingular}
+On an interval where the coherence factors obey
+$\dot\Gamma_{ab}=\eta_{ab}\Gamma_{ab}$ with locally integrable $\eta_{ab}$,
+no $\Gamma_{ab}$ can vanish at a finite time if it is nonzero at the start
+of the interval.
+\end{lemma}
+\begin{proof}
+The linear equation integrates to
+$\Gamma_{ab}(t)=\Gamma_{ab}(s)\exp\int_s^t\eta_{ab}(\tau)\,d\tau$, and the
+exponential of a finite integral is nonzero. Equivalently,
+$\det\Lambda_t=\det\Lambda_s\exp\int_s^t\Tr\mathcal L_\tau\,d\tau$.
+\end{proof}
+Thus a finite, locally integrable time-local generator cannot take an
+invertible evolution to a singular channel in finite time. If a
+coherence factor vanishes at $s$ and later becomes nonzero, no linear map
+$\Lambda_{t,s}$ on the probes can satisfy $\Lambda_t=\Lambda_{t,s}\Lambda_s$,
+because $\Lambda_s(E_{ab})=0$ while $\Lambda_t(E_{ab})\ne0$. This
+precludes divisibility through that time. The global unitary and the
+reduced CPTP maps $\Lambda_t$ themselves remain analytic in $t$.
 
 \subsection{Probe entanglement from the same input}
 \label{sec:entangling}
@@ -421,6 +663,30 @@ entanglement of $A$ with $B$; their definitions are in
 Appendix~\ref{app:observables}. For a Schur channel, the output from
 $\ket{++}$ also determines the maximum concurrence generated from
 separable probe states.
+
+\begin{lemma}[Local-filter identity]\label{lem:filter}
+For $2\times2$ matrices $A,B$ and a positive two-qubit operator $\rho$,
+with concurrence defined from the eigenvalues of $\rho\widetilde\rho$
+without normalization,
+$C[(A\otimes B)\rho(A\otimes B)^\dagger]=|\det A\det B|\,C(\rho)$.
+\end{lemma}
+\begin{proof}
+For any $2\times2$ matrix, $A^{\mathsf T}\sigma_yA=\det(A)\,\sigma_y$.
+Taking the complex conjugate and using $\sigma_y^*=-\sigma_y$ gives
+$A^\dagger\sigma_yA^*=\det(A)^*\sigma_y$. For invertible $A$, the first
+identity also gives $\sigma_yA^{\mathsf T}\sigma_y=\det(A)A^{-1}$. Let
+$\rho'=(A\otimes B)\rho(A\otimes B)^\dagger$ and $Y=\sigma_y\otimes\sigma_y$.
+Then
+\begin{align}
+ \rho'\widetilde{\rho'}
+ &=(A\otimes B)\rho(A\otimes B)^\dagger Y(A\otimes B)^*\rho^*(A\otimes B)^{\mathsf T}Y\notag\\
+ &=\det(A)^*\det(B)^*\,(A\otimes B)\rho\,Y\rho^*Y\,Y(A\otimes B)^{\mathsf T}Y\notag\\
+ &=|\det A\det B|^2\,(A\otimes B)\,\rho\widetilde\rho\,(A\otimes B)^{-1}.
+\end{align}
+This is similar to $|\det A\det B|^2\rho\widetilde\rho$, so the square
+roots of its eigenvalues, and hence $C$, scale by $|\det A\det B|$.
+Singular filters follow by continuity of $C$.
+\end{proof}
 
 \begin{proposition}
 For a fixed Ising Schur channel, its maximum output concurrence over
@@ -433,16 +699,24 @@ separable probe inputs is
 \end{proposition}
 \begin{proof}
 For a normalized pure product input
-$(a_0\ket0+a_1\ket1)\otimes(b_0\ket0+b_1\ket1)$, set
-$A=\sqrt2\diag(a_0,a_1)$ and $B=\sqrt2\diag(b_0,b_1)$.
-The output is $(A\otimes B)\rho_f(A\otimes B)^\dagger$ and has unit
-trace because $\rho_f$ has uniform diagonal. The local-filter identity
-for two-qubit concurrence gives
-$C_{\mathrm{out}}=|\det A\det B|C(\rho_f)
-=4|a_0a_1b_0b_1|C(\rho_f)\le C(\rho_f)$.
-The identity follows from the spin-flip formula; singular filters follow
-by continuity. Convexity extends the bound to mixtures of product
-inputs. The input $\ket{++}$ attains equality.
+$\ket\psi=(a_0\ket0+a_1\ket1)\otimes(b_0\ket0+b_1\ket1)$, the components
+are $\psi_{ij}=a_ib_j$. By Eq.~\eqref{eq:schur},
+$\Lambda_t(\ket\psi\bra\psi)_{ab}=\psi_a\Gamma_{ab}\psi_b^*$, i.e.
+$\Lambda_t(\ket\psi\bra\psi)=D_\psi\Gamma D_\psi^\dagger$ with
+$D_\psi=\diag(\psi)$. Using $\Gamma=4\rho_f$ and $2D_\psi=A\otimes B$ with
+$A=\sqrt2\diag(a_0,a_1)$, $B=\sqrt2\diag(b_0,b_1)$,
+\begin{equation}
+ \Lambda_t(\ket\psi\bra\psi)=(A\otimes B)\rho_f(A\otimes B)^\dagger .
+\end{equation}
+This output has unit trace because $\rho_f$ has uniform diagonal $1/4$:
+its trace is $\sum_{ij}4|a_i|^2|b_j|^2/4=1$. Lemma~\ref{lem:filter} gives
+$C_{\mathrm{out}}=|\det A\det B|C(\rho_f)=4|a_0a_1b_0b_1|C(\rho_f)\le C(\rho_f)$,
+since $|a_0a_1|\le\frac12(|a_0|^2+|a_1|^2)=\frac12$ and likewise for $b$.
+A separable input is a convex combination
+$\rho=\sum_iq_i\ket{\psi_i}\bra{\psi_i}$ of pure product states.
+Linearity of $\Lambda_t$ and convexity of $C$ give
+$C[\Lambda_t(\rho)]\le\sum_iq_iC[\Lambda_t(\ket{\psi_i}\bra{\psi_i})]\le C(\rho_f)$.
+The input $\ket{++}$ attains equality.
 \end{proof}
 In particular, the Ising map can create probe entanglement from some
 separable input iff $\rho_f(t)$ is entangled. Texture and Choi
@@ -452,25 +726,32 @@ this criterion.
 \subsection{Ising texture and channel fidelities}
 \label{sec:zztexture}
 
-Using $\rho_f=\Gamma/4$ in Eq.~\eqref{eq:textures} gives
+Using $\rho_f=\Gamma/4$ in Eq.~\eqref{eq:textures}, together with
+$\sum_{a,b}\Gamma_{ab}=4+\sum_{a<b}(\Gamma_{ab}+\Gamma_{ab}^*)
+=4+2\sum_{a<b}\Re\Gamma_{ab}$,
 \begin{align}
- p_f&=\frac1{16}\sum_{a,b}\gamma_{ab}
-     =\frac14+\frac18\sum_{a<b}\Re\gamma_{ab},\\
- \OmF&=\frac34-\frac18\sum_{a<b}\Re\gamma_{ab},
- &\OmR&=-\ln\!\left(\frac1{16}\sum_{a,b}\gamma_{ab}\right).
+ p_f&=\frac1{16}\sum_{a,b}\Gamma_{ab}
+     =\frac14+\frac18\sum_{a<b}\Re\Gamma_{ab},\\
+ \OmF&=\frac34-\frac18\sum_{a<b}\Re\Gamma_{ab},
+ &\OmR&=-\ln\!\left(\frac1{16}\sum_{a,b}\Gamma_{ab}\right).
  \label{eq:omegazz}
 \end{align}
 For the same Schur channel, the entanglement fidelity relative to the
-identity is $F_e=\bra{\Phi_4}J_t\ket{\Phi_4}=p_f$. Therefore the
-average pure-input fidelity relative to the identity is
+identity is
+\begin{equation}
+ F_e=\bra{\Phi_4}J_t\ket{\Phi_4}
+ =\frac14\sum_{c,d}\bra{cc}\Bigl(\frac14\sum_{a,b}\Gamma_{ab}\ket{aa}\bra{bb}\Bigr)\ket{dd}
+ =\frac1{16}\sum_{a,b}\Gamma_{ab}=p_f .
+\end{equation}
+The general relation $F_{\mathrm{avg}}=(dF_e+1)/(d+1)$ between average
+and entanglement fidelities \cite{Nielsen2002}, with $d=4$, then gives
 \begin{equation}
  \boxed{F_e=p_f=\Sigma(\rho_f)/4,\qquad
  F_{\mathrm{avg}}=\frac{4F_e+1}{5}
                  =\frac{1+\Sigma(\rho_f)}5.}
  \label{eq:fidelities}
 \end{equation}
-The general relation between average and entanglement fidelities is
-standard \cite{Nielsen2002}; $F_e=p_f$ uses the Schur structure.
+The equality $F_e=p_f$ uses the Schur structure.
 These are fidelities of the \emph{two-probe map relative to the identity},
 not fidelities of sending an unknown state from $A$ to $B$.
 
@@ -481,17 +762,23 @@ change texture even when the map is unitary.
 
 \subsection{Response operator and texture preservation}
 
-In the Ising case, comparing coefficients of $X_{ab}$ in
-Eq.~\eqref{eq:response} yields
+In the Ising case, Eq.~\eqref{eq:response} reads
+$\Sigma[\Lambda_t(X)]=\sum_{a,b}\Gamma_{ab}X_{ab}$, while
+$\Tr(\mathcal R_tX)=\sum_{a,b}(\mathcal R_t)_{ba}X_{ab}$. Comparing
+coefficients of $X_{ab}$ gives $(\mathcal R_t)_{ba}=\Gamma_{ab}$, i.e.
 \begin{equation}
  \mathcal R_t=\Gamma(t)^{\mathsf T}.
  \label{eq:responsetranspose}
 \end{equation}
-The transpose is ordinary, not a Hermitian conjugate. In general,
-fixing the free state, $\Lambda_t(f_1)=f_1$, and preserving the grand
-sum for every input, $\Lambda_t^*(f_1)=f_1$, are different conditions
-\cite{Vieira2026}. For this Schur family each condition forces
-$\gamma_{ab}=1$ for all $a,b$, hence the identity channel. Consequently
+The transpose is ordinary, not a Hermitian conjugate; since $\Gamma$ is
+Hermitian, $\Gamma^{\mathsf T}=\Gamma^*$. In general, fixing the free
+state, $\Lambda_t(f_1)=f_1$, and preserving the grand sum for every input,
+$\Lambda_t^*(f_1)=f_1$, are different conditions \cite{Vieira2026}. For
+this Schur family, $\Lambda_t(f_1)=\Gamma/4$ and
+$\Lambda_t^*(f_1)=\Gamma^{\mathsf T}/4$, so each condition forces
+$\Gamma_{ab}=1$ for all $a,b$, hence the identity channel.
+Moreover $\OmF=0$ means $p_f=1$, i.e.\ $\sum_{a<b}\Re\Gamma_{ab}=6$; with
+$|\Gamma_{ab}|\le1$ this forces every $\Gamma_{ab}=1$. Consequently
 $\OmF=0$ also certifies the identity within the known Ising family.
 
 \subsection{Summary of the Ising channel structure}
@@ -513,15 +800,15 @@ as specified in Section~\ref{sec:ratesoperators}. Every result of this
 section holds for an arbitrary fixed bulk preparation $\omega_E$ and
 applies to every probe input $\rho_{AB}(0)$, pure or mixed, product or
 entangled: the canonical form is a property of the channel $\Lambda_t$,
-which enters only through the coherence factors $\gamma_{ab}(t)$ of
+which enters only through the coherence factors $\Gamma_{ab}(t)$ of
 Eq.~\eqref{eq:gamma}.
 
-The notation distinguishes three quantities: $\gamma_{ab}(t)$ is a
+The notation distinguishes three quantities: $\Gamma_{ab}(t)$ is a
 complex channel multiplier, $\kappa_{ab}(t)$ is its real logarithmic
 decay rate, and $\gamma_k(t)$ is a real canonical rate. The pair of
 configuration indices $a,b$ labels a coherence; the single index $k$
 labels an eigenmode of the decoherence matrix. Both rates have units
-of inverse time, whereas $\Gamma$ and $\gamma_{ab}$ are dimensionless.
+of inverse time, whereas $\Gamma$ and $\Gamma_{ab}$ are dimensionless.
 
 \subsection{Time-local generator of the Schur channel}
 \label{sec:schurgenerator}
@@ -529,29 +816,39 @@ of inverse time, whereas $\Gamma$ and $\gamma_{ab}$ are dimensionless.
 When the dynamical map is invertible, the reduced evolution obeys a
 time-local master equation with generator
 $\mathcal L_t=\dot\Lambda_t\Lambda_t^{-1}$~\cite{Hall2014}. For the
-Schur channel this requires $\gamma_{ab}(t)\ne0$ for all $a,b$
-(Section~\ref{sec:zz}). Differentiating
-$\rho_{ab}(t)=\gamma_{ab}(t)\rho_{ab}(0)$ gives
+Schur channel this requires $\Gamma_{ab}(t)\ne0$ for all $a,b$
+(Section~\ref{sec:invertibility}). Differentiating
+$\rho_{ab}(t)=\Gamma_{ab}(t)r_{ab}$ and, for $\Gamma_{ab}(t)\ne0$,
+substituting $r_{ab}=\rho_{ab}(t)/\Gamma_{ab}(t)$ gives
 \begin{equation}
- \dot\rho_{ab}(t)=\ell_{ab}(t)\,\rho_{ab}(t),\qquad
- \ell_{ab}(t)=\frac{\dot\gamma_{ab}(t)}{\gamma_{ab}(t)}
- =\frac{d}{dt}\ln\gamma_{ab}(t),
+ \dot\rho_{ab}(t)=\eta_{ab}(t)\,\rho_{ab}(t),\qquad
+ \eta_{ab}(t)=\frac{\dot\Gamma_{ab}(t)}{\Gamma_{ab}(t)}
+ =\frac{d}{dt}\ln\Gamma_{ab}(t),
  \label{eq:schurgenerator}
 \end{equation}
-so $\mathcal L_t(X)_{ab}=\ell_{ab}(t)X_{ab}$. The constraints of
-Eq.~\eqref{eq:correlation} imply $\ell_{aa}=0$ and
-$\ell_{ba}=\ell_{ab}^*$. We separate its real and imaginary parts,
+so $\mathcal L_t(X)_{ab}=\eta_{ab}(t)X_{ab}$, in agreement with
+Eq.~\eqref{eq:generatorschur}. The constraints of
+Eq.~\eqref{eq:correlation} imply $\eta_{aa}=0$ and
+$\eta_{ba}=\eta_{ab}^*$, so the $4\times4$ matrix $\eta=(\eta_{ab})$ is
+Hermitian with zero diagonal. All generator data are six complex
+logarithmic derivatives. Writing each nonzero factor in polar form,
+$\Gamma_{ab}=R_{ab}e^{i\theta_{ab}}$ with $R_{ab}>0$,
 \begin{equation}
- \ell_{ab}=-\kappa_{ab}+i\omega_{ab},\qquad
- \kappa_{ab}=-\frac{d}{dt}\ln\lvert\gamma_{ab}\rvert,\qquad
- \omega_{ab}=\frac{d}{dt}\arg\gamma_{ab}.
+ \dot\Gamma_{ab}=(\dot R_{ab}+iR_{ab}\dot\theta_{ab})e^{i\theta_{ab}},\qquad
+ \eta_{ab}=\frac{\dot R_{ab}}{R_{ab}}+i\dot\theta_{ab}.
+\end{equation}
+We therefore define, without assuming Markovianity,
+\begin{equation}
+ \eta_{ab}=-\kappa_{ab}+i\omega_{ab},\qquad
+ \kappa_{ab}=-\frac{d}{dt}\ln\lvert\Gamma_{ab}\rvert,\qquad
+ \omega_{ab}=\frac{d}{dt}\arg\Gamma_{ab}.
  \label{eq:kappaomega}
 \end{equation}
 Here $\kappa_{ab}=\kappa_{ba}$ and $\omega_{ab}=-\omega_{ba}$; the
 derivative $\omega_{ab}$ is taken on a locally continuous phase branch.
-Equivalently, $\omega_{ab}=\Im(\dot\gamma_{ab}/\gamma_{ab})$, which
+Equivalently, $\omega_{ab}=\Im(\dot\Gamma_{ab}/\Gamma_{ab})$, which
 avoids artificial jumps of the principal argument.
-For any input with $\rho_{ab}(0)\ne0$,
+For any input with $r_{ab}\ne0$,
 \begin{equation}
  \kappa_{ab}(t)=-\frac{1}{\lvert\rho_{ab}(t)\rvert}
  \frac{d\lvert\rho_{ab}(t)\rvert}{dt},
@@ -559,88 +856,138 @@ For any input with $\rho_{ab}(0)\ne0$,
 \end{equation}
 so $\kappa_{ab}$ is the fractional rate of loss of the coherence
 between configurations $a$ and $b$, independent of the input amplitude.
-Over an interval on which $\gamma_{ab}$ does not vanish,
-$\int_{t_1}^{t_2}\kappa_{ab}\,dt=\ln\bigl(\lvert\gamma_{ab}(t_1)\rvert
-/\lvert\gamma_{ab}(t_2)\rvert\bigr)$.
+It is an observed coherence damping rate, not in general an eigenvalue
+of the canonical decoherence matrix.
+Over an interval on which $\Gamma_{ab}$ does not vanish,
+$\int_{t_1}^{t_2}\kappa_{ab}\,dt=\ln\bigl(\lvert\Gamma_{ab}(t_1)\rvert
+/\lvert\Gamma_{ab}(t_2)\rvert\bigr)$.
 
 \subsection{Canonical form}
 
-Let $\{G_j\}_{j=1}^{15}$ be an orthonormal basis of traceless probe
-operators, $\Tr G_j=0$ and $\Tr(G_j^\dagger G_k)=\delta_{jk}$. Any
+Let $\{O_j\}_{j=1}^{15}$ be an orthonormal basis of traceless probe
+operators, $\Tr O_j=0$ and $\Tr(O_j^\dagger O_k)=\delta_{jk}$. Any
 time-local master equation of a $d$-dimensional system can be written
 as~\cite{Hall2014}
 \begin{equation}
- \dot\rho=-i[H_{\mathrm{can}}(t),\rho]+\sum_{j,k}\mathsf d_{jk}(t)
- \Bigl(G_j\rho G_k^\dagger-\tfrac12\{G_k^\dagger G_j,\rho\}\Bigr),
+ \dot\rho=-i[H(t),\rho]+\sum_{j,k}\dmat_{jk}(t)
+ \Bigl(O_j\rho O_k^\dagger-\tfrac12\{O_k^\dagger O_j,\rho\}\Bigr),
  \label{eq:canonicalgeneral}
 \end{equation}
-with a Hermitian traceless $H_{\mathrm{can}}(t)$ and a Hermitian decoherence matrix
-$\mathsf d(t)$. Here $H_{\mathrm{can}}$ acts on the probe pair and is
-distinct from the total probe--bulk Hamiltonian $H^{(\ZZ)}$.
-Diagonalizing $\mathsf d$ gives
+with a Hermitian traceless $H(t)$ and a Hermitian decoherence matrix
+$\dmat(t)$. Diagonalizing $\dmat$ gives
 \begin{equation}
- \dot\rho=-i[H_{\mathrm{can}}(t),\rho]+\sum_{k}\gamma_k(t)
+ \dot\rho=-i[H(t),\rho]+\sum_{k}\gamma_k(t)
  \Bigl(L_k(t)\rho L_k^\dagger(t)
  -\tfrac12\{L_k^\dagger(t)L_k(t),\rho\}\Bigr),
  \label{eq:canonicalform}
 \end{equation}
 where the $L_k(t)$ form an orthonormal basis of traceless operators.
 The canonical decoherence rates $\gamma_k(t)$ are the eigenvalues of
-$\mathsf d(t)$; they are uniquely determined, invariant under the choice
-of the basis $\{G_j\}$, time dependent, and can be
-negative~\cite{Hall2014}. We construct this form explicitly for
-$\mathcal L_t$ of Eq.~\eqref{eq:schurgenerator}.
+$\dmat(t)$; they are uniquely determined, invariant under the choice
+of the basis $\{O_j\}$, time dependent, and can be
+negative~\cite{Hall2014}. The Hamiltonian $H(t)$ acts on the probe pair
+and is distinct from the total probe--bulk Hamiltonian $H^{(\ZZ)}$. We
+construct this form explicitly for $\mathcal L_t$ of
+Eq.~\eqref{eq:schurgenerator}.
 
-\subsection{Reduction to the diagonal operator subspace}
+\subsection{Diagonal operator basis}
 \label{sec:diagonalsubspace}
 
-Define the three diagonal, traceless and orthonormal operators
+Define the three diagonal, traceless and Hermitian operators
 \begin{equation}
- G_A=\frac{\sigma_A^z\otimes I}{2},\qquad
- G_B=\frac{I\otimes\sigma_B^z}{2},\qquad
- G_Z=\frac{\sigma_A^z\otimes\sigma_B^z}{2}.
+ F_1=\frac{\sigma_A^z\otimes I}{2},\qquad
+ F_2=\frac{I\otimes\sigma_B^z}{2},\qquad
+ F_3=\frac{\sigma_A^z\otimes\sigma_B^z}{2}.
  \label{eq:diagonalbasis}
 \end{equation}
-For the configuration $a=(s_A,s_B)$ of Section~\ref{sec:zz},
-$G_j\ket a=g_j^a\ket a$ with the configuration vector
+Each is a product of Paulis divided by two, so
+$\Tr F_\mu=0$ and $\Tr(F_\mu F_\nu)=\delta_{\mu\nu}$. For the configuration
+$a=(s_A^a,s_B^a)$, $F_\mu\ket a=g_\mu^a\ket a$ with
+$\mathbf g^a=(g_1^a,g_2^a,g_3^a)=(s_A^a,\,s_B^a,\,2s_A^as_B^a)$. Collecting
+these eigenvalues into the $4\times3$ matrix $G=(g_\mu^a)_{a\mu}$,
 \begin{equation}
- \mathbf g^a=(g_A^a,g_B^a,g_Z^a)=(s_A,\,s_B,\,2s_As_B),
+ G=\frac12\begin{pmatrix}
+ 1&1&1\\ 1&-1&-1\\ -1&1&-1\\ -1&-1&1
+ \end{pmatrix},
  \qquad
- \begin{array}{c|c}
- a&\mathbf g^a\\\hline
- 00&\tfrac12(1,1,1)\\
- 01&\tfrac12(1,-1,-1)\\
- 10&\tfrac12(-1,1,-1)\\
- 11&\tfrac12(-1,-1,1)
- \end{array}.
- \label{eq:configvectors}
+ \boxed{G^{\mathsf T}G=I_3,\qquad
+ G^{\mathsf T}\mathbf1=0,\qquad
+ GG^{\mathsf T}=I_4-\tfrac14\mathbf1\mathbf1^{\mathsf T},}
+ \label{eq:Gmatrix}
 \end{equation}
-Complete $\{G_A,G_B,G_Z\}$ with any twelve orthonormal traceless
-off-diagonal operators. We take the ansatz of a diagonal Hamiltonian
-$H_{\mathrm{can}}=\diag(h_a)$ with $\sum_ah_a=0$, and a decoherence matrix supported
-on the diagonal operators,
+where $\mathbf1=(1,1,1,1)^{\mathsf T}$. The first two identities follow
+by direct multiplication: each column has four entries $\pm\frac12$,
+distinct columns differ in sign at exactly two rows, and each column has
+two entries of each sign. The third follows because the three columns
+and $\mathbf1/2$ form an orthonormal basis of $\mathbb R^4$. Row $a$ of
+$G$, viewed as a column vector, is $\mathbf g^a$; hence
+$\sum_a\mathbf g^a=G^{\mathsf T}\mathbf1=0$.
+
+Complete $\{F_1,F_2,F_3\}$ with any twelve orthonormal traceless
+off-diagonal operators to obtain a basis $\{O_j\}$. We take the ansatz
+of a diagonal Hamiltonian
 \begin{equation}
- \mathsf d=S+iA,\qquad S=S^{\mathsf T}\in\mathbb R^{3\times3},\qquad
+ \Heff=\sum_ah_aP_a,\qquad h_a\in\mathbb R,\qquad \sum_ah_a=0,
+\end{equation}
+where the last condition fixes the irrelevant scalar gauge, and a
+decoherence matrix supported on the diagonal operators,
+\begin{equation}
+ \dmat=S+iA,\qquad S=S^{\mathsf T}\in\mathbb R^{3\times3},\qquad
  A=-A^{\mathsf T}\in\mathbb R^{3\times3},
  \label{eq:dsplit}
 \end{equation}
-indexed by $j,k\in\{A,B,Z\}$, with all other entries zero.
-
-For diagonal real $G_j$, the $(a,b)$ entry of
-$G_j\rho G_k-\frac12\{G_kG_j,\rho\}$ is
-$\bigl[g_j^ag_k^b-\frac12(g_j^ag_k^a+g_j^bg_k^b)\bigr]\rho_{ab}$.
-Summing with $S_{jk}+iA_{jk}$, the symmetric part reduces to
-$-\frac12(\mathbf g^a-\mathbf g^b)^{\mathsf T}S(\mathbf g^a-\mathbf g^b)$,
-and the antisymmetric part to $i\,\mathbf g^{a\mathsf T}A\,\mathbf g^b$,
-because $\mathbf x^{\mathsf T}A\mathbf x=0$. The commutator contributes
-$-i(h_a-h_b)$. Hence the ansatz generates the entrywise action
-$\mathcal L_t(X)_{ab}=\ell_{ab}X_{ab}$ with
+indexed by $\mu,\nu\in\{1,2,3\}$, with all other entries zero. Any
+Hermitian $3\times3$ matrix has this decomposition, with nine real
+parameters. \emph{No positivity assumption} is imposed on $\dmat$ or its
+eigenvalues: these may have either sign while $\Lambda_t$ remains CPTP.
+The ansatz reads
 \begin{equation}
- \ell_{ab}=-i(h_a-h_b)-\tfrac12\Delta_{ab}^{\mathsf T}S\,\Delta_{ab}
- +i\,\mathbf g^{a\mathsf T}A\,\mathbf g^b,\qquad
- \Delta_{ab}=\mathbf g^a-\mathbf g^b.
+ \mathcal L_t[X]=-i[\Heff,X]+
+ \sum_{\mu,\nu=1}^{3}\dmat_{\mu\nu}
+ \Bigl(F_\mu XF_\nu-\tfrac12\{F_\nu F_\mu,X\}\Bigr).
+ \label{eq:ansatz}
+\end{equation}
+
+\subsection{Action of each term on a matrix unit}
+
+Because every $F_\mu$ and $\Heff$ is diagonal,
+\begin{equation}
+ F_\mu E_{ab}F_\nu=g_\mu^ag_\nu^bE_{ab},\qquad
+ F_\nu F_\mu E_{ab}=g_\nu^ag_\mu^aE_{ab},\qquad
+ E_{ab}F_\nu F_\mu=g_\nu^bg_\mu^bE_{ab},
+\end{equation}
+\begin{equation}
+ [\Heff,E_{ab}]=(h_a-h_b)E_{ab}.
+\end{equation}
+Thus the ansatz maps $E_{ab}$ to a multiple of itself, with the exact
+scalar coefficient
+\begin{equation}
+ \eta_{ab}=-i(h_a-h_b)
+ +\sum_{\mu\nu}\dmat_{\mu\nu}g_\mu^ag_\nu^b
+ -\frac12\sum_{\mu\nu}\dmat_{\mu\nu}(g_\nu^ag_\mu^a+g_\nu^bg_\mu^b).
+\end{equation}
+In vector notation,
+\begin{equation}
+ \boxed{\eta_{ab}=-i(h_a-h_b)
+ +\mathbf g^{a\mathsf T}\dmat\,\mathbf g^b
+ -\tfrac12\mathbf g^{a\mathsf T}\dmat\,\mathbf g^a
+ -\tfrac12\mathbf g^{b\mathsf T}\dmat\,\mathbf g^b.}
  \label{eq:elementwise}
 \end{equation}
+This must equal $\dot\Gamma_{ab}/\Gamma_{ab}$ for every $a,b$.
+Because the $\mathbf g^a$ are real and $A$ is real antisymmetric,
+$\mathbf x^{\mathsf T}A\mathbf x=0$ for every real $\mathbf x$, so
+$\mathbf g^{a\mathsf T}\dmat\mathbf g^a=\mathbf g^{a\mathsf T}S\mathbf g^a$ is real
+and $\mathbf g^{a\mathsf T}\dmat\mathbf g^b
+=\mathbf g^{a\mathsf T}S\mathbf g^b+i\,\mathbf g^{a\mathsf T}A\mathbf g^b$.
+Separating real and imaginary parts, with
+$\Delta_{ab}=\mathbf g^a-\mathbf g^b$,
+\begin{align}
+ \Re\eta_{ab}&=\mathbf g^{a\mathsf T}S\mathbf g^b
+ -\tfrac12\mathbf g^{a\mathsf T}S\mathbf g^a-\tfrac12\mathbf g^{b\mathsf T}S\mathbf g^b
+ =-\tfrac12\Delta_{ab}^{\mathsf T}S\,\Delta_{ab},\\
+ \Im\eta_{ab}&=-(h_a-h_b)+\mathbf g^{a\mathsf T}A\,\mathbf g^b .
+\end{align}
 Comparing with Eq.~\eqref{eq:kappaomega},
 \begin{align}
  \kappa_{ab}&=\tfrac12\Delta_{ab}^{\mathsf T}S\,\Delta_{ab},
@@ -648,22 +995,80 @@ Comparing with Eq.~\eqref{eq:kappaomega},
  \omega_{ab}&=-(h_a-h_b)+\mathbf g^{a\mathsf T}A\,\mathbf g^b.
  \label{eq:omegaA}
 \end{align}
-Sections~\ref{sec:dissipative} and~\ref{sec:coherent} show that these
-equations have a unique solution $(S,A,H_{\mathrm{can}})$ for every Hermitian $\ell$
-with zero diagonal. The ansatz is then of the form
+The symmetric part governs instantaneous damping; the antisymmetric
+part contributes phases beyond those of a diagonal Hamiltonian.
+
+\subsection{Matrix form and unique inversion}
+\label{sec:inversion}
+
+Define $q_a=\frac12\mathbf g^{a\mathsf T}S\mathbf g^a$ and the vectors
+$h=(h_a)_a$, $q=(q_a)_a$. Equation~\eqref{eq:elementwise} for all sixteen
+entries, including $a=b$ where it gives $\eta_{aa}=0$, is the matrix
+identity
+\begin{equation}
+ \eta=G\dmat G^{\mathsf T}+(-ih-q)\mathbf1^{\mathsf T}+\mathbf1(ih-q)^{\mathsf T},
+ \label{eq:etamatrix}
+\end{equation}
+with ordinary transposes: the $(a,b)$ entry of the right side is
+$\mathbf g^{a\mathsf T}\dmat\mathbf g^b-ih_a-q_a+ih_b-q_b$. Multiplying on
+the left by $G^{\mathsf T}$ and on the right by $G$, and using
+Eq.~\eqref{eq:Gmatrix},
+\begin{equation}
+ G^{\mathsf T}\eta G=(G^{\mathsf T}G)\dmat(G^{\mathsf T}G)
+ +G^{\mathsf T}(-ih-q)(\mathbf1^{\mathsf T}G)
+ +(G^{\mathsf T}\mathbf1)(ih-q)^{\mathsf T}G=\dmat,
+\end{equation}
+that is,
+\begin{equation}
+ \boxed{\dmat(t)=G^{\mathsf T}\eta(t)G,\qquad
+ \dmat_{\mu\nu}=\sum_{a,b}g_\mu^a\,\eta_{ab}\,g_\nu^b,\qquad
+ S=\Re\dmat,\quad A=\Im\dmat.}
+ \label{eq:dfrometa}
+\end{equation}
+This reconstructs all nine real parameters of $\dmat$. Its antisymmetric
+part is $A_{\mu\nu}=\sum_{a,b}g_\mu^a\omega_{ab}g_\nu^b$, since $g$ is real.
+
+For the Hamiltonian, sum Eq.~\eqref{eq:omegaA} over $b$ at fixed $a$:
+\begin{equation}
+ \sum_b\omega_{ab}=-4h_a+\sum_bh_b
+ +\mathbf g^{a\mathsf T}A\sum_b\mathbf g^b=-4h_a,
+\end{equation}
+using $\sum_bh_b=0$ and $\sum_b\mathbf g^b=0$. Therefore
+\begin{equation}
+ \boxed{h_a(t)=-\frac14\sum_{b}\omega_{ab}(t)
+ =-\frac14\sum_{b}\Im\eta_{ab}(t),\qquad
+ \Heff(t)=\sum_ah_a(t)P_a .}
+ \label{eq:canonicalH}
+\end{equation}
+The four diagonal traceless matrices are spanned by $F_1,F_2,F_3$, so
+$\Heff$ may contain $\sigma_A^z$, $\sigma_B^z$ and an induced
+$\sigma_A^z\sigma_B^z$ term.
+
+\paragraph{Uniqueness.}
+The map $(\dmat,h)\mapsto\eta$ of Eq.~\eqref{eq:etamatrix}, with $\dmat$
+Hermitian $3\times3$ (nine real parameters) and $h$ real with
+$\sum_ah_a=0$ (three real parameters), is real-linear and takes values
+in the Hermitian $4\times4$ matrices with zero diagonal (six complex, or
+twelve real, parameters). It is injective: if $\eta=0$, then
+Eq.~\eqref{eq:dfrometa} gives $\dmat=0$, and Eq.~\eqref{eq:canonicalH}
+gives $h=0$. An injective linear map between real spaces of equal
+dimension twelve is bijective. Hence for every Hermitian $\eta$ with zero
+diagonal there is exactly one pair $(\dmat,\Heff)$ of the form
+\eqref{eq:ansatz}, given by Eqs.~\eqref{eq:dfrometa}
+and~\eqref{eq:canonicalH}. The ansatz is of the general form
 \eqref{eq:canonicalgeneral}, and uniqueness of the canonical
-form~\cite{Hall2014} identifies it as the canonical form of
-$\mathcal L_t$. Therefore:
+form~\cite{Hall2014} identifies it as the canonical form of $\mathcal L_t$.
+Therefore:
 \begin{proposition}\label{prop:threerates}
 At every time at which $\Lambda_t$ is invertible, the canonical
 Hamiltonian of the Ising channel is diagonal in the configuration basis,
 and its decoherence matrix is supported on
-$\operatorname{span}\{G_A,G_B,G_Z\}$. At most three canonical rates are
+$\operatorname{span}\{F_1,F_2,F_3\}$. At most three canonical rates are
 nonzero; the remaining twelve vanish identically.
 \end{proposition}
 No off-diagonal operator, and hence no operator that transfers
 population between configurations, appears in the generator. This is
-consistent with the fixed populations, $\gamma_{aa}(t)=1$.
+consistent with the fixed populations, $\Gamma_{aa}(t)=1$.
 
 \subsection{Dissipative part: the coherence magnitudes}
 \label{sec:dissipative}
@@ -673,136 +1078,160 @@ The six difference vectors and Eq.~\eqref{eq:kappaS} give
 \begin{tabular}{@{}ccl@{}}
 \toprule
 pair $ab$&$\Delta_{ab}$&$\kappa_{ab}=\tfrac12\Delta_{ab}^{\mathsf T}S\Delta_{ab}$\\\midrule
-$00,01$&$(0,1,1)$&$\tfrac12(S_{BB}+S_{ZZ}+2S_{BZ})$\\
-$10,11$&$(0,1,-1)$&$\tfrac12(S_{BB}+S_{ZZ}-2S_{BZ})$\\
-$00,10$&$(1,0,1)$&$\tfrac12(S_{AA}+S_{ZZ}+2S_{AZ})$\\
-$01,11$&$(1,0,-1)$&$\tfrac12(S_{AA}+S_{ZZ}-2S_{AZ})$\\
-$00,11$&$(1,1,0)$&$\tfrac12(S_{AA}+S_{BB}+2S_{AB})$\\
-$01,10$&$(1,-1,0)$&$\tfrac12(S_{AA}+S_{BB}-2S_{AB})$\\\bottomrule
+$00,01$&$(0,1,1)$&$\tfrac12(S_{22}+S_{33}+2S_{23})$\\
+$10,11$&$(0,1,-1)$&$\tfrac12(S_{22}+S_{33}-2S_{23})$\\
+$00,10$&$(1,0,1)$&$\tfrac12(S_{11}+S_{33}+2S_{13})$\\
+$01,11$&$(1,0,-1)$&$\tfrac12(S_{11}+S_{33}-2S_{13})$\\
+$00,11$&$(1,1,0)$&$\tfrac12(S_{11}+S_{22}+2S_{12})$\\
+$01,10$&$(1,-1,0)$&$\tfrac12(S_{11}+S_{22}-2S_{12})$\\\bottomrule
 \end{tabular}
 \end{center}
 This linear map from the six entries of $S$ to the six $\kappa_{ab}$ is
-invertible. With the pair sums
-\begin{equation}
- K_A=\kappa_{00,10}+\kappa_{01,11},\qquad
- K_B=\kappa_{00,01}+\kappa_{10,11},\qquad
- K_{AB}=\kappa_{00,11}+\kappa_{01,10},
-\end{equation}
+invertible. Differences within each row pair give the off-diagonal
+entries; with the pair sums
+\begin{align}
+ K_A&=\kappa_{00,10}+\kappa_{01,11}=S_{11}+S_{33},\qquad
+ K_B=\kappa_{00,01}+\kappa_{10,11}=S_{22}+S_{33},\notag\\
+ K_{AB}&=\kappa_{00,11}+\kappa_{01,10}=S_{11}+S_{22},
+\end{align}
 for coherences in which only $A$, only $B$, or both probes flip, the
 inverse is
 \begin{align}
- S_{AA}&=\tfrac12(K_A+K_{AB}-K_B),&
- S_{AB}&=\tfrac12(\kappa_{00,11}-\kappa_{01,10}),\notag\\
- S_{BB}&=\tfrac12(K_B+K_{AB}-K_A),&
- S_{AZ}&=\tfrac12(\kappa_{00,10}-\kappa_{01,11}),
+ S_{11}&=\tfrac12(K_A+K_{AB}-K_B),&
+ S_{12}&=\tfrac12(\kappa_{00,11}-\kappa_{01,10}),\notag\\
+ S_{22}&=\tfrac12(K_B+K_{AB}-K_A),&
+ S_{13}&=\tfrac12(\kappa_{00,10}-\kappa_{01,11}),
  \label{eq:Sinverse}\\
- S_{ZZ}&=\tfrac12(K_A+K_B-K_{AB}),&
- S_{BZ}&=\tfrac12(\kappa_{00,01}-\kappa_{10,11}).\notag
+ S_{33}&=\tfrac12(K_A+K_B-K_{AB}),&
+ S_{23}&=\tfrac12(\kappa_{00,01}-\kappa_{10,11}).\notag
 \end{align}
+This is an explicit alternative to $S=\Re(G^{\mathsf T}\eta G)$.
 The entries have a direct reading:
 \begin{itemize}
-\item $S_{AA}$ and $S_{BB}$ describe dephasing of each probe along $z$.
-\item $S_{AB}>0$ when the coherence between $00$ and $11$ decays faster
+\item $S_{11}$ and $S_{22}$ describe dephasing of each probe along $z$.
+\item $S_{12}>0$ when the coherence between $00$ and $11$ decays faster
 than that between $01$ and $10$, as for noise acting equally on both
-probes; $S_{AB}<0$ in the opposite, anticorrelated case.
-\item $S_{AZ}$ ($S_{BZ}$) measures how the dephasing of $A$ ($B$)
+probes; $S_{12}<0$ in the opposite, anticorrelated case.
+\item $S_{13}$ ($S_{23}$) measures how the dephasing of $A$ ($B$)
 depends on the configuration of the other probe.
-\item $S_{ZZ}$ is the diagonal decoherence-matrix coefficient associated
-with $G_Z=\sigma_A^z\sigma_B^z/2$.
+\item $S_{33}$ is the diagonal decoherence-matrix coefficient associated
+with $F_3=\sigma_A^z\sigma_B^z/2$.
 \end{itemize}
 These entries are coefficients in the chosen operator basis, rather
 than canonical rates. They coincide with canonical rates when the full
-matrix $\mathsf d=S+iA$ is diagonal in that basis
+matrix $\dmat=S+iA$ is diagonal in that basis
 (Section~\ref{sec:ratesoperators}).
 If $\Gamma$ factorizes into two independent single-probe dephasing
-maps, $\gamma_{(s_As_B),(s_A's_B')}=\alpha_{s_As_A'}\beta_{s_Bs_B'}$,
+maps, $\Gamma_{(s_As_B),(s_A's_B')}=\alpha_{s_As_A'}\beta_{s_Bs_B'}$,
 then $\kappa_{00,10}=\kappa_{01,11}=\kappa^A$,
 $\kappa_{00,01}=\kappa_{10,11}=\kappa^B$ and
 $\kappa_{00,11}=\kappa_{01,10}=\kappa^A+\kappa^B$, so
 Eq.~\eqref{eq:Sinverse} gives $S=\diag(2\kappa^A,2\kappa^B,0)$. Nonzero
-$S_{AB}$, $S_{AZ}$, $S_{BZ}$ or $S_{ZZ}$ therefore signal dephasing
+$S_{12}$, $S_{13}$, $S_{23}$ or $S_{33}$ therefore signal dephasing
 correlated through the common bulk.
 
 For $a\ne b$, each $\Delta_{ab}$ has squared norm $2$. With the unit vector
 $\mathbf e_{ab}=\Delta_{ab}/\sqrt2$ and the normalized operator
-$G_{ab}=\sum_j(\mathbf e_{ab})_jG_j$,
+$F_{ab}=\sum_\mu(\mathbf e_{ab})_\mu F_\mu$,
 \begin{equation}
  \kappa_{ab}=\mathbf e_{ab}^{\mathsf T}S\,\mathbf e_{ab}
- =\mathbf e_{ab}^{\mathsf T}\mathsf d\,\mathbf e_{ab},
+ =\mathbf e_{ab}^{\mathsf T}\dmat\,\mathbf e_{ab},
  \label{eq:kappaprojection}
 \end{equation}
 since $\mathbf e^{\mathsf T}A\mathbf e=0$. Each coherence decay rate is
 thus the decoherence matrix projected onto one fixed traceless
 diagonal operator; for example,
-$G_{01,10}=(\sigma_A^z-\sigma_B^z)/(2\sqrt2)$ and
-$G_{00,11}=(\sigma_A^z+\sigma_B^z)/(2\sqrt2)$.
+$F_{01,10}=(\sigma_A^z-\sigma_B^z)/(2\sqrt2)$ and
+$F_{00,11}=(\sigma_A^z+\sigma_B^z)/(2\sqrt2)$.
 
 \subsection{Coherent part: the coherence phases}
 \label{sec:coherent}
 
 The energies $h_a$ cancel from a sum of phase rates around a closed loop
-of three configurations. Write $A$ through a vector $\mathbf a$,
-$A_{jk}=\epsilon_{jkl}a_l$, so that
-$\mathbf x^{\mathsf T}A\mathbf y=\mathbf a\cdot(\mathbf x\times\mathbf y)$.
-Equation~\eqref{eq:omegaA} then gives
+of three configurations. For an oriented triple $(a,b,c)$,
+Eq.~\eqref{eq:omegaA} gives
 \begin{equation}
- C_{abc}\equiv\omega_{ab}+\omega_{bc}+\omega_{ca}
+ \mathcal C_{abc}\equiv\omega_{ab}+\omega_{bc}+\omega_{ca}
+ =\mathbf g^{a\mathsf T}A\mathbf g^b+\mathbf g^{b\mathsf T}A\mathbf g^c
+ +\mathbf g^{c\mathsf T}A\mathbf g^a,
+\end{equation}
+because $(h_a-h_b)+(h_b-h_c)+(h_c-h_a)=0$.
+Write $A$ through a vector $\mathbf a=(a_1,a_2,a_3)$,
+$A_{\mu\nu}=\epsilon_{\mu\nu\lambda}a_\lambda$, so that
+$\mathbf x^{\mathsf T}A\mathbf y=\mathbf a\cdot(\mathbf x\times\mathbf y)$.
+Since $(\mathbf g^b-\mathbf g^a)\times(\mathbf g^c-\mathbf g^a)
+=\mathbf g^a\times\mathbf g^b+\mathbf g^b\times\mathbf g^c+\mathbf g^c\times\mathbf g^a$,
+\begin{equation}
+ \mathcal C_{abc}
  =\mathbf a\cdot\bigl[(\mathbf g^b-\mathbf g^a)\times
  (\mathbf g^c-\mathbf g^a)\bigr].
  \label{eq:loopsum}
 \end{equation}
-The four configurations have three independent loops,
+The four configurations have three independent loops. With
+$\mathbf g^{01}-\mathbf g^{00}=(0,-1,-1)$, $\mathbf g^{10}-\mathbf g^{00}=(-1,0,-1)$
+and $\mathbf g^{11}-\mathbf g^{00}=(-1,-1,0)$, the cross products are
+$(1,1,-1)$, $(-1,1,-1)$ and $(-1,1,1)$, respectively, for the loops
 \begin{align}
- C_1&\equiv C_{00,01,10}=a_A+a_B-a_Z,\notag\\
- C_2&\equiv C_{00,01,11}=-a_A+a_B-a_Z,\\
- C_3&\equiv C_{00,10,11}=-a_A+a_B+a_Z,\notag
+ \mathcal C_1&\equiv \mathcal C_{00,01,10}=a_1+a_2-a_3,\notag\\
+ \mathcal C_2&\equiv \mathcal C_{00,01,11}=-a_1+a_2-a_3,\\
+ \mathcal C_3&\equiv \mathcal C_{00,10,11}=-a_1+a_2+a_3,\notag
 \end{align}
 which determine
 \begin{equation}
- a_A=\tfrac12(C_1-C_2),\qquad
- a_B=\tfrac12(C_1+C_3),\qquad
- a_Z=\tfrac12(C_3-C_2).
+ a_1=\tfrac12(\mathcal C_1-\mathcal C_2),\qquad
+ a_2=\tfrac12(\mathcal C_1+\mathcal C_3),\qquad
+ a_3=\tfrac12(\mathcal C_3-\mathcal C_2).
  \label{eq:Asolution}
 \end{equation}
-With $A$ fixed, the remaining phase rates
-$\eta_{ab}=-\omega_{ab}+\mathbf g^{a\mathsf T}A\,\mathbf g^b$ satisfy
-$\eta_{ab}+\eta_{bc}+\eta_{ca}=0$ around every loop, so
-$\eta_{ab}=h_a-h_b$ with
-\begin{equation}
- \boxed{H_{\mathrm{can}}(t)=\diag(h_a),\qquad h_a=\frac14\sum_b\eta_{ab}.}
- \label{eq:canonicalH}
-\end{equation}
-The Hamiltonian is a configuration-dependent energy shift of the probes
-induced by the bulk. The matrix $A$ carries the part of the phase
-evolution that cannot be absorbed into four configuration energies; it
-vanishes iff all loop sums $C_{abc}$ vanish.
+This agrees with $A=\Im(G^{\mathsf T}\eta G)$ and makes its physical
+content explicit: the matrix $A$ carries the part of the phase evolution
+that cannot be absorbed into four configuration energies, and it
+vanishes iff all loop sums $\mathcal C_{abc}$ vanish. With $A$ fixed,
+the remaining phase rates $\zeta_{ab}=-\omega_{ab}+\mathbf g^{a\mathsf T}A\,\mathbf g^b$
+equal $h_a-h_b$ and reproduce Eq.~\eqref{eq:canonicalH}, since
+$\frac14\sum_b\zeta_{ab}=-\frac14\sum_b\omega_{ab}$. The Hamiltonian is a
+configuration-dependent energy shift of the probes induced by the bulk.
+For a factorized $\Gamma$ (previous subsection) every loop sum vanishes,
+because each phase rate is a sum of single-probe phase rates that cancel
+around a closed loop; hence $A=0$ in that case.
 
 \subsection{Canonical rates and Lindblad operators}
 \label{sec:ratesoperators}
 
-Let $\mathsf d(t)\mathbf u_k(t)=\gamma_k(t)\mathbf u_k(t)$, $k=1,2,3$,
-with orthonormal eigenvectors
-$\mathbf u_k=(u_{Ak},u_{Bk},u_{Zk})$. Then
+Diagonalize the Hermitian matrix of Eq.~\eqref{eq:dfrometa} at each
+regular time,
+\begin{equation}
+ \dmat(t)=V(t)\diag(\gamma_1(t),\gamma_2(t),\gamma_3(t))V(t)^\dagger,
+ \qquad V^\dagger V=I_3,
+\end{equation}
+so that
 \begin{equation}
  \boxed{\{\gamma_k(t)\}_{k=1}^3=\spec\bigl[S(t)+iA(t)\bigr],\qquad
- \gamma_{4},\ldots,\gamma_{15}=0,}
+ \gamma_{4},\ldots,\gamma_{15}=0.}
  \label{eq:canonicalrates}
 \end{equation}
-with $S$ from Eq.~\eqref{eq:Sinverse} and $A$ from
-Eq.~\eqref{eq:Asolution}. We order these three rates as
-$\gamma_1\le\gamma_2\le\gamma_3$. The additional twelve zeros are
-listed separately, so the indices $1,\ldots,15$ do not constitute a
-globally sorted list. The canonical Lindblad operators are
+We order these three rates as $\gamma_1\le\gamma_2\le\gamma_3$. The
+additional twelve zeros are listed separately, so the indices
+$1,\ldots,15$ do not constitute a globally sorted list. Define
 \begin{equation}
- \boxed{L_k(t)=\sum_{j\in\{A,B,Z\}}u_{jk}(t)G_j
- =\frac12\bigl[u_{Ak}\sigma_A^z+u_{Bk}\sigma_B^z
- +u_{Zk}\sigma_A^z\sigma_B^z\bigr],}
+ \boxed{L_k(t)=\sum_{\mu=1}^3V_{\mu k}(t)F_\mu
+ =\frac12\bigl[V_{1k}\sigma_A^z+V_{2k}\sigma_B^z
+ +V_{3k}\sigma_A^z\sigma_B^z\bigr].}
  \label{eq:lindbladops}
 \end{equation}
-which are traceless and satisfy $\Tr(L_j^\dagger L_k)=\delta_{jk}$.
+Substituting $\dmat_{\mu\nu}=\sum_kV_{\mu k}\gamma_kV_{\nu k}^*$ into
+Eq.~\eqref{eq:ansatz} and using $F_\nu^\dagger=F_\nu$,
+\begin{equation}
+ \sum_{\mu\nu}\dmat_{\mu\nu}F_\mu XF_\nu
+ =\sum_k\gamma_k\Bigl(\sum_\mu V_{\mu k}F_\mu\Bigr)X
+ \Bigl(\sum_\nu V_{\nu k}F_\nu\Bigr)^\dagger=\sum_k\gamma_kL_kXL_k^\dagger,
+\end{equation}
+and likewise $\sum_{\mu\nu}\dmat_{\mu\nu}F_\nu F_\mu=\sum_k\gamma_kL_k^\dagger L_k$.
+The $L_k$ are traceless and satisfy
+$\Tr(L_j^\dagger L_k)=\sum_{\mu\nu}V_{\mu j}^*V_{\nu k}\delta_{\mu\nu}=\delta_{jk}$.
 They are diagonal in the configuration basis,
 \begin{equation}
- L_k(t)\ket a=\bigl(\mathbf u_k(t)\cdot\mathbf g^a\bigr)\ket a,
+ L_k(t)\ket a=\Bigl(\sum_\mu V_{\mu k}(t)g^a_\mu\Bigr)\ket a,
  \label{eq:lindbladaction}
 \end{equation}
 so each $L_k$ imprints a configuration-dependent amplitude and phase.
@@ -815,16 +1244,36 @@ does not track an eigenoperator continuously through a crossing.
 
 The canonical master equation of the Ising channel is therefore
 \begin{equation}
- \dot\rho=-i[H_{\mathrm{can}}(t),\rho]+\sum_{k=1}^3\gamma_k(t)
+ \dot\rho=-i[\Heff(t),\rho]+\sum_{k=1}^3\gamma_k(t)
  \Bigl(L_k(t)\rho L_k^\dagger(t)
  -\tfrac12\{L_k^\dagger(t)L_k(t),\rho\}\Bigr),
  \label{eq:canonicalmaster}
 \end{equation}
-with $H_{\mathrm{can}}$, $\gamma_k$ and $L_k$ determined by $\Gamma(t)$ alone. All
+with $\Heff$, $\gamma_k$ and $L_k$ determined by $\Gamma(t)$ alone. All
 operators in it are diagonal and mutually commute, so it fixes the
 populations and is unital. The $L_k$ are not raising or lowering
 operators: such operators would move population, which
 Proposition~\ref{prop:threerates} excludes for this channel.
+
+\subsection{The generator at the initial time}
+\label{sec:initial}
+
+By Eq.~\eqref{eq:initialderivative},
+$\eta_{ab}(0)=\dot\Gamma_{ab}(0)=-i(\varepsilon_a-\varepsilon_b)$.
+Hence $\kappa_{ab}(0)=0$ for every pair, and the invertible map of
+Eq.~\eqref{eq:Sinverse} gives $S(0)=0$. In matrix form,
+$\eta(0)=-i\varepsilon\mathbf1^{\mathsf T}+i\mathbf1\varepsilon^{\mathsf T}$
+with $\varepsilon=(\varepsilon_a)_a$, so Eq.~\eqref{eq:dfrometa} and
+$\mathbf1^{\mathsf T}G=0$ give
+\begin{equation}
+ \dmat(0)=G^{\mathsf T}\eta(0)G=0,\qquad
+ h_a(0)=\varepsilon_a-\frac14\sum_b\varepsilon_b .
+\end{equation}
+All canonical rates vanish at $t=0$, and the initial motion is purely
+coherent, generated by the bulk-averaged conditional energies
+$\Tr_E(\omega_EH_a)$. This is the general behaviour of a product initial
+state under a finite-dimensional unitary dilation; dissipative
+contributions to $\dmat$ appear only at $t>0$.
 
 \subsection{Sign of the rates and CP divisibility}
 \label{sec:ratesign}
@@ -834,74 +1283,131 @@ equation is called Markovian at time $t$ iff all canonical rates are
 nonnegative, and non-Markovian iff at least one rate is strictly
 negative. On an interval where the map is differentiable and invertible,
 nonnegative rates throughout the interval are equivalent to CP
-divisibility~\cite{Hall2014}. A
-negative rate does not invalidate Eq.~\eqref{eq:canonicalmaster}, and
-$\Lambda_t$ remains CPTP; it signals that the intermediate maps near
-$t$ are not completely positive, consistent with the finite-interval
-test of Eq.~\eqref{eq:divisibility}.
+divisibility~\cite{Hall2014}:
+\begin{equation}
+ \text{CP-divisible}\iff\dmat(t)\succeq0\iff\gamma_k(t)\ge0\quad\forall k
+ \ \text{(almost everywhere)}.
+\end{equation}
+A negative rate does not invalidate Eq.~\eqref{eq:canonicalmaster}, and
+$\Lambda_t$ remains CPTP for every $t\ge0$, because $\Gamma(t)\succeq0$
+with unit diagonal; it signals that the intermediate maps near $t$ are
+not completely positive, consistent with the finite-interval test of
+Eq.~\eqref{eq:divisibility}.
 
 For the Ising channel the sign structure follows from $S$ and $A$:
 write $\gamma_{\min}=\gamma_1$ and $\gamma_{\max}=\gamma_3$ for the
 extreme eigenvalues of the $3\times3$ diagonal-operator block.
 \begin{enumerate}
 \item The smallest rate obeys $\gamma_{\min}\le\lambda_{\min}(S)$.
-Indeed $S=(\mathsf d+\mathsf d^{\mathsf T})/2$, and $\mathsf d^{\mathsf T}$
-has the same spectrum as $\mathsf d$, so Weyl's inequality gives
-$\lambda_{\min}(S)\ge\gamma_{\min}$. A non-positive-semidefinite $S$
+Indeed $S=(\dmat+\dmat^{\mathsf T})/2$, and $\dmat^{\mathsf T}=\dmat^*$
+has the same spectrum as $\dmat$, so Weyl's inequality gives
+$\lambda_{\min}(S)\ge\frac12[\lambda_{\min}(\dmat)+\lambda_{\min}(\dmat^{\mathsf T})]
+=\gamma_{\min}$. A non-positive-semidefinite $S$
 therefore implies a negative canonical rate; the phase part $A$ cannot
 restore positivity.
-\item By Eq.~\eqref{eq:kappaprojection}, for every distinct pair $a\ne b$,
+\item By Eq.~\eqref{eq:kappaprojection} and the Rayleigh-quotient bounds
+for a Hermitian matrix and a unit vector, for every distinct pair $a\ne b$,
 \begin{equation}
  \gamma_{\min}(t)\le\kappa_{ab}(t)\le\gamma_{\max}(t).
  \label{eq:ratebounds}
 \end{equation}
 Hence a negative rate occurs whenever any coherence magnitude
-$\lvert\gamma_{ab}\rvert$ increases. Likewise $\gamma_{\min}\le S_{jj}$
-for $j\in\{A,B,Z\}$; in particular $K_{AB}>K_A+K_B$, i.e.\
-$S_{ZZ}<0$, implies a negative rate even if every $\kappa_{ab}$ is
+$\lvert\Gamma_{ab}\rvert$ increases. The converse fails: a negative rate
+can occur with every $\kappa_{ab}$ positive. Likewise
+$\gamma_{\min}\le S_{\mu\mu}=\mathbf u_\mu^{\mathsf T}\dmat\mathbf u_\mu$ for each
+unit vector $\mathbf u_\mu$; in particular $K_{AB}>K_A+K_B$, i.e.\
+$S_{33}<0$, implies a negative rate even if every $\kappa_{ab}$ is
 positive.
 \item $S\succeq0$ iff there is a real $3\times3$ matrix $M$ with
+$S=M^{\mathsf T}M$, i.e.\
 $\kappa_{ab}=\frac12\lvert M\Delta_{ab}\rvert^2$ for all pairs.
 In that case, the six decay rates are one half of squared Euclidean
 distances between four points $M\mathbf g^a$ representing the
 configurations.
 \end{enumerate}
 
-The complete condition is $\mathsf d=S+iA\succeq0$. Although
+The complete condition is $\dmat=S+iA\succeq0$. Although
 $S\succeq0$ and nonnegative $\kappa_{ab}$ are necessary for this
 condition, neither alone is sufficient. For example,
-$S=I_3$ with $A_{AB}=-A_{BA}=2$ and all other entries of $A$ zero
+$S=I_3$ with $A_{12}=-A_{21}=2$ and all other entries of $A$ zero
 has $\kappa_{ab}=1$ for all $a\ne b$, but
-$\spec(S+iA)=\{-1,1,3\}$.
+$\spec(S+iA)=\{1-2,1,1+2\}=\{-1,1,3\}$.
 
 \subsection{Singular times}
 
 The rates are built from the logarithmic derivatives
-$\ell_{ab}=\dot\gamma_{ab}/\gamma_{ab}$. The inverse-map construction
+$\eta_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}$. The inverse-map construction
 fails when a coherence factor vanishes~\cite{Hall2014}. For the finite
-system with a time-independent Hamiltonian, each $\gamma_{ab}(t)$ is
-analytic. Near a zero of order $r\ge1$ at $t_*$,
+system with a time-independent Hamiltonian, each $\Gamma_{ab}(t)$ is
+analytic in $t$ (a finite sum of exponentials). Near a zero of order
+$r\ge1$ at $t_*$,
 \begin{equation}
- \gamma_{ab}(t)=c(t-t_*)^r[1+O(t-t_*)],\quad c\ne0,
- \qquad \ell_{ab}(t)=\frac{r}{t-t_*}+O(1).
+ \Gamma_{ab}(t)=c(t-t_*)^r[1+O(t-t_*)],\quad c\ne0,
+ \qquad \eta_{ab}(t)=\frac{r}{t-t_*}+O(1).
  \label{eq:singularfactor}
 \end{equation}
-Thus $\kappa_{ab}=-r/(t-t_*)+O(1)$ has a pole, and at least one
-canonical rate becomes unbounded by Eq.~\eqref{eq:ratebounds}.
-The phase rate $\omega_{ab}$ need not diverge: the leading pole in
-Eq.~\eqref{eq:singularfactor} is real. At $t_*$ the rates defined by
+The second relation follows from
+$\eta_{ab}=\frac{d}{dt}\ln\Gamma_{ab}=r/(t-t_*)+\frac{d}{dt}\ln[1+O(t-t_*)]$,
+where the last term is analytic. Since the pole is real,
+$\kappa_{ab}=-r/(t-t_*)+O(1)$ diverges, whereas
+$\omega_{ab}=\Im\eta_{ab}=O(1)$ remains bounded. For odd $r$ the phase
+$\arg\Gamma_{ab}$ jumps by $\pi$ across $t_*$, because $(t-t_*)^r$ changes
+sign. By Eq.~\eqref{eq:ratebounds}, at least one canonical rate becomes
+unbounded: $\gamma_{\max}\to+\infty$ as $t\to t_*^-$ and
+$\gamma_{\min}\to-\infty$ as $t\to t_*^+$. At $t_*$ the rates defined by
 $\dot\Lambda_t\Lambda_t^{-1}$ are undefined. The time-local form
 applies on neighboring intervals where all coherence factors are nonzero.
 The state and its derivative remain bounded:
-$\rho_{ab}(t)=\gamma_{ab}(t)\rho_{ab}(0)$ and its time derivative stay
-bounded, with $\lvert\dot\rho_{ab}\rvert\le
-\lvert\dot\gamma_{ab}\rvert\lvert\rho_{ab}(0)\rvert$.
+$\rho_{ab}(t)=\Gamma_{ab}(t)r_{ab}$ and
+$\lvert\dot\rho_{ab}\rvert\le\lvert\dot\Gamma_{ab}\rvert\lvert r_{ab}\rvert$.
 According to Eq.~\eqref{eq:fractionalrate}, $\kappa_{ab}$ measures a
 fractional rather than an absolute change. Its signed integral is finite
 on a closed interval containing no zeros, as shown below
 Eq.~\eqref{eq:fractionalrate}. At an exact zero the corresponding
 one-sided logarithmic integrals diverge; a principal-value cancellation
 does not define a finite ordinary integral across the singularity.
+Lemma~\ref{lem:nosingular} shows that this divergence is unavoidable: an
+invertible map cannot reach a singular one under a locally integrable
+generator.
+
+\subsection{Computational procedure and consistency tests}
+\label{sec:procedure}
+
+For each chosen $(N,J,\Delta,g_A,g_B,\omega_E)$ and time $t$:
+\begin{enumerate}
+\item Build the four bulk matrices $H_a$ of Eq.~\eqref{eq:conditional}
+and propagate $U_a(t)$, or propagate the vectors of a decomposition of
+$\omega_E$.
+\item Compute the six complex values
+$\Gamma_{ab}=\Tr(\omega_EU_b^\dagger U_a)$, $a<b$
+[Eq.~\eqref{eq:gamma}].
+\item Compute $\dot\Gamma_{ab}=-i\Tr[\omega_EU_b^\dagger(H_a-H_b)U_a]$
+[Eq.~\eqref{eq:gammadot}].
+\item If each $\Gamma_{ab}\ne0$, set $\eta_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}$,
+$\eta_{ba}=\eta_{ab}^*$ and $\eta_{aa}=0$.
+\item Form $\dmat=G^{\mathsf T}\eta G$ and $h_a=-\frac14\sum_b\Im\eta_{ab}$
+[Eqs.~\eqref{eq:dfrometa} and~\eqref{eq:canonicalH}].
+\item Diagonalize only the $3\times3$ Hermitian matrix $\dmat$, obtaining
+$\gamma_k$ and the diagonal operators $L_k$ [Eq.~\eqref{eq:lindbladops}].
+\end{enumerate}
+No $16\times16$ diagonalization is required. At every regular time the
+calculation can be checked independently:
+\begin{enumerate}
+\item $\Gamma=\Gamma^\dagger\succeq0$, $\Gamma_{aa}=1$;
+$\eta=\eta^\dagger$, $\eta_{aa}=0$.
+\item $\dmat=\dmat^\dagger$; $\sum_ah_a=0$;
+$\Tr(L_j^\dagger L_k)=\delta_{jk}$.
+\item Reconstruct all six complex multipliers from the canonical form,
+$\eta^{\mathrm{rec}}_{ab}$ given by the right side of
+Eq.~\eqref{eq:elementwise}, and check
+$\eta^{\mathrm{rec}}_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}$.
+\item Apply $\mathcal L_t$ to all sixteen $E_{ab}$ and check
+$\mathcal L_t(E_{ab})=\eta_{ab}E_{ab}$.
+\end{enumerate}
+These tests verify the \emph{entire two-probe channel generator}, not
+merely its action on the special input $\ket{++}$. Step~3 can also be
+replaced by a finite difference of $\Gamma$; the analytic form avoids
+the associated discretization error.
 
 \part{Exchange coupling}
 \label{part:exchange}
@@ -916,16 +1422,19 @@ For the field-free model define
  M_S=S_A^z+S_B^z,\qquad M_E=\sum_{j=1}^N S_j^z,
  \qquad M=M_S+M_E.
 \end{equation}
-Each exchange term transfers one unit between a probe and the bulk,
-so $[H^{(\ex)},M]=0$, while individual probe $S^z$ values generally
-are not conserved. The total-charge sector $m$ has dimension
+The bulk XXZ terms conserve $M_E$, and each exchange term
+$S_A^+S_1^-+S_A^-S_1^+$ (or its right-contact analogue) transfers one unit
+between a probe and the bulk while conserving their sum. Hence
+$[H^{(\ex)},M]=0$, while individual probe $S^z$ values generally are not
+conserved. The total-charge sector $m$ contains the basis states with
+$(N+2)/2-m$ down spins, so
 \begin{equation}
  \dim\HH_m=\binom{N+2}{(N+2)/2-m}.
 \end{equation}
 This Hamiltonian decomposition requires no assumption on the input;
 coherences between occupied sectors must still be retained.
 There is no four-branch controlled propagator of the form
-\eqref{eq:conditional} for exchange coupling.
+\eqref{eq:controlled} for exchange coupling.
 
 \subsection{Bulk assumption and proof of phase covariance}
 
@@ -938,10 +1447,22 @@ Support in a single well-defined bulk magnetization sector is sufficient.
 An incoherent mixture of sectors also suffices. A coherent superposition
 of different bulk magnetizations generally does not.
 
-Let $V_\theta=e^{-i\theta M_S}$ and $W_\theta=e^{-i\theta M_E}$.
-Conservation gives $[U_t,V_\theta\otimes W_\theta]=0$, while
-\eqref{eq:bulksym} gives $W_\theta\omega_EW_\theta^\dagger=\omega_E$.
-Inserting these into the partial trace proves
+Let $V_\theta=e^{-i\theta M_S}$ and $W_\theta=e^{-i\theta M_E}$, so that
+$V_\theta\otimes W_\theta=e^{-i\theta M}$. Conservation gives
+$[U_t,V_\theta\otimes W_\theta]=0$, while Eq.~\eqref{eq:bulksym} gives
+$W_\theta\omega_EW_\theta^\dagger=\omega_E$. Then
+\begin{align}
+ \Lambda_t(V_\theta XV_\theta^\dagger)
+ &=\Tr_E\bigl[U_t(V_\theta\otimes W_\theta)(X\otimes\omega_E)
+ (V_\theta\otimes W_\theta)^\dagger U_t^\dagger\bigr]\notag\\
+ &=\Tr_E\bigl[(V_\theta\otimes W_\theta)U_t(X\otimes\omega_E)
+ U_t^\dagger(V_\theta\otimes W_\theta)^\dagger\bigr]\notag\\
+ &=V_\theta\,\Tr_E\bigl[(I\otimes W_\theta)U_t(X\otimes\omega_E)U_t^\dagger
+ (I\otimes W_\theta^\dagger)\bigr]\,V_\theta^\dagger
+ =V_\theta\Lambda_t(X)V_\theta^\dagger,
+\end{align}
+where the last step uses cyclicity of the partial trace for operators
+acting only on $E$. Hence
 \begin{equation}
  \boxed{\Lambda_t(V_\theta XV_\theta^\dagger)
        =V_\theta\Lambda_t(X)V_\theta^\dagger.}
@@ -954,8 +1475,15 @@ with the bulk; it does not imply $\Lambda_t^*(M_S)=M_S$ or unitality.
 
 The probe charges are $(m_{00},m_{01},m_{10},m_{11})=(1,0,0,-1)$.
 The operator $E_{ab}$ has coherence order $q=m_a-m_b$, meaning
-$[M_S,E_{ab}]=qE_{ab}$. Under a rotation it acquires the phase
-$e^{-iq\theta}$, so covariance implies
+$[M_S,E_{ab}]=qE_{ab}$ and $V_\theta E_{ab}V_\theta^\dagger=e^{-iq\theta}E_{ab}$.
+Write $\Lambda_t(E_{ab})=\sum_{c,d}c_{cd}E_{cd}$. Covariance gives
+\begin{equation}
+ \sum_{c,d}e^{-i(m_c-m_d)\theta}c_{cd}E_{cd}
+ =V_\theta\Lambda_t(E_{ab})V_\theta^\dagger
+ =\Lambda_t(V_\theta E_{ab}V_\theta^\dagger)
+ =e^{-iq\theta}\sum_{c,d}c_{cd}E_{cd}
+\end{equation}
+for every $\theta$. Hence $c_{cd}=0$ unless $m_c-m_d=q$, and
 \begin{equation}
  \Lambda_t(\mathcal V_q)\subseteq\mathcal V_q,\qquad
  \mathcal V_q=\operatorname{span}\{E_{ab}:m_a-m_b=q\}.
@@ -979,8 +1507,12 @@ Thus the $16\times16$ superoperator has the exact reduction
                (d_q)=(1,4,6,4,1).}
  \label{eq:blocks}
 \end{equation}
-Operators of the same order may mix. Hermiticity relates the opposite
-orders. In the ordered basis $\mathcal B_q$, the exact entries are
+Operators of the same order may mix. Hermiticity preservation,
+$\Lambda_t(X^\dagger)=\Lambda_t(X)^\dagger$, relates the opposite orders,
+since $E_{ab}^\dagger=E_{ba}$ has order $-q$. Using
+Eq.~\eqref{eq:kraus}, $(K_{r\nu}E_{ab}K_{r\nu}^\dagger)_{cd}
+=(K_{r\nu})_{ca}(K_{r\nu})_{db}^*$, so in the ordered basis $\mathcal B_q$
+the exact entries are
 \begin{equation}
  T^{(q)}_{cd,ab}(t)
  =\sum_{r,\nu}(K_{r\nu})_{ca}(K_{r\nu})_{db}^*,
@@ -990,30 +1522,52 @@ orders. In the ordered basis $\mathcal B_q$, the exact entries are
 Equation~\eqref{eq:blockentries} is a formal construction, not a closed
 evaluation of these functions for general interacting XXZ dynamics.
 
-The normalized Choi state satisfies the equivalent symmetry condition
+\subsection{Choi blocks}
+
+By Eq.~\eqref{eq:choigeneral},
+$J_t=\frac14\sum_{a,b}\sum_{c,d}T_{cd,ab}E_{cd}\otimes E_{ab}$, with
+nonzero coefficients only for $m_c-m_d=m_a-m_b$. Since $M_S^{\mathsf T}=M_S$
+is diagonal, $[M_S\otimes I_R-I_{AB}\otimes M_S^{\mathsf T},E_{cd}\otimes E_{ab}]
+=[(m_c-m_d)-(m_a-m_b)]E_{cd}\otimes E_{ab}$, which vanishes on every
+nonzero term. Hence the normalized Choi state satisfies
 \begin{equation}
  [J_t,M_S\otimes I_R-I_{AB}\otimes M_S^{\mathsf T}]=0.
 \end{equation}
-Grouping output--reference kets $\ket c\ket a$ by $m_c-m_a$ gives Choi
-blocks of the same sizes $1,4,6,4,1$. Choi blocks and superoperator
-blocks are different rearrangements of channel coefficients and should
-not be identified as matrices or assigned the same spectra.
+Group output--reference kets $\ket c\ket a$ by $m_c-m_a$; the term
+$E_{cd}\otimes E_{ab}=\ket{ca}\bra{db}$ connects $m_c-m_a$ to $m_d-m_b$,
+which are equal. The numbers of pairs $(c,a)$ with $m_c-m_a=k$ are
+$1,4,6,4,1$ for $k=-2,\ldots,2$, so the Choi blocks have the same sizes.
+Since $J_t$ is Hermitian, the blocks contain at most
+$1+16+36+16+1=70$ real parameters before trace preservation and positivity
+are imposed, rather than $256$. Choi blocks and superoperator blocks are
+different rearrangements of channel coefficients and should not be
+identified as matrices or assigned the same spectra.
 
 \subsection{Kraus operators with definite charge transfer}
 
-Under \eqref{eq:bulksym}, diagonalize $\omega_E$ within its charge
+Under Eq.~\eqref{eq:bulksym}, diagonalize $\omega_E$ within its charge
 sectors: $M_E\ket{\phi_\nu}=\mu_\nu\ket{\phi_\nu}$. Choose
-$M_E\ket r=\mu_r\ket r$. Conservation of the total input and output
-charge in Eq.~\eqref{eq:kraus} yields
+$M_E\ket r=\mu_r\ket r$. From $[U_t,M]=0$,
+\begin{align}
+ M_SK_{r\nu}&=\sqrt{p_\nu}\,{}_E\bra r(M-M_E)U_t\ket{\phi_\nu}_E
+ =\sqrt{p_\nu}\,{}_E\bra rU_tM\ket{\phi_\nu}_E-\mu_rK_{r\nu}\notag\\
+ &=\sqrt{p_\nu}\,{}_E\bra rU_t(M_S+\mu_\nu)\ket{\phi_\nu}_E-\mu_rK_{r\nu}
+ =K_{r\nu}M_S+(\mu_\nu-\mu_r)K_{r\nu}.
+\end{align}
+Hence
 \begin{equation}
+ [M_S,K_{r\nu}]=(\mu_\nu-\mu_r)K_{r\nu},\qquad
  (K_{r\nu})_{ca}\ne0\ \Longrightarrow\
- m_c-m_a=\mu_\nu-\mu_r,\qquad
- [M_S,K_{r\nu}]=(\mu_\nu-\mu_r)K_{r\nu}.
+ m_c-m_a=\mu_\nu-\mu_r .
 \end{equation}
-Only transfers between $-2$ and $+2$ can act on the two probes.
-The transfer label belongs to a Kraus operator; coherence order labels
-an input or output matrix unit. Their roles in the Choi and
-superoperator reductions are related but distinct.
+Since $m_c-m_a\in\{-2,\ldots,2\}$, only transfers between $-2$ and $+2$
+can act on the two probes; Kraus operators with other transfers vanish.
+Under $V_\theta$, each $K_{r\nu}$ acquires the scalar phase
+$e^{-i\theta(\mu_\nu-\mu_r)}$, which cancels in $K_{r\nu}XK_{r\nu}^\dagger$;
+this reproduces Eq.~\eqref{eq:covariance}. The transfer label belongs to
+a Kraus operator; coherence order labels an input or output matrix unit.
+Their roles in the Choi and superoperator reductions are related but
+distinct.
 
 \subsection{Reduced states at fixed total magnetization}
 \label{sec:xstate}
@@ -1026,11 +1580,17 @@ the reduced probe state has the exact form
  \end{pmatrix}.
  \label{eq:xstate}
 \end{equation}
-For a pure global ket, resolve its four probe components. Their bulk
-kets have charges $m-1,m,m,m+1$. Orthogonality of different bulk charges
-eliminates every coherence except $01\leftrightarrow10$. Linearity
-extends the conclusion to mixtures within the sector.
-The populations and $c$ remain time dependent, and the concurrence is
+For a pure global ket $\ket{\Psi(t)}$ with $M\ket\Psi=m\ket\Psi$ (preserved
+by $[U_t,M]=0$), resolve its four probe components,
+$\ket{\Psi(t)}=\sum_a\ket a\otimes\ket{\psi_a(t)}$. Since $M_S\ket a=m_a\ket a$,
+each bulk ket satisfies $M_E\ket{\psi_a}=(m-m_a)\ket{\psi_a}$; the charges are
+$m-1,m,m,m+1$. The reduced state has entries
+$\rho_{ab}=\langle\psi_b|\psi_a\rangle$, and bulk kets of different charge are
+orthogonal. This eliminates every coherence except $01\leftrightarrow10$,
+with $c=\langle\psi_{10}|\psi_{01}\rangle$. Linearity extends the conclusion
+to mixtures within the sector.
+The populations and $c$ remain time dependent. For this $X$ state with
+$\rho_{00,11}=0$, the Wootters formula reduces to
 \begin{equation}
  C=2\max\{0,|c|-\sqrt{p_{00}p_{11}}\}.
 \end{equation}
@@ -1053,22 +1613,36 @@ symmetry on an arbitrary reduced trajectory.
 Equations~\eqref{eq:textures}, \eqref{eq:measurement} and
 \eqref{eq:response} hold for exchange coupling as well. However,
 $\rho_f$ is generally not a Schur multiplier matrix and does not
-determine the exchange channel. Under Eq.~\eqref{eq:bulksym}, $f_1$
-has a nonzero component in every $\mathcal V_q$, but one output
-determines only each block's action on that particular component.
-It cannot determine a general $6\times6$ or $4\times4$ block.
+determine the exchange channel. Under Eq.~\eqref{eq:bulksym},
+$f_1=\frac14\sum_{a,b}E_{ab}$ has a nonzero component in every
+$\mathcal V_q$, but one output determines only each block's action on
+that particular component. It cannot determine a general $6\times6$ or
+$4\times4$ block.
 
 There is one exact scalar exception. Since $\mathcal V_{+2}$ is
-one-dimensional, write
-$\Lambda_t(E_{00,11})=\eta_{+2}(t)E_{00,11}$. Then
+one-dimensional, write $\Lambda_t(E_{00,11})=\xi_{+2}(t)E_{00,11}$. By the
+block selection rule, the $E_{00,11}$ component of
+$\rho_f=\frac14\sum_{a,b}\Lambda_t(E_{ab})$ comes only from
+$\frac14\Lambda_t(E_{00,11})$. Then
 \begin{equation}
- \eta_{+2}(t)=4[\rho_f(t)]_{00,11},\qquad
- \eta_{-2}(t)=\eta_{+2}(t)^*.
+ \xi_{+2}(t)=4[\rho_f(t)]_{00,11},\qquad
+ \xi_{-2}(t)=\xi_{+2}(t)^*,
 \end{equation}
+the second relation by Hermiticity preservation.
 This inference requires covariance; it is not guaranteed for a bulk
 coherent across magnetization sectors or for transverse-field dynamics.
 The equality $F_e=p_f$ is likewise not a general exchange-channel
 identity, although $F_{\mathrm{avg}}=(4F_e+1)/5$ still holds.
+
+\subsection{Applicability of the symmetry reduction}
+
+The exchange block decomposition needs both
+$[H,M_S+M_E]=0$ and $[\omega_E,M_E]=0$. Transverse bulk fields generally
+violate total-magnetization conservation and couple different
+total-magnetization sectors. Coherence between bulk magnetization
+sectors generally removes channel phase covariance, even for a conserving
+Hamiltonian. The Ising Schur channel and $\Gamma=4\rho_f$ remain valid in
+both cases, because the probe $z$ components are still conserved.
 
 \subsection{Summary of the exchange channel structure}
 
@@ -1108,15 +1682,16 @@ entanglement. They concern $A|B$, while $S(\rho_{AB})$ concerns the
 pair's marginal mixedness. Only for a globally pure state does
 $S(\rho_{AB})$ equal entanglement entropy across $AB|E$.
 
-For the Ising texture input,
+For the Ising texture input, Eq.~\eqref{eq:choipurity} with
+$\sum_{a,b}|\Gamma_{ab}|^2=4+2\sum_{a<b}|\Gamma_{ab}|^2$ gives
 \begin{equation}
- P_f(t)=\frac14+\frac18\sum_{a<b}|\gamma_{ab}(t)|^2,
+ P_f(t)=\frac14+\frac18\sum_{a<b}|\Gamma_{ab}(t)|^2,
  \qquad \frac14\le P_f\le1.
 \end{equation}
-Its local probe coherences are
+Its local probe coherences, obtained by tracing out the other probe, are
 \begin{equation}
- (\rho_A)_{01}=\frac{\gamma_{00,10}+\gamma_{01,11}}4,
- \qquad (\rho_B)_{01}=\frac{\gamma_{00,01}+\gamma_{10,11}}4,
+ (\rho_A)_{01}=\frac{\Gamma_{00,10}+\Gamma_{01,11}}4,
+ \qquad (\rho_B)_{01}=\frac{\Gamma_{00,01}+\Gamma_{10,11}}4,
 \end{equation}
 and each local diagonal is $(1/2,1/2)$.
 For a pure bulk, the global state is
