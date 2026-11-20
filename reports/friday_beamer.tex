@@ -1,8 +1,8 @@
 % Beamer presentation of partial results for Friday:
 %   Part I : Ising coupling, conditional dynamics, Schur dephasing, and Bell-state obstruction
-%   Part II: Time-local generator, canonical master equation, canonical rates, and
-%            the qualitative role of bulk degeneracy in the large canonical-rate peaks
-%   Appendix: full perturbative and symmetry analysis (see also friday_beamer_math_audit.md)
+%   Part II: Exact reduced map vs. canonical master equation, numerical observation,
+%            where large rates come from, degeneracy hypothesis, two-level model, and run comparison
+%   Appendix: canonical-form derivation, blow-up vs. finite peaks, and ongoing analysis (A.1--A.9)
 % Shares references.bib and notation with main_report.tex and main_beamer.tex.
 % Build from reports/:
 %   pdflatex -synctex=1 -interaction=nonstopmode -halt-on-error friday_beamer.tex
@@ -14,7 +14,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{lmodern}
 \usepackage{graphicx}
-\graphicspath{{./}{reports/}{Figures/}}
+\graphicspath{{./}{reports/}{Figures/}{reports/Figures/}}
 \usepackage{amsmath,amssymb,mathtools,booktabs,array}
 \usepackage[numbers,sort&compress]{natbib}
 \renewcommand{\bibsection}{}
@@ -42,11 +42,11 @@
 \newcommand{\ZZ}{\mathrm{ZZ}}
 \newcommand{\dmat}{\mathsf d}
 \newcommand{\Heff}{H_{\mathrm{eff}}}
-\newcommand{\report}[1]{{\color{muted}\footnotesize Details: report, #1.}}
 \newcommand{\appref}[1]{{\color{muted}\footnotesize Full derivation: Appendix, #1.}}
+\newcommand{\ongoing}{{\color{muted}\footnotesize Ongoing analysis.}}
 
 \title{Two edge spins with Ising coupling to an XXZ bulk}
-\subtitle{Partial results: Schur dephasing, Bell-state no-go, and the canonical master equation}
+\subtitle{Partial results: Bell-state no-go and the canonical master equation --- why the initial bulk state matters}
 \author{Spin transport project}
 \date{20 November 2026}
 
@@ -74,9 +74,8 @@ V_{\ZZ}&=g_A S_A^zS_1^z+g_B S_N^zS_B^z,\qquad H^{(\ZZ)}=H_E+V_{\ZZ}.
 \rho_{ABE}(0)=\rho_{AB}(0)\otimes\omega_E,\qquad
 \rho_{AB}(t)=\Lambda_t\bigl(\rho_{AB}(0)\bigr)=\Tr_E\bigl[U_t(\rho_{AB}(0)\otimes\omega_E)U_t^\dagger\bigr].
 \]
-\item \textbf{Outline:} (1) global and reduced dynamics for $\ket{00},\ket{01},\ket{10},\ket{11}$ and $\ket{++}$, and why Bell states cannot form; (2) canonical time-local master equation, canonical rates, and the role of bulk degeneracy in their large peaks.
+
 \end{itemize}
-\report{Sec.~2.1--2.2}
 \end{frame}
 
 % ==============================================================
@@ -110,8 +109,6 @@ H^{(\ZZ)}=\sum_{a}P_a\otimes H_a,\qquad
 \end{itemize}
 \end{column}
 \end{columns}
-\smallskip
-\report{Sec.~3.1}
 \end{frame}
 
 % ==============================================================
@@ -134,7 +131,6 @@ Fix \emph{any} initial bulk state---pure $\ket{\psi_0}_E$ or mixed $\omega_E$---
 \]
 \item \textbf{Global structure:} the full state remains an \textbf{exact product across $A:B:E$} at all $t\ge0$. The bulk evolves nontrivially under $H_a$, while no edge spin flips and no probe--bulk entanglement is created.
 \end{itemize}
-\report{Sec.~3.1--3.2}
 \end{frame}
 
 % ==============================================================
@@ -154,10 +150,9 @@ Tracing out the bulk $E$ from $\rho_{ABE}^{(a)}(t)=\ket a\bra a\otimes U_a(t)\om
 \Lambda_t(\ket{10}\bra{10})&=\ket{10}\bra{10}, &\qquad \Lambda_t(\ket{11}\bra{11})&=\ket{11}\bra{11}.
 \end{aligned}}
 \]
-\item Although each conditional bulk trajectory $\omega_E^{(a)}(t)=U_a(t)\omega_EU_a(t)^\dagger$ depends on $a$ and $t$, a \emph{single} branch leaves no trace on $AB$ once $E$ is traced out ($U_a^\dagger U_a=I_E$).
+\item Although each conditional bulk state $\omega_E^{(a)}(t)=U_a(t)\omega_EU_a(t)^\dagger$ depends on $a$ and $t$, a \emph{single} branch leaves no trace on $AB$ once $E$ is traced out ($U_a^\dagger U_a=I_E$).
 \item By linearity, any incoherent mixture $\rho_{AB}(0)=\sum_a p_a\ket a\bra a$ is also completely frozen: $\rho_{AB}(t)=\rho_{AB}(0)$.
 \end{itemize}
-\report{Sec.~3.2}
 \end{frame}
 
 % ==============================================================
@@ -191,7 +186,7 @@ Prepare $\ket{++}=\ket+_A\otimes\ket+_B=\tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket
 \text{Pure }\ket{\psi_0}_E:\quad &\ket{\Psi(t)}=\tfrac12\textstyle\sum_{a\in\{00,01,10,11\}}\ket a\otimes U_a(t)\ket{\psi_0}_E,\\[2pt]
 \text{General }\omega_E:\quad &\rho_{ABE}(t)=\tfrac14\textstyle\sum_{a,b}\ket a\bra b\otimes U_a(t)\,\omega_E\,U_b(t)^\dagger.
 \end{align*}
-Diverging bulk histories $U_a(t)\ket{\psi_0}_E$ generally entangle the pair $AB$ with the bulk $E$.
+Diverging conditional bulk states $U_a(t)\ket{\psi_0}_E$ generally entangle the pair $AB$ with the bulk $E$.
 \item \textbf{Reduced density matrix $\rho_f(t)=\Lambda_t(\ket{++}\bra{++})$:} tracing out $E$ compares distinct branches $a$ and $b$:
 \[
 \boxed{[\rho_f(t)]_{ab}=\frac14\Gamma_{ab}(t),\qquad
@@ -199,7 +194,6 @@ Diverging bulk histories $U_a(t)\ket{\psi_0}_E$ generally entangle the pair $AB$
 \]
 Generically $\lvert\Gamma_{ab}(t)\rvert<1$ for $a\ne b$: the six coherences acquire bulk-induced phases and damping. (Exceptions: e.g.\ $g_A=0$ makes $H_{00}=H_{10}$; or $U_b^\dagger U_a$ acts as a pure phase on the support of $\omega_E$.)
 \end{itemize}
-\report{Secs.~2.4, 3.2 and 3.6}
 \end{frame}
 
 % ==============================================================
@@ -225,7 +219,6 @@ In the computational order $(00,01,10,11)$, the $\ket{++}$ output encodes the en
 \item \textbf{Unit diagonal:} $\Gamma_{aa}(t)=\Tr_E[U_a(t)\omega_EU_a(t)^\dagger]=1$, so all four populations $r_{aa}$ are permanently conserved.
 \item \textbf{Correlation matrix:} $\Gamma(t)=\Gamma(t)^\dagger\succeq0$ (Gram matrix of $U_a(t)\sqrt{\omega_E}$), so $2\times2$ minors force $\lvert\Gamma_{ab}(t)\rvert\le1$: no coherence magnitude can ever grow beyond its initial value $\lvert r_{ab}\rvert$.
 \end{itemize}
-\report{Secs.~3.3 and 3.6}
 \end{frame}
 
 % ==============================================================
@@ -275,11 +268,10 @@ The Schur structure rules out $\rho_{\Phi^\pm}$ and $\rho_{\Psi^\pm}$ \textbf{in
 \smallskip
 \textbf{Distinction from general probe entanglement:}
 \begin{itemize}\setlength\itemsep{4pt}
-\item By the local-filter identity for the concurrence $C$ \cite{Wootters1998}, $\ket{++}$ is optimal among all separable inputs (report, Sec.~3.9):
+\item By the local-filter identity for the concurrence $C$ \cite{Wootters1998}, $\ket{++}$ is optimal among all separable inputs:
 $\max_{\rho\in\mathrm{Sep}(A:B)}C[\Lambda_t(\rho)]=C[\rho_f(t)]=C[\Gamma(t)/4]$.
 \item Non-additive conditional phases in $\Gamma(t)$ \emph{can} produce $C[\rho_f(t)]>0$ (phase-encoded correlations with diagonal $\tfrac14$), but reaching a Bell state $\ket{\Phi^\pm}$ or $\ket{\Psi^\pm}$ requires population-changing processes (e.g.\ exchange coupling) or external non-diagonal local gates.
 \end{itemize}
-\report{Sec.~3.9}
 \end{frame}
 
 % ==============================================================
@@ -291,40 +283,263 @@ $\max_{\rho\in\mathrm{Sep}(A:B)}C[\Lambda_t(\rho)]=C[\rho_f(t)]=C[\Gamma(t)/4]$.
 \rho_f=\mathrm{CZ}\ket{++}\bra{++}\mathrm{CZ},\qquad \mathrm{CZ}\ket{++}=\tfrac1{\sqrt2}\bigl(\ket{0+}+\ket{1-}\bigr),\qquad C=1 .
 \]
 It has populations $\tfrac14$ and Bell fidelity exactly $\tfrac12$ (saturating the bound), and is one local Hadamard away from $\ket{\Phi^+}$.
-\item \textbf{Can our channel be exactly CZ?}
-\begin{itemize}\footnotesize\setlength\itemsep{2pt}
-\item If $\Lambda_t$ is unitary on \emph{any} time interval, it is unitary for all $t$ and is a product of local $z$ rotations: the entangling phase $\Phi=\arg(u_{00}u_{11}u_{01}^*u_{10}^*)$ vanishes identically. Exact CZ on an interval is impossible.
-\item Exact CZ at an isolated time needs all four conditional bulk states to realign with $\Phi=\pi$: non-generic (fine-tuned).
-\item \emph{Approximately} CZ is possible for an isolated non-degenerate bulk eigenstate at weak coupling: a bulk-mediated $\sigma^z_A\sigma^z_B$ phase $\Phi(t)\simeq-g_Ag_B\chi_{1N}t$, with $C\ge1-O((g/\Delta E)^2)$ at $\Phi=\pi$.
-\end{itemize}
+\item \textbf{Can our channel be exactly CZ?} Only if $\Lambda_t$ is unitary, $\Gamma_{ab}=u_au_b^*$ with $\lvert u_a\rvert=1$, and its entangling phase $\Phi=\arg(u_{00}u_{11}u_{01}^*u_{10}^*)$---the part of $\diag(u)$ that local $z$ rotations cannot remove, with $C[\rho_f]=\lvert\sin(\Phi/2)\rvert$---equals $\pi$. Unitarity on a time interval forces $\Phi\equiv0$, and $\Phi=\pi$ at an isolated time is fine-tuned; only an \emph{approximate} CZ arises, for an isolated bulk eigenstate at weak coupling, through a bulk-mediated phase $\Phi(t)\simeq-g_Ag_B\chi_{1N}t$ (cf.\ Part~II: isolated eigenstates keep $\lvert\Gamma\rvert\approx1$).
 \item \textbf{Defensible statement:} the Ising channel cannot produce $\ket{\Phi^\pm},\ket{\Psi^\pm}$ from any $C<1$ input; its separable-input entanglement capacity is $C[\Gamma/4]$.
 \end{itemize}
 \appref{A.8--A.9}
 \end{frame}
 
 % ==============================================================
-\section{Time-local generator and canonical rates}
+\section{Canonical master equation and the role of the bulk state}
 % ==============================================================
 
-\begin{frame}{Parametric dynamical map vs.\ time-local master equation}
+\begin{frame}{Exact reduced map vs.\ time-local generator}
 \small
-\begin{itemize}\setlength\itemsep{6pt}
-\item \textbf{Parametric quantum map (always smooth and well-defined):}
-Because $\rho_{AB}(t)=\Lambda_t[\rho_{AB}(0)]=\Tr_E[U_t(\rho_{AB}(0)\otimes\omega_E)U_t^\dagger]$ is induced by exact unitary dynamics of the finite global system, $t\mapsto\Lambda_t$ is \textbf{real-analytic and CPTP for every $t\ge0$}. Neither $\rho_{AB}(t)$ nor $\dot\rho_{AB}(t)$ ever has a singularity.
-\item \textbf{Forcing a time-local generator is an extra hypothesis:}
-Writing $\dot\rho_{AB}(t)=\mathcal L_t[\rho_{AB}(t)]$ eliminates the initial state via $\rho_{AB}(0)=\Lambda_t^{-1}[\rho_{AB}(t)]$, requiring \textbf{invertibility of $\Lambda_t$} \cite{Hall2014}:
+\begin{itemize}\setlength\itemsep{5pt}
+\item \textbf{Exact reduced map (always CPTP and smooth):}
+$\Gamma(t)$ is the Gram matrix of the vectors $U_a(t)\sqrt{\omega_E}$, so $\Gamma(t)\succeq0$ with unit diagonal for every $\omega_E$ and every $t\ge0$. Thus $t\mapsto\Lambda_t$ is \textbf{always CPTP and real-analytic}; neither $\rho_{AB}(t)$ nor $\dot\rho_{AB}(t)$ ever has a singularity.
+\item \textbf{Asking for a time-local generator is an extra requirement:}
+Writing $\dot\rho_{AB}(t)=\mathcal L_t[\rho_{AB}(t)]$ eliminates the initial state via $\rho_{AB}(0)=\Lambda_t^{-1}[\rho_{AB}(t)]$, which requires $\Lambda_t$ to be invertible \cite{Hall2014}:
 \[
-\boxed{\mathcal L_t=\dot\Lambda_t\,\Lambda_t^{-1}\quad\text{exists at time }t
-\iff \det\Lambda_t=\prod_{a<b}\lvert\Gamma_{ab}(t)\rvert^2\ne0.}
+\mathcal L_t=\dot\Lambda_t\,\Lambda_t^{-1},\qquad
+\det\Lambda_t=\prod_{a<b}\lvert\Gamma_{ab}(t)\rvert^2\ne0 .
 \]
-\item \textbf{Dependence on the bulk preparation $\omega_E$:}
-Global unitarity does \emph{not} enforce $\Gamma_{ab}(t)\ne0$ for all $t$. For fixed $H_E$ and $g_{A,B}$, whether $\Gamma_{ab}(t)=\Tr_E[\omega_EU_b(t)^\dagger U_a(t)]$ stays away from zero---and hence whether $\mathcal L_t$ stays regular---is decided by the initial bulk state $\omega_E$.
+\item \textbf{Dependence on the initial bulk state $\omega_E$:}
+For fixed $H_E$ and $g_{A,B}$, whether every $\Gamma_{ab}(t)=\Tr_E[\omega_EU_b(t)^\dagger U_a(t)]$ stays away from zero---and whether $\mathcal L_t$ stays regular---depends on $\omega_E$.
 \end{itemize}
-\report{Secs.~3.8, 4.1 and 4.11}
+\smallskip
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\centering
+Unitarity of the global evolution guarantees $\Lambda_t$. It does \textbf{not} guarantee $\Lambda_t^{-1}$, and the time-local generator needs $\Lambda_t^{-1}$.}}
+\end{center}
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Derivation of the canonical form (I): Entrywise $\mathcal L_t$ and diagonal basis}
+\begin{frame}{Canonical master equation: the result}
+\small
+Whenever all $\Gamma_{ab}(t)\neq0$, the reduced state obeys the unique canonical master equation \cite{Hall2014}
+\[
+\dot\rho=-i[\Heff(t),\rho]+\textstyle\sum_{k=1}^{3}\tilde\gamma_k(t)\bigl(L_k\rho L_k^\dagger-\tfrac12\{L_k^\dagger L_k,\rho\}\bigr).
+\]
+How the rates $\tilde\gamma_k$ follow from $\Gamma(t)$, in three steps:
+\begin{enumerate}\setlength\itemsep{3pt}
+\item \textbf{Each coherence has an exact rate.} From $\rho_{ab}(t)=\Gamma_{ab}(t)\,r_{ab}$: $\dot\rho_{ab}=\eta_{ab}\,\rho_{ab}$ with
+$\eta_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}=\tfrac{d}{dt}\ln\Gamma_{ab}=-\kappa_{ab}+i\omega_{ab}$ (decay rate and frequency of coherence $ab$).
+\item \textbf{Match to the canonical form.} Populations are frozen, so only diagonal operators appear: $\Heff=\sum_ah_aP_a$ and jumps in $F_\mu\in\{\tfrac12\sigma^z_A,\tfrac12\sigma^z_B,\tfrac12\sigma^z_A\sigma^z_B\}$, with $F_\mu\ket a=G_{a\mu}\ket a$, $G_{a\mu}=\pm\tfrac12$, $G^{\mathsf T}G=I_3$. On $\ket a\bra b$ the dissipator (coefficient matrix $\dmat$) gives a rate \emph{linear} in $\dmat$, e.g.\ $\kappa_{ab}=\tfrac12(G_a-G_b)^{\mathsf T}(\operatorname{Re}\dmat)(G_a-G_b)$. Inverting: $\dmat(t)=G^{\mathsf T}\eta(t)G$.
+\item \textbf{Rates $=$ eigenvalues of $\dmat$:} $\{\tilde\gamma_k\}=\spec(G^{\mathsf T}\eta G)$, with $L_k$ the eigen-combinations of the $F_\mu$; the other 12 canonical rates are identically zero (plotted as $\gamma_1\le\cdots\le\gamma_{15}$).
+\end{enumerate}
+\medskip
+\begin{center}
+\fbox{\parbox{0.92\textwidth}{\centering
+The canonical rates are linear combinations of the logarithmic derivatives $\dot\Gamma_{ab}/\Gamma_{ab}$, with $\lvert\tilde\gamma_k\rvert\le\lVert\eta\rVert$:\ they can only be large if some $\lvert\dot\Gamma_{ab}/\Gamma_{ab}\rvert$ is large.}}
+\end{center}
+{\color{muted}\footnotesize Full derivation: Appendix.}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Observation: phantom helix vs.\ earlier eigenstates}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.55\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{Channel_CanonicalRates.png}
+\end{column}
+\begin{column}{0.43\textwidth}
+\small
+\begin{itemize}\setlength\itemsep{6pt}
+\item \textbf{Phantom-helix bulk state} ($\ket{\Psi_1^+}$, $J=1$, $\Delta=\tfrac12$, $g=0.1$, edges in $\ket{++}$): canonical rates show \textbf{large isolated spikes} ($\lvert\gamma\rvert\approx9.7$ at $t\approx223$ for $N=10$, shown; up to $\approx67$ for $N=4$).
+\item \textbf{Earlier runs, isolated-chain ground state as bulk state:} the canonical rates stayed small and smooth, with no spikes.
+\item Both bulk states are \textbf{pure} and \textbf{eigenstates} of the isolated chain.
+\item \textbf{Question:} what property of the initial bulk state separates the two behaviours?
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Where can large rates come from?}
+\small
+Write $H_a=H_E+V_a$ with boundary field $V_a=g_As_A^aS_1^z+g_Bs_B^aS_N^z$. For a pure initial bulk state $\ket{\psi_0}$, $\Gamma_{ab}(t)=\langle\phi_b(t)\vert\phi_a(t)\rangle$ with $\ket{\phi_a(t)}=e^{-iH_at}\ket{\psi_0}$, and exact differentiation gives
+\[
+\frac{\dot\Gamma_{ab}(t)}{\Gamma_{ab}(t)}
+=\frac{i\,\bra{\phi_b(t)}(V_b-V_a)\ket{\phi_a(t)}}{\langle\phi_b(t)\mid\phi_a(t)\rangle},\qquad
+\lvert\text{numerator}\rvert\le\lVert V_a-V_b\rVert\sim g .
+\]
+\begin{center}
+\fbox{\parbox{0.93\textwidth}{
+\begin{itemize}\setlength\itemsep{4pt}
+\item The \textbf{numerator} is always small: at most the edge coupling, for \emph{every} bulk state.
+\item So the rates can become large \textbf{only if the denominator becomes small}, i.e.\ if two conditional bulk states become (nearly) orthogonal.
+\item The question becomes: \textbf{which initial bulk states can a weak boundary field rotate into an orthogonal state?}
+\end{itemize}}}
+\end{center}
+\smallskip
+{\color{muted}\footnotesize The same exact identity holds for mixed $\omega_E$, with $\Tr_E[\omega_E U_b(t)^\dagger(\cdots)U_a(t)]$ in place of the overlap.}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Hypothesis: degeneracy of the initial bulk level}
+\small
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+\textbf{Isolated eigenstate}
+\begin{itemize}\footnotesize\setlength\itemsep{4pt}
+\item The nearest other level (that the boundary field can couple to) is far away compared with the coupling $g$.
+\item Mixing those states in costs energy, so the weak field can only slightly deform $\ket{\psi_0}$. Each branch mostly picks up a phase.
+\item Conditional bulk states stay nearly parallel, $\lvert\Gamma_{ab}(t)\rvert\approx1$, and the rates stay small.
+\end{itemize}
+\end{column}
+\begin{column}{0.48\textwidth}
+\textbf{Eigenstate in a degenerate level}
+\begin{itemize}\footnotesize\setlength\itemsep{4pt}
+\item Other bulk states sit at the \emph{same} energy.
+\item The boundary field can mix them in at \textbf{no energy cost} and rotate $\ket{\psi_0}$ by a large angle inside the level.
+\item Opposite edge configurations push in opposite directions ($V_{\bar a}=-V_a$), so conditional bulk states can become nearly orthogonal and the rates spike.
+\end{itemize}
+\end{column}
+\end{columns}
+\medskip
+\begin{center}
+\fbox{\parbox{0.93\textwidth}{\centering
+The energy and the magnetization of $\ket{\psi_0}$ do not decide this. What decides it is whether $\ket{\psi_0}$ has degenerate partners that the boundary field connects it to.}}
+\end{center}
+\smallskip
+{\color{muted}\scriptsize
+\textbf{Caveats:} (1) \emph{Necessary, not sufficient:} if $\ket{\psi_0}$ is already an eigenvector of the boundary field within the level, it is not rotated and nothing happens.\quad
+(2) \emph{Meaning of ``degenerate'':} $V_a$ conserves $M_z$, so only degeneracies within the same $M_z$ sector count; in practice, ``degenerate'' means gap $\lesssim$ coupling.}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Simplest example: a two-level bulk}
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.54\textwidth}
+\footnotesize
+Keep two bulk levels, $H_E=\tfrac{\Delta}{2}\sigma^z$ (splitting $\Delta$), with opposite boundary fields $V_a=+\delta\sigma^x$, $V_{\bar a}=-\delta\sigma^x$, starting in an eigenstate of $H_E$:
+\vspace{-6pt}
+\[
+\Gamma_{a\bar a}(t)=1-2\,\frac{\delta^2}{\Omega^2}\sin^2(\Omega t),\quad
+\Omega=\sqrt{\tfrac{\Delta^2}{4}+\delta^2}.
+\]
+\vspace{-6pt}
+\begin{itemize}\setlength\itemsep{1.5pt}
+\item \textbf{Gapped ($\Delta\gg\delta$):} $\Gamma_{a\bar a}\approx1$; rates stay small.
+\item \textbf{Degenerate ($\Delta=0$):} $\Gamma_{a\bar a}=\cos(2\delta t)$ hits zero periodically; $\kappa=-\tfrac{d}{dt}\ln\lvert\Gamma\rvert$ spikes ($E_0$ drops out).
+\item \textbf{Spike height:} if $\ket{\psi_0}$ sits unevenly in the degenerate level, $\lvert\Gamma\rvert$ dips to a small nonzero value and the spike is \textbf{tall but finite}, as in the helix data ($\min\lvert\Gamma_{01,10}\rvert\approx10^{-4}$; exact zeros: Appendix).
+\item \textbf{More than two states ($d>2$):} coupling to multiple partners mixes several rotation frequencies, giving \textbf{isolated, irregular spikes} instead of periodic ones (same mechanism).
+\end{itemize}
+\end{column}
+\begin{column}{0.44\textwidth}
+\centering
+\includegraphics[width=\linewidth,height=0.52\textheight,keepaspectratio]{two_level_bulk.pdf}
+
+{\scriptsize\raggedright
+In the $H_E$ eigenbasis $\{\ket{E_+},\ket{E_-}\}$ ($\ket{\psi_0}=\ket{E_+}$, $\delta=\bra{E_+}V_a\ket{E_-}$ from the $z$-field $V_a$, $\bar a$ opposite to $a$):\\[-8pt]
+\[
+\begin{aligned}
+\Gamma_{a\bar a}(t)&=\bra{\psi_0}U_{\bar a}(t)^\dagger U_a(t)\ket{\psi_0}\\[-2pt]
+&=\bra{E_+}e^{i(\frac{\Delta}{2}\sigma^z-\delta\sigma^x)t}e^{-i(\frac{\Delta}{2}\sigma^z+\delta\sigma^x)t}\ket{E_+}.
+\end{aligned}
+\]}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Is the hypothesis consistent with the runs?}
+\small
+Compare the gap to the nearest coupled bulk level with the boundary-field norm $\lVert V_a\rVert=(g_A+g_B)/4=0.05$ ($J=1$, $g_A=g_B=0.1$, $S^\alpha=\sigma^\alpha/2$):
+\smallskip
+\begin{center}
+\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.6cm}cccc@{}}
+\toprule
+Bulk state & Level degeneracy & Gap to coupled level & $\text{gap}/\lVert V\rVert$ & Spikes? \\\midrule
+Isolated-chain ground state, $N=6$--$10$, $\Delta=0.5,1$ & $1$ (in its $M_z$ sector) & $0.33$--$0.56$ & \textbf{7--11} & No\\[4pt]
+Phantom helix $\ket{\Psi_1^+}$, $N=4$--$10$, $\Delta=0.5$ & $d=2$--$8$ & $0.002$--$0.13$ & \textbf{0.04--2.7} & Yes\\\bottomrule
+\end{tabular}
+\end{center}
+\smallskip
+\begin{itemize}\footnotesize\setlength\itemsep{3.5pt}
+\item \textbf{Ground-state runs (no bulk boundary fields):} for odd $N$ the ground space is $2$-fold degenerate ($M_z=\pm\tfrac12$), but $V_a$ conserves $M_z$ and cannot connect the two partners, so the state behaves as isolated ($\lvert\Gamma_{ab}\rvert\ge0.95$, $\lvert\gamma_k\rvert\le0.01$).
+\item \textbf{Helix runs ($N=4,5$, $d=2$):} the observed spike spacing ($\approx70$--$76$) matches an estimate of the rotation frequency set by the boundary field inside the doublet (Appendix~A.3).
+\end{itemize}
+\smallskip
+\begin{center}
+\fbox{\parbox{0.88\textwidth}{\centering
+The two families differ precisely in degeneracy, and the spikes follow the degeneracy.}}
+\end{center}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Summary and open questions}
+\footnotesize
+\textbf{Part I:} No edge state with $C<1$---in particular, no product state---reaches $\ket{\Phi^\pm}$ or $\ket{\Psi^\pm}$, for any bulk state.
+\smallskip
+
+\textbf{Part II (logical chain):}
+\begin{enumerate}\setlength\itemsep{2.5pt}
+\item Global unitarity $\implies\Lambda_t$ is CPTP and smooth for every bulk state and every $t$.
+\item A canonical master equation needs $\Lambda_t^{-1}$, i.e.\ $\Gamma_{ab}(t)\neq0$.
+\item The rates are built from $\dot\Gamma_{ab}/\Gamma_{ab}$, whose numerator is always $\lesssim g$; large rates therefore require near-orthogonal conditional bulk states.
+\item \textbf{Hypothesis:} that happens only when the initial bulk state has (nearly) degenerate partners coupled by the boundary field. Isolated eigenstates are protected.
+\item \textbf{Consistent with the runs:} isolated-chain ground states ($\text{gap}/\lVert V\rVert\approx7$--$11$) show no spikes; the phantom helix ($d=2$--$8$, $\text{gap}/\lVert V\rVert\lesssim2.7$) does.
+\end{enumerate}
+\smallskip
+
+\textbf{Open questions (ongoing work):}
+\begin{itemize}\setlength\itemsep{2pt}
+\item When are the spikes true divergences (exact zeros of $\Gamma_{ab}$) rather than tall finite near-zeros?
+\item Quantitative theory for $d>2$.
+\item Mixed bulk states over many levels, which can dephase by phase averaging (a different mechanism).
+\item Controlled test: compare an isolated and a degenerate eigenstate in the \emph{same} $H_E$ at fixed $N,g$.
+\end{itemize}
+\end{frame}
+
+% ==============================================================
+\begin{frame}[plain]
+\end{frame}
+
+% ==============================================================
+\appendix
+\section{Appendix: derivations and ongoing analysis}
+% ==============================================================
+
+\begin{frame}{Appendix: Possible uses of (near-)divergent canonical rates (I)}
+\small
+\textbf{Direct consequences of $\Gamma_{ab}(t)=\langle\phi_b(t)\vert\phi_a(t)\rangle$:}
+\smallskip
+\begin{enumerate}\setlength\itemsep{6pt}
+\item \textbf{Edge-only spectral probe of the bulk.}
+Spikes require $\ket{\psi_0}$ in a (near-)degenerate level coupled by $V_a$, while $1/\lvert\Gamma_{ab}\rvert$ amplifies near-zeros---helping distinguish helix/phantom states from ordinary chain states via edge dynamics alone:
+\begin{itemize}\footnotesize\setlength\itemsep{2pt}
+\item no spikes $\implies$ isolated level;\quad periodic spikes $\implies$ $d=2$ (spacing $\pi/(2\delta)$ measures the in-level coupling $\delta$);\quad irregular spikes $\implies$ $d>2$.
+\end{itemize}
+\item \textbf{Sharp witness of non-Markovianity.}
+A zero gives $\gamma_{\min}\to-\infty$ just after $t_*$: maximal violation of CP-divisibility and non-invertibility of $\Lambda_t$---a preparation-controlled breakdown of the time-local description while $\Lambda_t$ remains CPTP.
+\item \textbf{Times of perfect which-configuration information.}
+$\Gamma_{ab}(t_*)=0$ means orthogonal conditional bulk states (perfect bulk record of $a$ vs.\ $b$, zero edge coherence): candidates for bulk readout of the edges, or times to avoid when edge coherence is a resource (cf.\ the protected CZ-like regime of Part~I).
+\end{enumerate}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Appendix: Possible uses of (near-)divergent canonical rates (II)}
+\small
+\textbf{More speculative directions:}
+\medskip
+\begin{enumerate}\setcounter{enumi}{3}\setlength\itemsep{10pt}
+\item \textbf{Sensing.}
+Near-divergence peak heights scale as $\delta/\lvert c\rvert$, where $c$ is a small weight imbalance of $\ket{\psi_0}$ inside the degenerate level (or the small imaginary offset of $\Gamma_{ab}$).
+\begin{itemize}\footnotesize\setlength\itemsep{3pt}
+\item Peak heights therefore respond strongly to weak symmetry-breaking perturbations or small detunings from the exact helix condition.
+\end{itemize}
+\item \textbf{Control.}
+In the $d=2$ regime, zeros occur periodically at times set directly by the edge--bulk coupling $\delta$.
+\begin{itemize}\footnotesize\setlength\itemsep{3pt}
+\item The times at which a chosen pair of edge configurations is completely dephased (or rephased) could be engineered, connecting to dynamical decoupling and dephasing-free subspaces.
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Appendix: Derivation of the canonical form (I) --- Entrywise $\mathcal L_t$ and diagonal basis}
 \small
 \textbf{Step 1 --- Time-local generator on matrix units $E_{ab}=\ket a\bra b$ (where $\Gamma_{ab}(t)\ne0$):}
 Differentiating $\rho_{ab}(t)=\Gamma_{ab}(t)r_{ab}$ and substituting $r_{ab}=\rho_{ab}(t)/\Gamma_{ab}(t)$ gives
@@ -346,7 +561,7 @@ $F_1=\tfrac12\sigma_A^z\otimes I$, $F_2=\tfrac12I\otimes\sigma_B^z$, $F_3=\tfrac
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Derivation of the canonical form (II): Closed-form inversion}
+\begin{frame}{Appendix: Derivation of the canonical form (II) --- Closed-form inversion}
 \small
 \textbf{Step 3 --- Action of the diagonal ansatz on $E_{ab}$:}
 With $F_\mu\ket a=g_\mu^a\ket a$ and $\mathbf g^a=(s_A^a,s_B^a,2s_A^as_B^a)$, form the $4\times3$ eigenvalue matrix
@@ -371,11 +586,10 @@ Multiplying by $G^{\mathsf T}(\cdot)G$ annihilates the $\mathbf1$ terms, and sum
 h_a(t)=-\tfrac14\textstyle\sum_{b}\operatorname{Im}\eta_{ab}(t),\qquad
 \Heff(t)=\textstyle\sum_a h_a(t)P_a.}
 \]
-\report{Secs.~4.4--4.5}
 \end{frame}
 
 % ==============================================================
-\begin{frame}[shrink=4]{Canonical master equation and definition of the canonical rates}
+\begin{frame}[shrink=4]{Appendix: Canonical master equation and definition of the canonical rates}
 \small
 \textbf{Step 5 --- Diagonalize the $3\times3$ Hermitian matrix $\dmat(t)=V(t)\diag(\tilde\gamma_1,\tilde\gamma_2,\tilde\gamma_3)V(t)^\dagger$:}
 Setting $L_k(t)=\sum_{\mu=1}^3 V_{\mu k}(t)F_\mu$ ($\Tr L_j^\dagger L_k=\delta_{jk}$, diagonal in $\{\ket a\}$) yields the unique canonical master equation \cite{Hall2014}:
@@ -392,98 +606,25 @@ Setting $L_k(t)=\sum_{\mu=1}^3 V_{\mu k}(t)F_\mu$ ($\Tr L_j^\dagger L_k=\delta_{
 \item \textbf{Rayleigh-quotient bound ($\mathbf e_{ab}=(\mathbf g^a-\mathbf g^b)/\sqrt2$):}
 $\gamma_{\min}(t)\le\kappa_{ab}(t)=\mathbf e_{ab}^{\mathsf T}\dmat(t)\mathbf e_{ab}\le\gamma_{\max}(t)$.
 \end{itemize}
-\report{Secs.~4.8 and 4.10; \texttt{diagonalCanonicalRates} in notebooks}
 \end{frame}
 
 % ==============================================================
-\begin{frame}{When do the canonical rates blow up?}
+\begin{frame}{Appendix: When do the canonical rates blow up?}
 \small
 \begin{itemize}\setlength\itemsep{4pt}
 \item \textbf{Exact criterion:} the rates are finite at $t$ iff every $\Gamma_{ab}(t)\neq0$. At a zero of order $r$, $\kappa_{ab}\simeq-r/(t-t_*)$, so $\gamma_{\max}\to+\infty$ before $t_*$ and $\gamma_{\min}\to-\infty$ after it, while $\rho_{AB}(t)$ stays smooth. Since $\Gamma_{ab}$ is a finite sum of exponentials with $\Gamma_{ab}(0)=1$, any zeros are isolated (countable).
 \item \textbf{Geometric meaning (pure bulk $\ket{\psi_0}$):} with $\ket{\phi_a(t)}=U_a(t)\ket{\psi_0}$ we have $\Gamma_{ab}(t)=\langle\phi_b(t)\mid\phi_a(t)\rangle$, so
 \[
-\boxed{\text{large rates}\iff\text{conditional bulk histories become (nearly) orthogonal.}}
+\boxed{\text{large rates}\iff\text{conditional bulk states become (nearly) orthogonal.}}
 \]
 For mixed $\omega_E$ the same holds for the Hilbert--Schmidt vectors $U_a(t)\sqrt{\omega_E}$.
 \item \textbf{But exact real-time zeros are special:} a complex $\Gamma_{ab}$ vanishes only if $\operatorname{Re}\Gamma_{ab}=\operatorname{Im}\Gamma_{ab}=0$ \emph{simultaneously}---two conditions on one variable $t$. Generically one gets a \textbf{near-zero} and a \textbf{tall but finite} peak; an exact divergence needs a symmetry of $(H_E,\omega_E)$ that makes $\Gamma_{ab}$ real (up to a known phase).
 \end{itemize}
-\appref{A.5--A.6}
+\appref{A.5--A.6}\quad \ongoing
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Numerical canonical rates: phantom helix bulk ($N=10$)}
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.56\textwidth}
-\centering
-\includegraphics[width=\linewidth,height=0.76\textheight,keepaspectratio]{Channel_CanonicalRates.png}
-\end{column}
-\begin{column}{0.42\textwidth}
-\footnotesize
-\begin{itemize}\setlength\itemsep{3pt}
-\item \textbf{Setup:} Ising coupling ($N=10$, $J=1$, $g=0.1$, $\Delta=\tfrac12$), edges in $\ket{++}$, bulk in the phantom helix $\ket{\Psi_1^+}$: an eigenstate of $H_E$ in an \textbf{8-fold degenerate} level.
-\item Twelve rates are identically $0$; at most $3$ move ($\gamma_1$ blue, $\gamma_{15}$ green).
-\item \textbf{Large isolated peaks}, e.g.\ $\lvert\gamma\rvert\approx9.7$ at $t\approx222.6$: near-orthogonality of two conditional bulk histories ($\Gamma_{01,10}$).
-\item The peaks are \textbf{tall but finite}; they may or may not correspond to exact zeros of $\Gamma_{ab}$ (genuine divergences).
-\item \textbf{Question:} why does a degenerate initial bulk state produce such peaks at all?
-\end{itemize}
-\end{column}
-\end{columns}
-\end{frame}
-
-% ==============================================================
-\section{Degenerate vs.\ non-degenerate initial bulk states}
-% ==============================================================
-
-\begin{frame}[shrink=4]{Core physical argument: what the edges do to the bulk}
-\small
-The edges act on the bulk only through the weak, configuration-dependent boundary field
-\[
-H_a=H_E+V_a,\qquad V_a=g_As_A^aS_1^z+g_Bs_B^aS_N^z,\qquad \lVert V_a\rVert=\tfrac{g_A+g_B}{4}\ (\text{small}),\qquad V_{\bar a}=-V_a .
-\]
-Large peaks require the four conditional histories $U_a(t)\ket{\psi_0}$ to \textbf{rotate apart by $O(1)$ angles}. How far a weak perturbation can rotate the initial state depends on its spectral neighbourhood:
-\medskip
-\begin{columns}[T,totalwidth=\textwidth]
-\begin{column}{0.48\textwidth}
-\textbf{Isolated (non-degenerate) eigenstate}
-\begin{itemize}\footnotesize\setlength\itemsep{3pt}
-\item Neighbouring levels are a gap $\Delta E\gg\lVert V\rVert$ away.
-\item $V_a$ can only \emph{dress} $\ket{\psi_0}$ by an amount $\sim\lVert V\rVert/\Delta E$; each branch mostly acquires a phase $e^{-iE_at}$.
-\item Conditional histories stay nearly parallel: $\lvert\Gamma_{ab}(t)\rvert\approx1$ for \emph{all} $t$.
-\item Rates stay small and bounded; the channel is close to a diagonal phase gate.
-\end{itemize}
-\end{column}
-\begin{column}{0.48\textwidth}
-\textbf{Eigenstate inside a degenerate level $\mathcal D$}
-\begin{itemize}\footnotesize\setlength\itemsep{3pt}
-\item No gap protects rotations \emph{inside} $\mathcal D$: the projected perturbation $W_a=P_{\mathcal D}V_aP_{\mathcal D}$ acts at zeroth order in $1/\Delta E$.
-\item On times $t\sim1/g$, each branch is rotated by $O(1)$ angles within $\mathcal D$.
-\item Opposite configurations rotate \emph{oppositely} ($W_{\bar a}=-W_a$): branches $a,\bar a$ can become (nearly) orthogonal.
-\item $\lvert\Gamma_{a\bar a}(t)\rvert$ dips towards $0$: tall rate peaks.
-\end{itemize}
-\end{column}
-\end{columns}
-\smallskip
-\footnotesize Both initial states may be \emph{pure}; the decisive property is degeneracy (or near-degeneracy) of the level, not purity. A mixture within $\mathcal D$ behaves the same way.
-\end{frame}
-
-% ==============================================================
-\begin{frame}{Minimal illustration: a two-fold degenerate level}
-\small
-Inside a two-dimensional degenerate level, to leading order each branch evolves with $E_0+W_a$, and $W_a$ has eigenvalues $\pm\delta$ ($\delta=O(g)$), eigenvectors $\ket{u_\pm}$. Writing $p_\pm=\lvert\langle u_\pm\vert\psi_0\rangle\rvert^2$,
-\[
-\Gamma_{a\bar a}(t)\simeq\bra{\psi_0}e^{-2iW_at}\ket{\psi_0}=p_+e^{-2i\delta t}+p_-e^{2i\delta t},\qquad
-\lvert\Gamma_{a\bar a}\rvert^2=\cos^2(2\delta t)+(p_+-p_-)^2\sin^2(2\delta t).
-\]
-\begin{itemize}\setlength\itemsep{5pt}
-\item For balanced weights $p_+=p_-$ (e.g.\ enforced by a symmetry of the state, or for a maximally mixed $\omega_E\propto P_{\mathcal D}$): $\Gamma_{a\bar a}\simeq\cos(2\delta t)$, which passes through zero once every half-period $\pi/(2\delta)$ $\Rightarrow$ a \textbf{periodic comb of tall peaks}.
-\item Compare: for an isolated level the same formula has no rotation available, and $\lvert\Gamma\rvert$ never leaves the vicinity of $1$.
-\item \textbf{Larger degeneracy} ($d>2$): several frequencies $\delta_m$ interfere, $\Gamma_{a\bar a}\simeq\sum_mp_me^{-2i\delta_mt}$; the comb becomes irregular, with only occasional deep dips.
-\end{itemize}
-\appref{A.1--A.4}
-\end{frame}
-
-% ==============================================================
-\begin{frame}{Finite peaks vs.\ genuine divergences}
+\begin{frame}{Appendix: Finite peaks vs.\ genuine divergences}
 \small
 \begin{itemize}\setlength\itemsep{6pt}
 \item \textbf{Leading-order picture:} $\Gamma_{a\bar a}$ is real and crosses zero $\Rightarrow$ genuine poles of the canonical rates.
@@ -499,38 +640,12 @@ A tall, finite, antisymmetric peak; the genuine pole is the limit $\epsilon\to0$
 \medskip
 \begin{center}
 \fbox{\parbox{0.9\textwidth}{\centering
-Degenerate initial bulk state $\Rightarrow$ $O(1)$ rotations of the conditional histories $\Rightarrow$ near-orthogonality $\Rightarrow$ large canonical-rate peaks, which become genuine divergences only when $\Gamma_{ab}$ vanishes exactly.}}
+Degenerate initial bulk state $\Rightarrow$ $O(1)$ rotations of the conditional bulk states $\Rightarrow$ near-orthogonality $\Rightarrow$ large canonical-rate peaks, which become genuine divergences only when $\Gamma_{ab}$ vanishes exactly.}}
 \end{center}
-\appref{A.5--A.6}
+\appref{A.5--A.6}\quad \ongoing
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Summary}
-\small
-\begin{center}
-\footnotesize
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{5.0cm}>{\raggedright\arraybackslash}p{5.0cm}@{}}
-\toprule
-& Isolated bulk eigenstate & Degenerate bulk level\\\midrule
-Conditional histories & Stay nearly parallel & Rotate apart by $O(1)$ angles\\[3pt]
-$\lvert\Gamma_{ab}(t)\rvert$ & Close to $1$ for all $t$ & $O(1)$ excursions, near-zeros\\[3pt]
-Canonical rates & Small, bounded & Tall isolated peaks\\[3pt]
-Channel & Near-unitary phase gate (slow bulk-mediated $\sigma^z\sigma^z$ phase) & Strong, non-monotonic dephasing\\[3pt]
-Time-local generator & Regular & Ill-conditioned near peaks; singular only at exact zeros\\\bottomrule
-\end{tabular}
-\end{center}
-\medskip
-\begin{itemize}\setlength\itemsep{4pt}
-\item The reduced dynamics is always smooth; the canonical generator is an extra, preparation-dependent description.
-\item Bell states $\ket{\Phi^\pm},\ket{\Psi^\pm}$ are unreachable from any $C<1$ edge input, for every $\omega_E$; Bell-equivalent states are not excluded by structure alone.
-\end{itemize}
-\end{frame}
-
-% ==============================================================
-\appendix
-\section{Appendix}
-% ==============================================================
-
 \begin{frame}[shrink=6]{Appendix A.1: Isolated eigenstate --- rigorous lower bound on $\lvert\Gamma_{ab}\rvert$}
 \footnotesize
 \textbf{Lemma 1.} Let $H_E\ket{E_0}=E_0\ket{E_0}$ be non-degenerate, $\Delta E=\operatorname{dist}(E_0,\spec H_E\setminus\{E_0\})$, $v_a=\lVert V_a\rVert<\Delta E/2$, $\varepsilon_a=v_a/(\Delta E-v_a)$. Then for all $t$,
@@ -551,11 +666,11 @@ $N$&4&5&6&7&8&9&10\\\midrule
 $d$ / gap $\Delta E$&2 / 0.133&2 / 0.098&4 / 0.018&4 / 0.048&4 / 0.0031&8 / 0.0067&8 / 0.0020\\\bottomrule
 \end{tabular}
 \end{center}
-so these runs are never in the isolated weak-coupling regime.
+so these runs are never in the isolated weak-coupling regime.\hfill\ongoing
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Appendix A.2: Degenerate level --- first-order theory and its validity}
+\begin{frame}{Appendix A.2: Degenerate level --- first-order theory and validity (ongoing)}
 \footnotesize
 Let $H_EP_{\mathcal D}=E_0P_{\mathcal D}$, $\dim\mathcal D=d\ge2$, $Q=1-P_{\mathcal D}$, $\Delta E=$ gap from $E_0$ to $\spec(H_E|_Q)$. Schrieffer--Wolff gives
 \[
@@ -577,7 +692,7 @@ H^{\rm eff}_a=E_0+W_a+K_a,\quad H^{\rm eff}_{\bar a}=E_0-W_a+K_a,\quad [H^{\rm e
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Appendix A.3: Two-fold degenerate level ($d=2$)}
+\begin{frame}{Appendix A.3: Two-fold degenerate level ($d=2$, ongoing)}
 \footnotesize
 Within first order, with $\sigma=\delta_1+\delta_2$ and $\Delta\delta=\delta_1-\delta_2\neq0$:
 \[
@@ -596,7 +711,7 @@ Within first order, with $\sigma=\delta_1+\delta_2$ and $\Delta\delta=\delta_1-\
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Appendix A.4: Higher degeneracy ($d\ge3$)}
+\begin{frame}{Appendix A.4: Higher degeneracy ($d\ge3$, ongoing)}
 \footnotesize
 \textbf{Closed polygon.} Phases $\theta_m$ with $\sum_mp_me^{i\theta_m}=0$ exist iff $\max_mp_m\le\tfrac12$. This is \emph{necessary}, but not sufficient, for $\Gamma^{(1)}(t)=\sum_mp_me^{-2i\delta_mt}$ to vanish, since the phases are confined to the line $\theta_m=-2\delta_mt$.
 \medskip
@@ -619,7 +734,7 @@ Real sign changes, hence first-order zeros, exist iff $p_0<\tfrac12$ (for $d=2$,
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Appendix A.5: Exact symmetries of the helix preparation}
+\begin{frame}{Appendix A.5: Exact symmetries of the helix preparation (ongoing)}
 \footnotesize
 Let $K$ be complex conjugation in the computational basis, $\mathcal R$ the reflection $j\mapsto N+1-j$, $M_z=\sum_jS^z_j$, and
 \[
@@ -640,7 +755,7 @@ $\Gamma_{a\bar a}(t)=\langle U_{\bar a}(t)\psi\vert U_a(t)\psi\rangle=\langle\Th
 \end{frame}
 
 % ==============================================================
-\begin{frame}{Appendix A.6: Genericity of real zeros and shape of a near-zero}
+\begin{frame}{Appendix A.6: Real zeros and shape of a near-zero (ongoing)}
 \footnotesize
 \textbf{Real versus complex.} $\Gamma_{ab}$ extends to an entire function of $t$.
 \begin{itemize}\setlength\itemsep{2pt}
