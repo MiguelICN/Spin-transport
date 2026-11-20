@@ -337,6 +337,99 @@ The canonical rates are linear combinations of the logarithmic derivatives $\dot
 \end{frame}
 
 % ==============================================================
+\begin{frame}{Explicit master equation, jump operators, and \texorpdfstring{$\Heff(t)$}{H\_eff(t)}}
+\footnotesize\setlength\abovedisplayskip{3pt}\setlength\belowdisplayskip{3pt}
+With $F_1=\tfrac12\sigma_A^z\otimes I$, $F_2=\tfrac12I\otimes\sigma_B^z$, $F_3=\tfrac12\sigma_A^z\otimes\sigma_B^z$ and $\dmat(t)=G^{\mathsf T}\eta(t)G$ ($\eta_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}$, $\eta_{aa}=0$), keeping only the non-zero terms:
+\[
+\boxed{\begin{aligned}
+\dot\rho(t)&=-i\bigl[\Heff(t),\rho(t)\bigr]+\textstyle\sum_{\mu,\nu=1}^{3}\dmat_{\mu\nu}(t)\Bigl(F_\mu\rho(t)F_\nu-\tfrac12\bigl\{F_\nu F_\mu,\rho(t)\bigr\}\Bigr)\\[-1pt]
+&=-i\bigl[\Heff(t),\rho(t)\bigr]+\textstyle\sum_{k=1}^{3}\tilde\gamma_k(t)\Bigl(L_k(t)\rho(t)L_k(t)^\dagger-\tfrac12\bigl\{L_k(t)^\dagger L_k(t),\rho(t)\bigr\}\Bigr).
+\end{aligned}}
+\]
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+\textbf{Non-zero jump operators ($k=1,2,3$)}
+\begin{itemize}\scriptsize\setlength\abovedisplayskip{3pt}\setlength\belowdisplayskip{3pt}\setlength\itemsep{3pt}
+\item Diagonalizing $\dmat(t)=V(t)\diag(\tilde\gamma_1,\tilde\gamma_2,\tilde\gamma_3)V(t)^\dagger$ ($V^\dagger V=I_3$):
+\[
+L_k(t)=\tfrac12\bigl(V_{1k}\sigma_A^z\otimes I+V_{2k}I\otimes\sigma_B^z+V_{3k}\sigma_A^z\otimes\sigma_B^z\bigr).
+\]
+\item Orthonormal and traceless: $\Tr\bigl(L_j(t)^\dagger L_k(t)\bigr)=\delta_{jk}$.
+\item Diagonal in $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$ (non-Hermitian whenever $\operatorname{Im}\dmat(t)\neq0$).
+\end{itemize}
+\end{column}
+\begin{column}{0.49\textwidth}
+\textbf{Effective Hamiltonian $\Heff(t)$ (traceless, diagonal)}
+{\scriptsize\setlength\abovedisplayskip{3pt}\setlength\belowdisplayskip{3pt}
+\[
+\begin{aligned}
+\Heff(t)&=\textstyle\sum_{a}h_a(t)\ket a\bra a\\[-2pt]
+&=\tfrac{\Omega_A(t)}{2}\sigma_A^z\otimes I+\tfrac{\Omega_B(t)}{2}I\otimes\sigma_B^z+\tfrac{J_{zz}(t)}{2}\sigma_A^z\otimes\sigma_B^z
+\end{aligned}
+\]}
+\begin{itemize}\scriptsize\setlength\itemsep{2.5pt}
+\item $h_a(t)=-\tfrac14\sum_b\operatorname{Im}\bigl(\dot\Gamma_{ab}(t)/\Gamma_{ab}(t)\bigr)$,\quad $\sum_a h_a=0$.
+\item $(\Omega_A,\Omega_B,J_{zz})^{\mathsf T}=G^{\mathsf T}h(t)$:\\[1pt]
+$\Omega_A=\tfrac12(h_{00}+h_{01}-h_{10}-h_{11})$,\;
+$\Omega_B=\tfrac12(h_{00}-h_{01}+h_{10}-h_{11})$,\\[1pt]
+$J_{zz}=\tfrac12(h_{00}-h_{01}-h_{10}+h_{11})$ (bulk-mediated $\sigma_A^z\sigma_B^z$).
+\end{itemize}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Schur channel vs.\ canonical generator: reading correlations}
+\footnotesize
+Both describe the \emph{same} $\rho_{AB}(t)$ ($\Gamma_{ab}\neq0$, no direct $A$--$B$ term in $H^{(\ZZ)}$), but reveal correlations differently:
+\smallskip
+\begin{columns}[T,totalwidth=\textwidth]
+\begin{column}{0.48\textwidth}
+\textbf{1.\ Schur channel: $\rho_{AB}(t)=\Gamma(t)\circ\rho_{AB}(0)$}
+\begin{itemize}\scriptsize\setlength\itemsep{3pt}
+\item \textbf{Picture:} \emph{cumulative ($0\to t$) bulk interference.} Each $\Gamma_{ab}(t)=\Tr_E[\omega_E U_b(t)^\dagger U_a(t)]$ compares two conditional bulk states directly (always defined).
+\item \textbf{Uncorrelated ($\Lambda_t^A\otimes\Lambda_t^B$):} $\Gamma$ factorizes across $A:B$, $\Gamma_{s_As_B,s_A's_B'}=\alpha_{s_As_A'}\beta_{s_Bs_B'}$ (e.g.\ $\Gamma_{00,10}=\Gamma_{01,11}$).
+\item \textbf{Correlations:} \textbf{non-factorizable $\Gamma(t)$} ($A$'s overlap depends on $B$: $\Gamma_{00,10}\neq\Gamma_{01,11}$, $\Gamma_{00,11}\neq\Gamma_{00,10}\Gamma_{00,01}$).
+\item \textbf{Entanglement:} \textbf{non-additive conditional phases} across the four branches while $\lvert\Gamma_{ab}(t)\rvert$ remains large against dephasing.
+\end{itemize}
+\end{column}
+\begin{column}{0.49\textwidth}
+\textbf{2.\ Time-local generator: $\dot\rho(t)=\mathcal L_t[\rho(t)]$}
+\begin{itemize}\scriptsize\setlength\itemsep{3pt}
+\item \textbf{Picture:} \emph{instantaneous effective operators} on $AB$ alone (uses $\Lambda_t^{-1}$). Conditional bulk states become two-spin couplings and rates.
+\item \textbf{Uncorrelated ($\mathcal L_t^A\otimes\id+\id\otimes\mathcal L_t^B$):} $J_{zz}=0$ and $\dmat=\diag(\dmat_{11},\dmat_{22},0)$ (only local $\sigma_A^z\otimes I$, $I\otimes\sigma_B^z$ terms).
+\item \textbf{Coherent entangling term:} $J_{zz}(t)\,\sigma_A^z\otimes\sigma_B^z\neq0$ in $\Heff(t)$ directly generates two-qubit entangling phases.
+\item \textbf{Collective dissipator:} non-local $L_k(t)$ ($V_{3k}\sigma_A^z\otimes\sigma_B^z$ and cross-terms $\dmat_{12},\dmat_{13},\dmat_{23}\neq0$), with $\tilde\gamma_k<0$ recoherence vs.\ $\tilde\gamma_k>0$ damping.
+\end{itemize}
+\end{column}
+\end{columns}
+\smallskip
+\begin{center}
+\fbox{\parbox{0.94\textwidth}{\centering\scriptsize
+At $t=0$, $\Gamma(0)=\mathbf1\mathbf1^{\mathsf T}$ factorizes and $J_{zz}(0)=\dmat(0)=0$: bulk propagation makes $\Gamma(t)$ non-factorizable, which in $\mathcal L_t$ switches on the effective $\sigma_A^z\sigma_B^z$ coupling $J_{zz}(t)$ and collective jumps $L_k(t)$.}}
+\end{center}
+\end{frame}
+
+% ==============================================================
+\begin{frame}{Why only the rates spike: observables, cancellation, and Loschmidt echo}
+\footnotesize\setlength\abovedisplayskip{2pt}\setlength\belowdisplayskip{2pt}
+\begin{itemize}\setlength\itemsep{2pt}
+\item \textbf{Observables are linear in $\rho$; rates are ratios.} Expectation values depend on $\rho_{ab}(t)=\Gamma_{ab}(t)\,r_{ab}$, which stays smooth and bounded even as $\Gamma_{ab}\to0$. By contrast, $\eta_{ab}=\dot\Gamma_{ab}/\Gamma_{ab}=\tfrac{d}{dt}\ln\Gamma_{ab}$ measures the change \emph{relative to the remaining coherence}, dividing by a near-zero. In the master equation this spike cancels out,
+\[
+\dot\rho_{ab}=\underbrace{\eta_{ab}}_{\text{large}}\;\underbrace{\rho_{ab}}_{\text{small}}=\dot\Gamma_{ab}\,r_{ab}\quad\bigl(\text{finite: }\lvert\dot\Gamma_{ab}\rvert\le\lVert V_a-V_b\rVert\bigr),
+\]
+so no physical observable diverges---only quantities that divide by $\Gamma_{ab}$ ($\Lambda_t^{-1}$, $\mathcal L_t$, $\tilde\gamma_k$, and $\tfrac{d}{dt}\ln\Gamma_{ab}$).
+\item \textbf{Positive and negative rate lobes cancel in net damping.} Accumulated damping is a total derivative,
+$\int_{t_1}^{t_2}\kappa_{ab}\,dt=-\ln\lvert\Gamma_{ab}(t_2)/\Gamma_{ab}(t_1)\rvert$, finite whenever $\Gamma_{ab}(t_{1,2})\neq0$. Around a near-zero $t_0$, $\kappa_{ab}(t)$ is antisymmetric in $t-t_0$: the positive lobe before $t_0$ (decay toward $0$) is undone by the negative lobe after $t_0$ (revival / backflow), while the phase rate $\omega_{ab}$ integrates to $\pm\pi$---a smooth \textbf{sign flip of the coherence}.
+\item \textbf{Edge coherence as a Loschmidt echo.} For a pure bulk state $\ket{\psi_0}$,
+\[
+\mathcal M_{ab}(t)=\bigl\lvert\bra{\psi_0}e^{iH_bt}e^{-iH_at}\ket{\psi_0}\bigr\rvert^2=\lvert\Gamma_{ab}(t)\rvert^2
+\]
+is the echo for forward evolution under $H_a$ and backward under $H_b$ (cf.\ central-spin probes, Quan \emph{et al.}, PRL \textbf{96}, 140604 (2006)). While $\mathcal M_{ab}(t)$ itself dips smoothly toward $0$ at orthogonality times, its log-derivative $-\tfrac{d}{dt}\ln\mathcal M_{ab}=2\kappa_{ab}$ exhibits the sharp spike.
+\end{itemize}
+\end{frame}
+
+% ==============================================================
 \begin{frame}{Observation: phantom helix vs.\ earlier eigenstates}
 \begin{columns}[T,totalwidth=\textwidth]
 \begin{column}{0.55\textwidth}
